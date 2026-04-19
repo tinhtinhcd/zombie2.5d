@@ -4,8 +4,12 @@ extends Node3D
 @onready var hud: HUD = $HUD
 @onready var pause_menu: PauseMenuUI = $PauseMenu
 @onready var game_manager: GameManager = get_node("/root/GameManager") as GameManager
+@onready var scene_router: SceneRouter = get_node("/root/SceneRouter") as SceneRouter
 
 func _ready() -> void:
+    # This scene is the single entry point for a fresh gameplay run.
+    # reset_game() clears session state; apply_permanent_upgrades() layers
+    # in any persistent progression the player has earned across runs.
     game_manager.reset_game()
     game_manager.apply_permanent_upgrades(player)
     pause_menu.visible = false
@@ -13,6 +17,7 @@ func _ready() -> void:
     hud.restart_requested.connect(_restart_game)
     hud.upgrade_selected.connect(_on_upgrade_selected)
     pause_menu.resume_requested.connect(_hide_pause_menu)
+    pause_menu.home_requested.connect(_go_home)
     player.hp_changed.connect(hud.set_hp)
     player.died.connect(_on_player_died)
     hud.set_hp(player.current_hp)
@@ -40,3 +45,6 @@ func _restart_game() -> void:
 
 func _on_upgrade_selected(upgrade_id: StringName) -> void:
     game_manager.select_upgrade(player, upgrade_id)
+
+func _go_home() -> void:
+    scene_router.go_to_home()

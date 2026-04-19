@@ -2,8 +2,10 @@ extends Control
 class_name PauseMenuUI
 
 signal resume_requested
+signal home_requested
 
-# Placeholder pause menu for future pause-state and settings flows.
+# Pause menu UI. Emits signals for resume and home actions so the game scene
+# controls navigation flow. This keeps scene routing out of the UI layer.
 
 @onready var resume_button: Button = $Panel/ResumeButton
 @onready var home_button: Button = $Panel/HomeButton
@@ -19,4 +21,4 @@ func _on_resume_pressed() -> void:
 
 func _on_home_pressed() -> void:
     visible = false
-    SceneRouter.go_to_home()
+    home_requested.emit()

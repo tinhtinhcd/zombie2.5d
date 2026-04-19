@@ -11,20 +11,20 @@ class_name EnemySpawner
 @export var default_spawn_count: int = 3
 
 var player_target: Node3D
+var _enemy_container: Node3D
+var _spawn_points: Array[Marker3D] = []
 
 func _ready() -> void:
     player_target = get_node_or_null(player_target_path) as Node3D
+    _enemy_container = get_node_or_null(enemy_container_path) as Node3D
+    var spawn_points_root := get_node_or_null(spawn_points_path) as Node3D
+    if spawn_points_root != null:
+        _spawn_points = _get_spawn_points(spawn_points_root)
 
 func spawn_enemies(spawn_count: int = default_spawn_count, speed_bonus: float = 0.0, enemy_types: Array = ["normal"]) -> Array[Node3D]:
     var spawned_enemies: Array[Node3D] = []
-    var enemy_container := get_node_or_null(enemy_container_path) as Node3D
-    var spawn_points_root := get_node_or_null(spawn_points_path) as Node3D
 
-    if enemy_scene == null or enemy_container == null or spawn_points_root == null:
-        return spawned_enemies
-
-    var spawn_points := _get_spawn_points(spawn_points_root)
-    if spawn_points.is_empty():
+    if enemy_scene == null or _enemy_container == null or _spawn_points.is_empty():
         return spawned_enemies
 
     for index in range(max(spawn_count, 0)):
@@ -32,8 +32,8 @@ func spawn_enemies(spawn_count: int = default_spawn_count, speed_bonus: float = 
         if enemy_instance == null:
             continue
 
-        var spawn_point := spawn_points[index % spawn_points.size()]
-        enemy_container.add_child(enemy_instance)
+        var spawn_point := _spawn_points[index % _spawn_points.size()]
+        _enemy_container.add_child(enemy_instance)
         enemy_instance.global_position = spawn_point.global_position
         enemy_instance.global_rotation = spawn_point.global_rotation
         if enemy_instance is Enemy:

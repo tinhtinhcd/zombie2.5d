@@ -22,17 +22,24 @@ var current_wave: int = 0
 var _waiting_for_upgrade_selection: bool = false
 var _active_level_data: LevelData
 var game_manager: GameManager
+var _enemy_container: Node3D
+var _spawner: EnemySpawner
+var _projectile_container: Node3D
+var _pickup_container: Node3D
 
 func _ready() -> void:
     game_manager = get_node("/root/GameManager") as GameManager
+    _enemy_container = get_node_or_null(enemy_container_path) as Node3D
+    _spawner = get_node_or_null(spawner_path) as EnemySpawner
+    _projectile_container = get_node_or_null(projectile_container_path) as Node3D
+    _pickup_container = get_node_or_null(pickup_container_path) as Node3D
     current_wave = 0
     if game_manager != null:
         game_manager.upgrade_selected.connect(_on_upgrade_selected)
         game_manager.level_changed.connect(_on_level_changed)
 
 func _process(_delta: float) -> void:
-    var enemy_container := get_node_or_null(enemy_container_path) as Node3D
-    if game_manager == null or enemy_container == null:
+    if game_manager == null or _enemy_container == null:
         return
     if not game_manager.is_gameplay_active or game_manager.is_game_over:
         return
@@ -40,21 +47,23 @@ func _process(_delta: float) -> void:
         return
     if _waiting_for_upgrade_selection:
         return
-    if enemy_container.get_child_count() > 0:
+    # A wave is complete when no enemies remain in the container.
+    if _enemy_container.get_child_count() > 0:
         return
 
+    # All waves done → advance to the next level.
     if _is_level_complete():
         game_manager.advance_to_next_level()
         return
 
+    # Offer an upgrade choice before starting the next wave.
     _waiting_for_upgrade_selection = true
     game_manager.begin_upgrade_selection()
 
 func start_next_wave() -> void:
     current_wave += 1
 
-    var spawner := get_node_or_null(spawner_path) as EnemySpawner
-    if spawner == null:
+    if _spawner == null:
         return
 
     if game_manager != null:
@@ -62,18 +71,18 @@ func start_next_wave() -> void:
         game_manager.set_boss_wave(_is_boss_wave(current_wave))
 
     if _is_boss_wave(current_wave):
-        _start_boss_wave(spawner)
+        _start_boss_wave(_spawner)
         return
 
     var wave_definition := _get_wave_definition(current_wave)
-    var spawn_count := int(wave_definition.get("spawn_count", spawner.default_spawn_count))
+    var spawn_count := int(wave_definition.get("spawn_count", _spawner.default_spawn_count))
     spawn_count += max(current_wave - 1, 0) * spawn_count_increase_per_wave
 
     var speed_bonus := float(wave_definition.get("speed_bonus", 0.0))
     speed_bonus += float(max(current_wave - 1, 0)) * speed_bonus_per_wave
     var enemy_types: Array = wave_definition.get("enemy_types", ["normal"])
 
-    spawner.spawn_enemies(spawn_count, speed_bonus, enemy_types)
+    _spawner.spawn_enemies(spawn_count, speed_bonus, enemy_types)
 
 func _get_wave_definition(wave_number: int) -> Dictionary:
     var active_wave_definitions := _get_active_wave_definitions()
@@ -146,18 +155,14 @@ func _get_active_boss_interval() -> int:
     return boss_wave_interval
 
 func _clear_runtime_nodes() -> void:
-    var enemy_container := get_node_or_null(enemy_container_path) as Node3D
-    var projectile_container := get_node_or_null(projectile_container_path) as Node3D
-    var pickup_container := get_node_or_null(pickup_container_path) as Node3D
-
-    if enemy_container != null:
-        for child in enemy_container.get_children():
+    if _enemy_container != null:
+        for child in _enemy_container.get_children():
             child.queue_free()
 
-    if projectile_container != null:
-        for child in projectile_container.get_children():
+    if _projectile_container != null:
+        for child in _projectile_container.get_children():
             child.queue_free()
 
-    if pickup_container != null:
-        for child in pickup_container.get_children():
+    if _pickup_container != null:
+        for child in _pickup_container.get_children():
             child.queue_free()

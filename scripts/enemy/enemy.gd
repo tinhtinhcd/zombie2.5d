@@ -51,6 +51,7 @@ func _ready() -> void:
     _constrain_to_plane()
 
 func _physics_process(delta: float) -> void:
+    # Freeze movement when gameplay is paused, game over, or upgrade selection is active.
     if game_manager != null and not game_manager.is_gameplay_active:
         velocity = Vector3.ZERO
         return
@@ -62,6 +63,7 @@ func _physics_process(delta: float) -> void:
     move_and_slide()
     _constrain_to_plane()
 
+    # Tick down contact-damage cooldown so the player isn't hurt every frame.
     _contact_damage_cooldown = max(_contact_damage_cooldown - delta, 0.0)
     _try_damage_player()
 

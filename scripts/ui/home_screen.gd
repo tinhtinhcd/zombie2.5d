@@ -1,6 +1,11 @@
 extends Control
 
+# Home screen with Start button and prototype permanent-upgrade controls.
+# The upgrade buttons below are temporary test UI for unlocking permanent
+# upgrades. Replace with a proper shop or progression screen later.
+
 @onready var start_button: Button = $StartButton
+# Prototype upgrade buttons — temporary, for testing permanent progression.
 @onready var unlock_hp_button: Button = $UnlockHPButton
 @onready var unlock_fire_rate_button: Button = $UnlockFireRateButton
 @onready var unlock_damage_button: Button = $UnlockDamageButton
