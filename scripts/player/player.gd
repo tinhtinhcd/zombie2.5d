@@ -31,8 +31,10 @@ var _base_scale: Vector3 = Vector3.ONE
 var _base_color: Color = Color(1.0, 1.0, 1.0, 1.0)
 var _feedback_material: StandardMaterial3D
 var _feedback_tween: Tween
+var game_manager: GameManager
 
 func _ready() -> void:
+    game_manager = get_node("/root/GameManager") as GameManager
     current_hp = max(max_hp, 1)
     _base_scale = scale
     _plane_origin = global_position
@@ -45,13 +47,12 @@ func _ready() -> void:
     hp_changed.emit(current_hp)
 
 func _physics_process(delta: float) -> void:
-    var game_manager := get_node_or_null("/root/GameManager") as GameManager
     _damage_cooldown_timer = max(_damage_cooldown_timer - delta, 0.0)
     if game_manager != null and not game_manager.is_gameplay_active:
         velocity = Vector3.ZERO
         return
 
-    var input_vector := Input.get_vector("move_left", "move_right", "move_up", "move_down")
+    var input_vector := get_input_vector()
     var move_direction := _get_move_direction(input_vector)
 
     velocity = move_direction * move_speed
@@ -60,8 +61,13 @@ func _physics_process(delta: float) -> void:
     move_and_slide()
     _constrain_to_plane()
 
+func get_input_vector() -> Vector2:
+    # Abstracted input reading. Replace this with virtual joystick input
+    # when adding mobile touch controls.
+    return Input.get_vector("move_left", "move_right", "move_up", "move_down")
+
 func _process(delta: float) -> void:
-    var game_manager := get_node_or_null("/root/GameManager") as GameManager
+
     if game_manager != null and not game_manager.is_gameplay_active:
         return
 
@@ -151,7 +157,7 @@ func restore_hp(amount: int) -> void:
     hp_changed.emit(current_hp)
 
 func receive_experience(amount: int) -> void:
-    var game_manager := get_node_or_null("/root/GameManager") as GameManager
+
     if game_manager != null:
         game_manager.add_xp(amount)
 

@@ -21,16 +21,16 @@ class_name WaveManager
 var current_wave: int = 0
 var _waiting_for_upgrade_selection: bool = false
 var _active_level_data: LevelData
+var game_manager: GameManager
 
 func _ready() -> void:
-    var game_manager := get_node_or_null("/root/GameManager") as GameManager
+    game_manager = get_node("/root/GameManager") as GameManager
     current_wave = 0
     if game_manager != null:
         game_manager.upgrade_selected.connect(_on_upgrade_selected)
         game_manager.level_changed.connect(_on_level_changed)
 
 func _process(_delta: float) -> void:
-    var game_manager := get_node_or_null("/root/GameManager") as GameManager
     var enemy_container := get_node_or_null(enemy_container_path) as Node3D
     if game_manager == null or enemy_container == null:
         return
@@ -51,7 +51,6 @@ func _process(_delta: float) -> void:
     game_manager.begin_upgrade_selection()
 
 func start_next_wave() -> void:
-    var game_manager := get_node_or_null("/root/GameManager") as GameManager
     current_wave += 1
 
     var spawner := get_node_or_null(spawner_path) as EnemySpawner
@@ -112,7 +111,6 @@ func _on_upgrade_selected(_upgrade_id: StringName) -> void:
     start_next_wave()
 
 func _on_level_changed(_level_index: int, _level_id: StringName, _display_name: String) -> void:
-    var game_manager := get_node_or_null("/root/GameManager") as GameManager
     if game_manager == null:
         return
 

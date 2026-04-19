@@ -75,7 +75,10 @@ var permanent_upgrades: Dictionary = {}
 var _progression_loaded: bool = false
 
 func _ready() -> void:
-    reset_game()
+    # Only load data here. reset_game() is called by game.gd when
+    # the gameplay scene starts, so we avoid duplicate signal emissions.
+    _ensure_levels_loaded()
+    _ensure_progression_loaded()
 
 func reset_game() -> void:
     # Restore default session state for a fresh run.
@@ -135,6 +138,9 @@ func trigger_game_over() -> void:
     game_over_changed.emit(is_game_over)
 
 func restart_game() -> void:
+    # Intentional roguelike loop: restart always begins a fresh run from
+    # level 1 with default session stats. Permanent upgrades are preserved
+    # across runs via SaveManager.
     reset_game()
     var scene_router := get_node_or_null("/root/SceneRouter") as SceneRouter
     if scene_router != null:

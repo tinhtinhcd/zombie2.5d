@@ -10,11 +10,15 @@ class_name EnemySpawner
 @export var player_target_path: NodePath = NodePath("../Player")
 @export var default_spawn_count: int = 3
 
+var player_target: Node3D
+
+func _ready() -> void:
+    player_target = get_node_or_null(player_target_path) as Node3D
+
 func spawn_enemies(spawn_count: int = default_spawn_count, speed_bonus: float = 0.0, enemy_types: Array = ["normal"]) -> Array[Node3D]:
     var spawned_enemies: Array[Node3D] = []
     var enemy_container := get_node_or_null(enemy_container_path) as Node3D
     var spawn_points_root := get_node_or_null(spawn_points_path) as Node3D
-    var player_target := get_node_or_null(player_target_path) as Node3D
 
     if enemy_scene == null or enemy_container == null or spawn_points_root == null:
         return spawned_enemies

@@ -21,9 +21,10 @@ signal upgrade_selected(upgrade_id: StringName)
 @onready var upgrade_button_3: Button = $HUDRoot/UpgradePanel/UpgradeButton3
 
 var _upgrade_option_ids: Array[StringName] = []
+var game_manager: GameManager
 
 func _ready() -> void:
-    var game_manager := get_node_or_null("/root/GameManager") as GameManager
+    game_manager = get_node("/root/GameManager") as GameManager
     pause_button.pressed.connect(_on_pause_pressed)
     restart_button.pressed.connect(_on_restart_pressed)
     upgrade_button_1.pressed.connect(func() -> void: _emit_upgrade_selected(0))
@@ -68,7 +69,7 @@ func _on_level_changed(level_index: int, _level_id: StringName, display_name: St
 
 func _on_wave_changed(value: int) -> void:
     var boss_suffix := ""
-    var game_manager := get_node_or_null("/root/GameManager") as GameManager
+
     if game_manager != null and game_manager.is_boss_wave:
         boss_suffix = " Boss"
     wave_label.text = "Wave: %d%s" % [value, boss_suffix]
@@ -77,7 +78,7 @@ func _on_boss_wave_changed(is_boss_wave_now: bool) -> void:
     var boss_suffix := ""
     if is_boss_wave_now:
         boss_suffix = " Boss"
-    var game_manager := get_node_or_null("/root/GameManager") as GameManager
+
     var wave_value := 0
     if game_manager != null:
         wave_value = game_manager.current_wave
@@ -105,7 +106,7 @@ func _hide_upgrade_panel() -> void:
     upgrade_panel.visible = false
     _upgrade_option_ids.clear()
 
-    var game_manager := get_node_or_null("/root/GameManager") as GameManager
+
     if game_manager != null:
         pause_button.disabled = game_manager.is_game_over
 

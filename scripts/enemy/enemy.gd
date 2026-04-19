@@ -36,8 +36,10 @@ var _base_color: Color = Color(1.0, 1.0, 1.0, 1.0)
 var _feedback_material: StandardMaterial3D
 var _feedback_tween: Tween
 var _death_tween: Tween
+var game_manager: GameManager
 
 func _ready() -> void:
+    game_manager = get_node("/root/GameManager") as GameManager
     apply_enemy_type(enemy_type)
     _base_scale = scale
     _plane_origin = global_position
@@ -49,7 +51,6 @@ func _ready() -> void:
     _constrain_to_plane()
 
 func _physics_process(delta: float) -> void:
-    var game_manager := get_node_or_null("/root/GameManager") as GameManager
     if game_manager != null and not game_manager.is_gameplay_active:
         velocity = Vector3.ZERO
         return
@@ -95,7 +96,7 @@ func die() -> void:
     velocity = Vector3.ZERO
     if collision_shape != null:
         collision_shape.disabled = true
-    var game_manager := get_node_or_null("/root/GameManager") as GameManager
+
     if game_manager != null:
         game_manager.add_score(1)
     _spawn_xp_pickup()
