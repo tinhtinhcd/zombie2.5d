@@ -1,0 +1,9 @@
+[gd_scene load_steps=4 format=3.5]
+[node name="HUD" type="CanvasLayer"]
+[node name="HealthBar" type="TextureProgress" parent="HUD"]
+value = 100
+max_value = 100
+[node name="ScoreLabel" type="Label" parent="HUD"]
+text = "Score: 0"
+[node name="PauseButton" type="Button" parent="HUD"]
+text = "Pause"

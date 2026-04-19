@@ -1,0 +1,10 @@
+[gd_scene load_steps=4 format=3.5]
+[node name="HomeScreen" type="Control"]
+[node name="Background" type="ColorRect" parent="HomeScreen"]
+color = Color(0.08, 0.08, 0.08, 1.0)
+[node name="Title" type="Label" parent="HomeScreen"]
+text = "HOME"
+[node name="StartButton" type="Button" parent="HomeScreen"]
+text = "Start"
+[node name="SettingsButton" type="Button" parent="HomeScreen"]
+text = "Settings"

@@ -1,0 +1,3 @@
+[gd_scene load_steps=3 format=3.5]
+[node name="LevelContainer" type="Node3D"]
+[node name="LevelRoot" type="Node3D" parent="LevelContainer"]

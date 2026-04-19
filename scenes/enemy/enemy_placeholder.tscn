@@ -1,0 +1,10 @@
+[gd_scene load_steps=4 format=3.5]
+[node name="EnemyPlaceholder" type="Node3D"]
+[node name="Mesh" type="MeshInstance3D" parent="EnemyPlaceholder"]
+mesh = SphereMesh {
+	radius = 0.5
+}
+[node name="CollisionShape" type="CollisionShape3D" parent="EnemyPlaceholder"]
+shape = SphereShape3D {
+	radius = 0.5
+}

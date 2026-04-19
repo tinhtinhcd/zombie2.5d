@@ -1,0 +1,10 @@
+[gd_scene load_steps=4 format=3.5]
+[node name="PlayerPlaceholder" type="Node3D"]
+[node name="Mesh" type="MeshInstance3D" parent="PlayerPlaceholder"]
+mesh = BoxMesh {
+	size = Vector3(1.0, 1.0, 1.0)
+}
+[node name="CollisionShape" type="CollisionShape3D" parent="PlayerPlaceholder"]
+shape = BoxShape3D {
+	extents = Vector3(0.5, 0.5, 0.5)
+}

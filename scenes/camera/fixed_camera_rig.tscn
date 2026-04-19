@@ -1,0 +1,6 @@
+[gd_scene load_steps=4 format=3.5]
+[node name="FixedCameraRig" type="Node3D"]
+[node name="CameraPivot" type="Node3D" parent="FixedCameraRig"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+[node name="Camera" type="Camera3D" parent="CameraPivot"]
+current = true

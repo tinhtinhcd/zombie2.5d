@@ -1,0 +1,5 @@
+[gd_scene load_steps=4 format=3.5]
+[node name="MainRoot" type="Node3D"]
+[node name="LevelContainer" type="Node3D" parent="."]
+[node name="FixedCameraRig" type="Node3D" parent="."]
+[node name="UIRoot" type="CanvasLayer" parent="."]

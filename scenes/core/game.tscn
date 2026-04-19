@@ -1,0 +1,7 @@
+[gd_scene load_steps=5 format=3.5]
+[node name="GameRoot" type="Node3D"]
+[node name="LevelContainer" type="Node3D" parent="GameRoot"]
+[node name="PlayerPlaceholder" type="Node3D" parent="GameRoot"]
+[node name="EnemyPlaceholder" type="Node3D" parent="GameRoot"]
+[node name="FixedCameraRig" type="Node3D" parent="GameRoot"]
+[node name="GameHUD" type="CanvasLayer" parent="GameRoot"]

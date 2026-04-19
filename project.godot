@@ -1,0 +1,26 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/features=PackedStringArray("4.5")
+
+[autoload]
+
+GameManager="res://scripts/autoload/GameManager.gd"
+SceneRouter="res://scripts/autoload/SceneRouter.gd"
+SaveManager="res://scripts/autoload/SaveManager.gd"
+AudioManager="res://scripts/autoload/AudioManager.gd"
+
+[gd_project settings]
+
+config_version=4
+application/name="2.5D Mobile Scaffold"
+run/main_scene="res://scenes/core/main.tscn"
