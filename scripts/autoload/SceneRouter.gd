@@ -1,21 +1,16 @@
 extends Node
 class_name SceneRouter
 
-# Manages scene and UI routing.
-# Keep transition logic centralized for scalability.
+const HOME_SCENE_PATH := "res://scenes/ui/home_screen.tscn"
+const GAME_SCENE_PATH := "res://scenes/core/game.tscn"
 
-func _ready() -> void:
-    # Prepare route state or cached scenes.
-    pass
+func change_scene(scene_path: String) -> void:
+    var error := get_tree().change_scene_to_file(scene_path)
+    if error != OK:
+        push_error("Failed to change scene to %s (error %d)." % [scene_path, error])
 
 func go_to_home() -> void:
-    # Load the home screen scene or UI.
-    pass
+    change_scene(HOME_SCENE_PATH)
 
 func go_to_game() -> void:
-    # Load the main gameplay scene.
-    pass
-
-func go_to_pause() -> void:
-    # Activate pause menu overlay.
-    pass
+    change_scene(GAME_SCENE_PATH)

@@ -1,0 +1,21 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemy/enemy.gd" id="1_enemy"]
+[ext_resource type="PackedScene" path="res://scenes/effects/xp_pickup.tscn" id="2_xp_pickup"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_enemy"]
+radius = 0.45
+height = 1.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_enemy"]
+size = Vector3(0.9, 1.4, 0.9)
+
+[node name="Enemy" type="CharacterBody3D"]
+script = ExtResource("1_enemy")
+xp_pickup_scene = ExtResource("2_xp_pickup")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("CapsuleShape3D_enemy")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_enemy")

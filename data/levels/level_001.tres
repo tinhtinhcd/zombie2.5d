@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="LevelData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/levels/LevelData.gd" id="1_level_data"]
+[ext_resource type="Script" path="res://scripts/levels/LevelDifficultyData.gd" id="2_level_difficulty"]
+
+[sub_resource type="Resource" id="1_level_001_difficulty"]
+script = ExtResource("2_level_difficulty")
+health_multiplier = 1.0
+spawn_multiplier = 1.0
+pressure_rating = 1.0
+
+[resource]
+script = ExtResource("1_level_data")
+level_id = &"level_001"
+display_name = "Graveyard Gate"
+wave_count = 3
+enemy_types = PackedStringArray("normal")
+wave_definitions = [{
+"enemy_types": ["normal"],
+"spawn_count": 2
+}, {
+"enemy_types": ["normal", "fast"],
+"spawn_count": 3
+}, {
+"enemy_types": ["normal", "fast"],
+"spawn_count": 4
+}]
+difficulty = SubResource("1_level_001_difficulty")

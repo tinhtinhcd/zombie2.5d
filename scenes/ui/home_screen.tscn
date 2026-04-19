@@ -1,10 +1,79 @@
-[gd_scene load_steps=4 format=3.5]
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/home_screen.gd" id="1_home_screen"]
+
 [node name="HomeScreen" type="Control"]
-[node name="Background" type="ColorRect" parent="HomeScreen"]
-color = Color(0.08, 0.08, 0.08, 1.0)
-[node name="Title" type="Label" parent="HomeScreen"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_home_screen")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.08, 0.08, 0.08, 1)
+
+[node name="Title" type="Label" parent="."]
+layout_mode = 0
+offset_left = 48.0
+offset_top = 40.0
+offset_right = 208.0
+offset_bottom = 87.0
+theme_override_font_sizes/font_size = 32
 text = "HOME"
-[node name="StartButton" type="Button" parent="HomeScreen"]
-text = "Start"
-[node name="SettingsButton" type="Button" parent="HomeScreen"]
+
+[node name="StartButton" type="Button" parent="."]
+layout_mode = 0
+offset_left = 48.0
+offset_top = 128.0
+offset_right = 208.0
+offset_bottom = 176.0
+text = "Play"
+
+[node name="SettingsButton" type="Button" parent="."]
+layout_mode = 0
+offset_left = 48.0
+offset_top = 188.0
+offset_right = 208.0
+offset_bottom = 236.0
+disabled = true
 text = "Settings"
+
+[node name="UnlockHPButton" type="Button" parent="."]
+layout_mode = 0
+offset_left = 280.0
+offset_top = 128.0
+offset_right = 472.0
+offset_bottom = 168.0
+text = "Unlock HP"
+
+[node name="UnlockFireRateButton" type="Button" parent="."]
+layout_mode = 0
+offset_left = 280.0
+offset_top = 180.0
+offset_right = 472.0
+offset_bottom = 220.0
+text = "Unlock Fire Rate"
+
+[node name="UnlockDamageButton" type="Button" parent="."]
+layout_mode = 0
+offset_left = 280.0
+offset_top = 232.0
+offset_right = 472.0
+offset_bottom = 272.0
+text = "Unlock Damage"
+
+[node name="PermanentUpgradeLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 280.0
+offset_top = 56.0
+offset_right = 520.0
+offset_bottom = 112.0
+text = "Permanent"

@@ -1,0 +1,25 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/player/player.gd" id="1_player"]
+[ext_resource type="PackedScene" path="res://scenes/effects/projectile.tscn" id="2_projectile"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_player"]
+radius = 0.4
+height = 1.2
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_player"]
+radius = 0.4
+mid_height = 1.2
+
+[node name="Player" type="CharacterBody3D"]
+script = ExtResource("1_player")
+projectile_scene = ExtResource("2_projectile")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("CapsuleShape3D_player")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("CapsuleMesh_player")
+
+[node name="ShootPoint" type="Marker3D" parent="."]
+position = Vector3(0, 0.8, -0.8)

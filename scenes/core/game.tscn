@@ -1,7 +1,48 @@
-[gd_scene load_steps=5 format=3.5]
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/levels/level_container.tscn" id="1_level_container"]
+[ext_resource type="PackedScene" path="res://scenes/camera/fixed_camera_rig.tscn" id="2_fixed_camera_rig"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="3_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/pause_menu.tscn" id="4_pause_menu"]
+[ext_resource type="Script" path="res://scripts/core/game.gd" id="5_game"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="6_player"]
+[ext_resource type="PackedScene" path="res://scenes/enemy/enemy.tscn" id="7_enemy"]
+[ext_resource type="Script" path="res://scripts/enemy/EnemySpawner.gd" id="8_enemy_spawner"]
+[ext_resource type="Script" path="res://scripts/core/WaveManager.gd" id="9_wave_manager"]
+
 [node name="GameRoot" type="Node3D"]
-[node name="LevelContainer" type="Node3D" parent="GameRoot"]
-[node name="PlayerPlaceholder" type="Node3D" parent="GameRoot"]
-[node name="EnemyPlaceholder" type="Node3D" parent="GameRoot"]
-[node name="FixedCameraRig" type="Node3D" parent="GameRoot"]
-[node name="GameHUD" type="CanvasLayer" parent="GameRoot"]
+script = ExtResource("5_game")
+
+[node name="LevelContainer" parent="." instance=ExtResource("1_level_container")]
+
+[node name="FixedCameraRig" parent="." instance=ExtResource("2_fixed_camera_rig")]
+
+[node name="Player" parent="." instance=ExtResource("6_player")]
+
+[node name="EnemyContainer" type="Node3D" parent="."]
+
+[node name="ProjectileContainer" type="Node3D" parent="."]
+
+[node name="PickupContainer" type="Node3D" parent="."]
+
+[node name="EnemySpawner" type="Node3D" parent="."]
+script = ExtResource("8_enemy_spawner")
+enemy_scene = ExtResource("7_enemy")
+
+[node name="SpawnPoints" type="Node3D" parent="EnemySpawner"]
+
+[node name="SpawnPointA" type="Marker3D" parent="EnemySpawner/SpawnPoints"]
+position = Vector3(6, 0, -2)
+
+[node name="SpawnPointB" type="Marker3D" parent="EnemySpawner/SpawnPoints"]
+position = Vector3(8, 0, 0)
+
+[node name="SpawnPointC" type="Marker3D" parent="EnemySpawner/SpawnPoints"]
+position = Vector3(6, 0, 2)
+
+[node name="WaveManager" type="Node" parent="."]
+script = ExtResource("9_wave_manager")
+
+[node name="HUD" parent="." instance=ExtResource("3_hud")]
+
+[node name="PauseMenu" parent="." instance=ExtResource("4_pause_menu")]
