@@ -1,2 +1,6 @@
 /.godot
 /.godot
+/.godot
+*.cache
+*.bin
+/.godot
