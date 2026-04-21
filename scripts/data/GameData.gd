@@ -95,6 +95,12 @@ func load_all() -> void:
     upgrades = _load_array(UPGRADES_PATH, FALLBACK_UPGRADES)
     missions = _load_array(MISSIONS_PATH, FALLBACK_MISSIONS)
     permanent_upgrades = _load_dictionary(PERMANENT_UPGRADES_PATH, FALLBACK_PERMANENT_UPGRADES)
+    _validate_heroes()
+    _validate_weapons()
+    _validate_pets()
+    _validate_upgrades()
+    _validate_missions()
+    _validate_permanent_upgrades()
     _ensure_required_defaults()
 
 func get_hero_definition(hero_id: String) -> Dictionary:
@@ -136,37 +142,257 @@ func get_missions() -> Array:
 func _load_dictionary(path: String, fallback: Dictionary) -> Dictionary:
     var parsed: Variant = _load_json(path)
     if typeof(parsed) != TYPE_DICTIONARY:
+        if parsed != null:
+            _warn("%s top-level data is not an object; using fallback data." % path.get_file())
         return fallback.duplicate(true)
 
     var parsed_dictionary: Dictionary = parsed
     if parsed_dictionary.is_empty():
+        _warn("%s has no entries; using fallback data." % path.get_file())
         return fallback.duplicate(true)
     return parsed_dictionary.duplicate(true)
 
 func _load_array(path: String, fallback: Array) -> Array:
     var parsed: Variant = _load_json(path)
     if typeof(parsed) != TYPE_ARRAY:
+        if parsed != null:
+            _warn("%s top-level data is not an array; using fallback data." % path.get_file())
         return fallback.duplicate(true)
 
     var parsed_array: Array = parsed
     if parsed_array.is_empty():
+        _warn("%s has no entries; using fallback data." % path.get_file())
         return fallback.duplicate(true)
     return parsed_array.duplicate(true)
 
 func _load_json(path: String) -> Variant:
     if not FileAccess.file_exists(path):
+        _warn("%s is missing; using fallback data." % path.get_file())
         return null
 
     var file := FileAccess.open(path, FileAccess.READ)
     if file == null:
+        _warn("%s could not be opened; using fallback data." % path.get_file())
         return null
 
-    return JSON.parse_string(file.get_as_text())
+    var parsed: Variant = JSON.parse_string(file.get_as_text())
+    if parsed == null:
+        _warn("%s could not be parsed; using fallback data." % path.get_file())
+    return parsed
+
+func _validate_heroes() -> void:
+    for hero_id_variant in heroes.keys():
+        var hero_id := str(hero_id_variant)
+        var defaults := _get_dictionary_default(FALLBACK_HEROES, hero_id, _default_hero_entry(hero_id))
+        if typeof(heroes[hero_id_variant]) != TYPE_DICTIONARY:
+            _warn("heroes.json entry \"%s\" is not an object; using safe defaults." % hero_id)
+            heroes[hero_id_variant] = defaults
+            continue
+
+        var hero: Dictionary = heroes[hero_id_variant]
+        _ensure_string_field(hero, "display_name", str(defaults.get("display_name", _display_name_from_id(hero_id))), "heroes.json", hero_id)
+        _ensure_number_field(hero, "max_hp_bonus", defaults.get("max_hp_bonus", 0), "heroes.json", hero_id)
+        _ensure_number_field(hero, "move_speed_bonus", defaults.get("move_speed_bonus", 0.0), "heroes.json", hero_id)
+        _ensure_number_field(hero, "projectile_damage_bonus", defaults.get("projectile_damage_bonus", 0), "heroes.json", hero_id)
+        heroes[hero_id_variant] = hero
+
+func _validate_weapons() -> void:
+    for weapon_id_variant in weapons.keys():
+        var weapon_id := str(weapon_id_variant)
+        var defaults := _get_dictionary_default(FALLBACK_WEAPONS, weapon_id, _default_weapon_entry(weapon_id))
+        if typeof(weapons[weapon_id_variant]) != TYPE_DICTIONARY:
+            _warn("weapons.json entry \"%s\" is not an object; using safe defaults." % weapon_id)
+            weapons[weapon_id_variant] = defaults
+            continue
+
+        var weapon: Dictionary = weapons[weapon_id_variant]
+        _ensure_string_field(weapon, "id", str(defaults.get("id", weapon_id)), "weapons.json", weapon_id)
+        _ensure_string_field(weapon, "display_name", str(defaults.get("display_name", _display_name_from_id(weapon_id))), "weapons.json", weapon_id)
+        _ensure_number_field(weapon, "damage", defaults.get("damage", 1), "weapons.json", weapon_id)
+        _ensure_number_field(weapon, "fire_rate", defaults.get("fire_rate", 0.5), "weapons.json", weapon_id)
+        _ensure_number_field(weapon, "projectile_count", defaults.get("projectile_count", 1), "weapons.json", weapon_id)
+        _ensure_number_field(weapon, "spread_angle", defaults.get("spread_angle", 0.0), "weapons.json", weapon_id)
+        _ensure_number_field(weapon, "projectile_speed", defaults.get("projectile_speed", 14.0), "weapons.json", weapon_id)
+        _ensure_number_field(weapon, "range", defaults.get("range", 20.0), "weapons.json", weapon_id)
+
+        if int(weapon.get("projectile_count", 1)) < 1:
+            _warn("weapons.json entry \"%s\" invalid projectile_count; using 1." % weapon_id)
+            weapon["projectile_count"] = 1
+        if float(weapon.get("fire_rate", 0.5)) <= 0.0:
+            _warn("weapons.json entry \"%s\" invalid fire_rate; using 0.5." % weapon_id)
+            weapon["fire_rate"] = 0.5
+        if float(weapon.get("range", 20.0)) <= 0.0:
+            _warn("weapons.json entry \"%s\" invalid range; using 20.0." % weapon_id)
+            weapon["range"] = 20.0
+        weapons[weapon_id_variant] = weapon
+
+func _validate_pets() -> void:
+    for pet_id_variant in pets.keys():
+        var pet_id := str(pet_id_variant)
+        var defaults := _get_dictionary_default(FALLBACK_PETS, pet_id, _default_pet_entry(pet_id))
+        if typeof(pets[pet_id_variant]) != TYPE_DICTIONARY:
+            _warn("pets.json entry \"%s\" is not an object; using safe defaults." % pet_id)
+            pets[pet_id_variant] = defaults
+            continue
+
+        var pet: Dictionary = pets[pet_id_variant]
+        _ensure_string_field(pet, "display_name", str(defaults.get("display_name", _display_name_from_id(pet_id))), "pets.json", pet_id)
+        _ensure_number_field(pet, "damage", defaults.get("damage", 1), "pets.json", pet_id)
+        _ensure_number_field(pet, "attack_interval", defaults.get("attack_interval", 1.0), "pets.json", pet_id)
+        if float(pet.get("attack_interval", 1.0)) <= 0.0:
+            _warn("pets.json entry \"%s\" invalid attack_interval; using 1.0." % pet_id)
+            pet["attack_interval"] = 1.0
+        pets[pet_id_variant] = pet
+
+func _validate_upgrades() -> void:
+    var validated_upgrades := []
+    for index in range(upgrades.size()):
+        var entry: Variant = upgrades[index]
+        if typeof(entry) != TYPE_DICTIONARY:
+            _warn("upgrades.json entry %d is not an object; skipping." % index)
+            continue
+
+        var upgrade: Dictionary = entry
+        if not _has_required_string(upgrade, "id") or not _has_required_string(upgrade, "title") or not _has_required_string(upgrade, "description"):
+            _warn("upgrades.json entry %d is missing id, title, or description; skipping." % index)
+            continue
+        validated_upgrades.append(upgrade.duplicate(true))
+
+    if validated_upgrades.is_empty():
+        _warn("upgrades.json has no valid entries; using fallback data.")
+        upgrades = FALLBACK_UPGRADES.duplicate(true)
+        return
+    upgrades = validated_upgrades
+
+func _validate_missions() -> void:
+    var validated_missions := []
+    for index in range(missions.size()):
+        var defaults := _default_mission_entry(index)
+        var entry: Variant = missions[index]
+        if typeof(entry) != TYPE_DICTIONARY:
+            _warn("missions.json entry %d is not an object; using safe defaults." % index)
+            validated_missions.append(defaults)
+            continue
+
+        var mission: Dictionary = entry
+        var entry_id := str(mission.get("id", "mission_%d" % index))
+        _ensure_string_field(mission, "id", str(defaults.get("id")), "missions.json", entry_id)
+        _ensure_string_field(mission, "label", str(defaults.get("label")), "missions.json", entry_id)
+        _ensure_string_field(mission, "stat", str(defaults.get("stat")), "missions.json", entry_id)
+        _ensure_number_field(mission, "target", defaults.get("target", 1), "missions.json", entry_id)
+        if int(mission.get("target", 1)) <= 0:
+            _warn("missions.json entry \"%s\" invalid target; using 1." % entry_id)
+            mission["target"] = 1
+        validated_missions.append(mission.duplicate(true))
+
+    if validated_missions.is_empty():
+        _warn("missions.json has no valid entries; using fallback data.")
+        missions = FALLBACK_MISSIONS.duplicate(true)
+        return
+    missions = validated_missions
+
+func _validate_permanent_upgrades() -> void:
+    for upgrade_id_variant in permanent_upgrades.keys():
+        var upgrade_id := str(upgrade_id_variant)
+        var defaults := _get_dictionary_default(FALLBACK_PERMANENT_UPGRADES, upgrade_id, _default_permanent_upgrade_entry(upgrade_id))
+        if typeof(permanent_upgrades[upgrade_id_variant]) != TYPE_DICTIONARY:
+            _warn("permanent_upgrades.json entry \"%s\" is not an object; using safe defaults." % upgrade_id)
+            permanent_upgrades[upgrade_id_variant] = defaults
+            continue
+
+        var upgrade: Dictionary = permanent_upgrades[upgrade_id_variant]
+        _ensure_string_field(upgrade, "title", str(defaults.get("title", _display_name_from_id(upgrade_id))), "permanent_upgrades.json", upgrade_id)
+        _ensure_string_field(upgrade, "description", str(defaults.get("description", "")), "permanent_upgrades.json", upgrade_id)
+        _ensure_number_field(upgrade, "max_rank", defaults.get("max_rank", 1), "permanent_upgrades.json", upgrade_id)
+        if int(upgrade.get("max_rank", 1)) < 1:
+            _warn("permanent_upgrades.json entry \"%s\" invalid max_rank; using 1." % upgrade_id)
+            upgrade["max_rank"] = 1
+        permanent_upgrades[upgrade_id_variant] = upgrade
 
 func _ensure_required_defaults() -> void:
     if not heroes.has(DEFAULT_HERO_ID):
+        _warn("heroes.json missing required default \"%s\"; injecting fallback." % DEFAULT_HERO_ID)
         heroes[DEFAULT_HERO_ID] = FALLBACK_HEROES[DEFAULT_HERO_ID].duplicate(true)
     if not weapons.has(DEFAULT_WEAPON_ID):
+        _warn("weapons.json missing required default \"%s\"; injecting fallback." % DEFAULT_WEAPON_ID)
         weapons[DEFAULT_WEAPON_ID] = FALLBACK_WEAPONS[DEFAULT_WEAPON_ID].duplicate(true)
     if not pets.has(DEFAULT_PET_ID):
+        _warn("pets.json missing required default \"%s\"; injecting fallback." % DEFAULT_PET_ID)
         pets[DEFAULT_PET_ID] = FALLBACK_PETS[DEFAULT_PET_ID].duplicate(true)
+
+func _ensure_string_field(entry: Dictionary, key: String, default_value: String, file_name: String, entry_id: String) -> void:
+    if entry.has(key) and typeof(entry.get(key)) == TYPE_STRING and not str(entry.get(key)).strip_edges().is_empty():
+        return
+
+    _warn("%s entry \"%s\" %s %s; using default." % [file_name, entry_id, _field_issue(entry, key), key])
+    entry[key] = default_value
+
+func _ensure_number_field(entry: Dictionary, key: String, default_value: Variant, file_name: String, entry_id: String) -> void:
+    if entry.has(key) and _is_number(entry.get(key)):
+        return
+
+    _warn("%s entry \"%s\" %s %s; using default." % [file_name, entry_id, _field_issue(entry, key), key])
+    entry[key] = default_value
+
+func _has_required_string(entry: Dictionary, key: String) -> bool:
+    return entry.has(key) and typeof(entry.get(key)) == TYPE_STRING and not str(entry.get(key)).strip_edges().is_empty()
+
+func _is_number(value: Variant) -> bool:
+    return typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT
+
+func _field_issue(entry: Dictionary, key: String) -> String:
+    return "missing" if not entry.has(key) else "invalid"
+
+func _get_dictionary_default(fallback: Dictionary, entry_id: String, safe_default: Dictionary) -> Dictionary:
+    if fallback.has(entry_id) and typeof(fallback[entry_id]) == TYPE_DICTIONARY:
+        var fallback_entry: Dictionary = fallback[entry_id]
+        return fallback_entry.duplicate(true)
+    return safe_default
+
+func _default_hero_entry(hero_id: String) -> Dictionary:
+    return {
+        "display_name": _display_name_from_id(hero_id),
+        "max_hp_bonus": 0,
+        "move_speed_bonus": 0.0,
+        "projectile_damage_bonus": 0,
+    }
+
+func _default_weapon_entry(weapon_id: String) -> Dictionary:
+    return {
+        "id": weapon_id,
+        "display_name": _display_name_from_id(weapon_id),
+        "damage": 1,
+        "fire_rate": 0.5,
+        "projectile_count": 1,
+        "spread_angle": 0.0,
+        "projectile_speed": 14.0,
+        "range": 20.0,
+    }
+
+func _default_pet_entry(pet_id: String) -> Dictionary:
+    return {
+        "display_name": _display_name_from_id(pet_id),
+        "damage": 1,
+        "attack_interval": 1.0,
+    }
+
+func _default_mission_entry(index: int) -> Dictionary:
+    return {
+        "id": "mission_%d" % index,
+        "label": "Mission %d" % (index + 1),
+        "stat": "kills",
+        "target": 1,
+    }
+
+func _default_permanent_upgrade_entry(upgrade_id: String) -> Dictionary:
+    return {
+        "title": _display_name_from_id(upgrade_id),
+        "description": "",
+        "max_rank": 1,
+    }
+
+func _display_name_from_id(entry_id: String) -> String:
+    return entry_id.replace("_", " ").capitalize()
+
+func _warn(message: String) -> void:
+    push_warning("GameData warning: %s" % message)

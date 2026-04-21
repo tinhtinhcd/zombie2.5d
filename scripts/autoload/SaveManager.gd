@@ -5,17 +5,20 @@ class_name SaveManager
 
 const SAVE_PATH := "user://progression.save"
 const SAVE_VERSION := 1
+const DEFAULT_HERO_ID := "hero_knight"
+const DEFAULT_WEAPON_ID := "weapon_basic"
+const DEFAULT_PET_ID := "pet_drone"
 const DEFAULT_SAVE_DATA := {
     "version": SAVE_VERSION,
     "highest_unlocked_level": 1,
     "permanent_upgrades": {},
     "soft_currency": 0,
-    "selected_hero_id": "hero_knight",
-    "selected_weapon_id": "weapon_basic",
-    "selected_pet_id": "pet_drone",
-    "unlocked_heroes": ["hero_knight"],
-    "unlocked_weapons": ["weapon_basic"],
-    "unlocked_pets": ["pet_drone"],
+    "selected_hero_id": DEFAULT_HERO_ID,
+    "selected_weapon_id": DEFAULT_WEAPON_ID,
+    "selected_pet_id": DEFAULT_PET_ID,
+    "unlocked_heroes": [DEFAULT_HERO_ID],
+    "unlocked_weapons": [DEFAULT_WEAPON_ID],
+    "unlocked_pets": [DEFAULT_PET_ID],
     "inventory": {},
     "settings": {},
 }
@@ -93,24 +96,24 @@ func _merge_with_defaults(source: Dictionary) -> Dictionary:
         merged["permanent_upgrades"] = permanent_upgrades.duplicate(true)
 
     merged["soft_currency"] = max(int(source.get("soft_currency", 0)), 0)
-    merged["selected_hero_id"] = str(source.get("selected_hero_id", "hero_knight"))
-    merged["selected_weapon_id"] = str(source.get("selected_weapon_id", "weapon_basic"))
-    merged["selected_pet_id"] = str(source.get("selected_pet_id", "pet_drone"))
+    merged["selected_hero_id"] = str(source.get("selected_hero_id", DEFAULT_HERO_ID))
+    merged["selected_weapon_id"] = str(source.get("selected_weapon_id", DEFAULT_WEAPON_ID))
+    merged["selected_pet_id"] = str(source.get("selected_pet_id", DEFAULT_PET_ID))
 
     var unlocked_heroes_value: Variant = source.get("unlocked_heroes", DEFAULT_SAVE_DATA["unlocked_heroes"])
     if typeof(unlocked_heroes_value) == TYPE_ARRAY:
         merged["unlocked_heroes"] = unlocked_heroes_value.duplicate(true)
-    _ensure_array_contains(merged["unlocked_heroes"], "hero_knight")
+    _ensure_array_contains(merged["unlocked_heroes"], DEFAULT_HERO_ID)
 
     var unlocked_weapons_value: Variant = source.get("unlocked_weapons", DEFAULT_SAVE_DATA["unlocked_weapons"])
     if typeof(unlocked_weapons_value) == TYPE_ARRAY:
         merged["unlocked_weapons"] = unlocked_weapons_value.duplicate(true)
-    _ensure_array_contains(merged["unlocked_weapons"], "weapon_basic")
+    _ensure_array_contains(merged["unlocked_weapons"], DEFAULT_WEAPON_ID)
 
     var unlocked_pets_value: Variant = source.get("unlocked_pets", DEFAULT_SAVE_DATA["unlocked_pets"])
     if typeof(unlocked_pets_value) == TYPE_ARRAY:
         merged["unlocked_pets"] = unlocked_pets_value.duplicate(true)
-    _ensure_array_contains(merged["unlocked_pets"], "pet_drone")
+    _ensure_array_contains(merged["unlocked_pets"], DEFAULT_PET_ID)
     _validate_selected_loadout(merged)
 
     var inventory_value: Variant = source.get("inventory", {})
@@ -132,12 +135,12 @@ func _ensure_array_contains(items: Array, item_id: String) -> void:
 func _validate_selected_loadout(save_data: Dictionary) -> void:
     var unlocked_heroes_value: Array = save_data.get("unlocked_heroes", [])
     if not unlocked_heroes_value.has(save_data.get("selected_hero_id", "")):
-        save_data["selected_hero_id"] = "hero_knight"
+        save_data["selected_hero_id"] = DEFAULT_HERO_ID
 
     var unlocked_weapons_value: Array = save_data.get("unlocked_weapons", [])
     if not unlocked_weapons_value.has(save_data.get("selected_weapon_id", "")):
-        save_data["selected_weapon_id"] = "weapon_basic"
+        save_data["selected_weapon_id"] = DEFAULT_WEAPON_ID
 
     var unlocked_pets_value: Array = save_data.get("unlocked_pets", [])
     if not unlocked_pets_value.has(save_data.get("selected_pet_id", "")):
-        save_data["selected_pet_id"] = "pet_drone"
+        save_data["selected_pet_id"] = DEFAULT_PET_ID
