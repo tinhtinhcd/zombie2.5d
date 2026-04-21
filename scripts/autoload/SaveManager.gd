@@ -9,6 +9,14 @@ const DEFAULT_SAVE_DATA := {
     "version": SAVE_VERSION,
     "highest_unlocked_level": 1,
     "permanent_upgrades": {},
+    "soft_currency": 0,
+    "selected_hero_id": "hero_knight",
+    "selected_weapon_id": "weapon_basic",
+    "selected_pet_id": "pet_drone",
+    "unlocked_heroes": ["hero_knight", "hero_rogue", "hero_mage"],
+    "unlocked_weapons": ["weapon_basic", "weapon_spread", "weapon_rapid", "weapon_heavy"],
+    "unlocked_pets": ["pet_drone", "pet_sprite", "pet_wisp"],
+    "inventory": {},
     "settings": {},
 }
 
@@ -83,6 +91,31 @@ func _merge_with_defaults(source: Dictionary) -> Dictionary:
     if typeof(permanent_upgrades_value) == TYPE_DICTIONARY:
         var permanent_upgrades: Dictionary = permanent_upgrades_value
         merged["permanent_upgrades"] = permanent_upgrades.duplicate(true)
+
+    merged["soft_currency"] = max(int(source.get("soft_currency", 0)), 0)
+    merged["selected_hero_id"] = str(source.get("selected_hero_id", "hero_knight"))
+    merged["selected_weapon_id"] = str(source.get("selected_weapon_id", "weapon_basic"))
+    merged["selected_pet_id"] = str(source.get("selected_pet_id", "pet_drone"))
+
+    var unlocked_heroes_value: Variant = source.get("unlocked_heroes", DEFAULT_SAVE_DATA["unlocked_heroes"])
+    if typeof(unlocked_heroes_value) == TYPE_ARRAY:
+        merged["unlocked_heroes"] = unlocked_heroes_value.duplicate(true)
+
+    var unlocked_weapons_value: Variant = source.get("unlocked_weapons", DEFAULT_SAVE_DATA["unlocked_weapons"])
+    if typeof(unlocked_weapons_value) == TYPE_ARRAY:
+        merged["unlocked_weapons"] = unlocked_weapons_value.duplicate(true)
+    for weapon_id in DEFAULT_SAVE_DATA["unlocked_weapons"]:
+        if not merged["unlocked_weapons"].has(weapon_id):
+            merged["unlocked_weapons"].append(weapon_id)
+
+    var unlocked_pets_value: Variant = source.get("unlocked_pets", DEFAULT_SAVE_DATA["unlocked_pets"])
+    if typeof(unlocked_pets_value) == TYPE_ARRAY:
+        merged["unlocked_pets"] = unlocked_pets_value.duplicate(true)
+
+    var inventory_value: Variant = source.get("inventory", {})
+    if typeof(inventory_value) == TYPE_DICTIONARY:
+        var inventory: Dictionary = inventory_value
+        merged["inventory"] = inventory.duplicate(true)
 
     var settings_value: Variant = source.get("settings", {})
     if typeof(settings_value) == TYPE_DICTIONARY:

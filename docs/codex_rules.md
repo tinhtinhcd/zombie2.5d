@@ -70,8 +70,8 @@ Define strict rules for AI (Codex) to ensure:
 * Use `CharacterBody3D` for player and enemies
 * Movement only on X/Z plane
 * Do NOT implement jump or vertical gameplay
-* Camera must remain fixed
-* No dynamic camera system
+* Camera angle and offset must remain fixed
+* Camera may follow the hero position only
 * No complex physics
 
 ---

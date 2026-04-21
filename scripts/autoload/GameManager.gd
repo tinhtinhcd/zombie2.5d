@@ -14,6 +14,12 @@ signal upgrade_selection_closed
 signal upgrade_selected(upgrade_id: StringName)
 signal permanent_upgrades_changed(upgrades: Dictionary)
 signal highest_unlocked_level_changed(new_highest_unlocked_level: int)
+signal loadout_changed
+signal currency_changed(new_amount: int)
+signal inventory_changed(inventory: Dictionary)
+signal mission_progress_changed(summary: String)
+signal player_level_changed(level: int, current_xp: int, required_xp: int)
+signal boss_health_changed(current_hp: int, max_hp: int, visible: bool)
 
 const UPGRADE_DEFINITIONS := [
     {
@@ -36,6 +42,138 @@ const UPGRADE_DEFINITIONS := [
         "title": "Recover",
         "description": "Restore 4 HP.",
     },
+    {
+        "id": &"move_speed",
+        "title": "Sprint",
+        "description": "Increase movement speed.",
+    },
+    {
+        "id": &"projectile_speed",
+        "title": "Fast Rounds",
+        "description": "Projectiles travel faster.",
+    },
+    {
+        "id": &"weapon_range",
+        "title": "Long Barrel",
+        "description": "Increase weapon range.",
+    },
+    {
+        "id": &"projectile_count",
+        "title": "Extra Shot",
+        "description": "Add one projectile to the current weapon, up to five.",
+    },
+]
+
+const HERO_DEFINITIONS := {
+    "hero_knight": {
+        "display_name": "Knight",
+        "max_hp_bonus": 4,
+        "move_speed_bonus": 0.0,
+        "projectile_damage_bonus": 1,
+    },
+    "hero_rogue": {
+        "display_name": "Rogue",
+        "max_hp_bonus": 0,
+        "move_speed_bonus": 1.0,
+        "projectile_damage_bonus": 0,
+    },
+    "hero_mage": {
+        "display_name": "Mage",
+        "max_hp_bonus": -2,
+        "move_speed_bonus": 0.2,
+        "projectile_damage_bonus": 2,
+    },
+}
+
+const WEAPON_DEFINITIONS := {
+    "weapon_basic": {
+        "id": "weapon_basic",
+        "display_name": "Basic Gun",
+        "description": "Reliable starter weapon.",
+        "weapon_type": "basic",
+        "damage": 1,
+        "fire_rate": 0.6,
+        "projectile_count": 1,
+        "spread_angle": 0.0,
+        "projectile_speed": 14.0,
+        "range": 20.0,
+        "unlocked": true,
+        "implemented": true,
+        "icon": "",
+        "projectile_scene": "res://scenes/effects/projectile.tscn",
+    },
+    "weapon_spread": {
+        "id": "weapon_spread",
+        "display_name": "Spread Shot",
+        "description": "Fires a short cone of projectiles for crowd control.",
+        "weapon_type": "spread",
+        "damage": 1,
+        "fire_rate": 0.75,
+        "projectile_count": 3,
+        "spread_angle": 24.0,
+        "projectile_speed": 13.0,
+        "range": 17.0,
+        "unlocked": true,
+        "implemented": true,
+        "icon": "",
+        "projectile_scene": "res://scenes/effects/projectile.tscn",
+    },
+    "weapon_rapid": {
+        "id": "weapon_rapid",
+        "display_name": "Rapid Blaster",
+        "description": "Fast fire rate with lower per-shot impact.",
+        "weapon_type": "rapid",
+        "damage": 1,
+        "fire_rate": 0.32,
+        "projectile_count": 1,
+        "spread_angle": 0.0,
+        "projectile_speed": 16.0,
+        "range": 18.0,
+        "unlocked": true,
+        "implemented": true,
+        "icon": "",
+        "projectile_scene": "res://scenes/effects/projectile.tscn",
+    },
+    "weapon_heavy": {
+        "id": "weapon_heavy",
+        "display_name": "Heavy Launcher",
+        "description": "Slow, high-damage shot with longer reach.",
+        "weapon_type": "heavy",
+        "damage": 3,
+        "fire_rate": 0.9,
+        "projectile_count": 1,
+        "spread_angle": 0.0,
+        "projectile_speed": 11.0,
+        "range": 23.0,
+        "unlocked": true,
+        "implemented": true,
+        "icon": "",
+        "projectile_scene": "res://scenes/effects/projectile.tscn",
+    },
+}
+
+const PET_DEFINITIONS := {
+    "pet_drone": {
+        "display_name": "Drone",
+        "damage": 1,
+        "attack_interval": 1.2,
+    },
+    "pet_sprite": {
+        "display_name": "Sprite",
+        "damage": 1,
+        "attack_interval": 0.9,
+    },
+    "pet_wisp": {
+        "display_name": "Wisp",
+        "damage": 2,
+        "attack_interval": 1.6,
+    },
+}
+
+const MISSION_DEFINITIONS := [
+    {"id": "mission_kills", "label": "Defeat 15 enemies", "stat": "kills", "target": 15},
+    {"id": "mission_xp", "label": "Collect 20 XP", "stat": "xp", "target": 20},
+    {"id": "mission_waves", "label": "Reach wave 3", "stat": "wave", "target": 3},
 ]
 
 const PERMANENT_UPGRADE_DEFINITIONS := {
@@ -58,6 +196,10 @@ const PERMANENT_UPGRADE_DEFINITIONS := {
 
 var score: int = 0
 var xp: int = 0
+var run_level: int = 1
+var current_level_xp: int = 0
+var xp_to_next_level: int = 5
+var xp_drop_bonus_per_level: int = 1
 var current_level: int = 1
 var current_level_id: StringName = &""
 var current_level_display_name: String = ""
@@ -72,6 +214,15 @@ var current_level_data: LevelData
 var _levels: Array[LevelData] = []
 var highest_unlocked_level: int = 1
 var permanent_upgrades: Dictionary = {}
+var soft_currency: int = 0
+var selected_hero_id: String = "hero_knight"
+var selected_weapon_id: String = "weapon_basic"
+var selected_pet_id: String = "pet_drone"
+var unlocked_heroes: Array = ["hero_knight", "hero_rogue", "hero_mage"]
+var unlocked_weapons: Array = ["weapon_basic", "weapon_spread", "weapon_rapid", "weapon_heavy"]
+var unlocked_pets: Array = ["pet_drone", "pet_sprite", "pet_wisp"]
+var inventory: Dictionary = {}
+var mission_stats: Dictionary = {"kills": 0, "xp": 0, "wave": 0}
 var _progression_loaded: bool = false
 
 func _ready() -> void:
@@ -86,6 +237,9 @@ func reset_game() -> void:
     _ensure_progression_loaded()
     score = 0
     xp = 0
+    run_level = 1
+    current_level_xp = 0
+    xp_to_next_level = 5
     current_wave = 0
     is_boss_wave = false
     is_paused = false
@@ -95,8 +249,11 @@ func reset_game() -> void:
     _update_gameplay_active()
     score_changed.emit(score)
     xp_changed.emit(xp)
+    player_level_changed.emit(run_level, current_level_xp, xp_to_next_level)
     boss_wave_changed.emit(is_boss_wave)
     game_over_changed.emit(is_game_over)
+    boss_health_changed.emit(0, 0, false)
+    _reset_missions()
     upgrade_selection_closed.emit()
 
 func pause_game() -> void:
@@ -117,14 +274,40 @@ func add_score(amount: int) -> void:
     # Keep score changes centralized for future UI and progression hooks.
     score += max(amount, 0)
     score_changed.emit(score)
+    if amount > 0:
+        mission_stats["kills"] = int(mission_stats.get("kills", 0)) + amount
+        add_currency(amount)
+        if score % 3 == 0:
+            grant_item("scrap", 1)
+        _emit_mission_progress()
 
 func add_xp(amount: int) -> void:
-    xp += max(amount, 0)
+    var resolved_amount: int = max(amount, 0)
+    xp += resolved_amount
+    current_level_xp += resolved_amount
+    mission_stats["xp"] = int(mission_stats.get("xp", 0)) + resolved_amount
     xp_changed.emit(xp)
+    _emit_mission_progress()
+    while current_level_xp >= xp_to_next_level:
+        current_level_xp -= xp_to_next_level
+        run_level += 1
+        xp_to_next_level += 3
+        player_level_changed.emit(run_level, current_level_xp, xp_to_next_level)
+        begin_upgrade_selection()
+        if is_upgrade_selection_active:
+            return
+    player_level_changed.emit(run_level, current_level_xp, xp_to_next_level)
+
+func get_scaled_xp_drop(base_amount: int) -> int:
+    var resolved_base: int = max(base_amount, 1)
+    var level_bonus: int = max(current_level - 1, 0) * max(xp_drop_bonus_per_level, 0)
+    return resolved_base + level_bonus
 
 func set_wave(wave: int) -> void:
     current_wave = max(wave, 0)
     wave_changed.emit(current_wave)
+    mission_stats["wave"] = max(int(mission_stats.get("wave", 0)), current_wave)
+    _emit_mission_progress()
 
 func set_boss_wave(is_boss_wave_now: bool) -> void:
     is_boss_wave = is_boss_wave_now
@@ -184,6 +367,87 @@ func apply_permanent_upgrades(player: Player) -> void:
     var projectile_damage_rank := get_permanent_upgrade_rank(&"perm_projectile_damage")
     if projectile_damage_rank > 0:
         player.increase_projectile_damage(projectile_damage_rank)
+
+func set_selected_loadout(hero_id: String, weapon_id: String, pet_id: String) -> void:
+    _ensure_progression_loaded()
+    if HERO_DEFINITIONS.has(hero_id) and unlocked_heroes.has(hero_id):
+        selected_hero_id = hero_id
+    if WEAPON_DEFINITIONS.has(weapon_id) and unlocked_weapons.has(weapon_id):
+        selected_weapon_id = weapon_id
+    if PET_DEFINITIONS.has(pet_id) and unlocked_pets.has(pet_id):
+        selected_pet_id = pet_id
+    _save_progression()
+    loadout_changed.emit()
+
+func get_selected_hero_definition() -> Dictionary:
+    return get_hero_definition(selected_hero_id)
+
+func get_selected_weapon_definition() -> Dictionary:
+    return get_weapon_definition(selected_weapon_id)
+
+func get_selected_pet_definition() -> Dictionary:
+    return get_pet_definition(selected_pet_id)
+
+func get_hero_definition(hero_id: String) -> Dictionary:
+    return HERO_DEFINITIONS.get(hero_id, HERO_DEFINITIONS["hero_knight"])
+
+func get_weapon_definition(weapon_id: String) -> Dictionary:
+    return WEAPON_DEFINITIONS.get(weapon_id, WEAPON_DEFINITIONS["weapon_basic"])
+
+func get_pet_definition(pet_id: String) -> Dictionary:
+    return PET_DEFINITIONS.get(pet_id, PET_DEFINITIONS["pet_drone"])
+
+func get_weapon_ids() -> Array:
+    return WEAPON_DEFINITIONS.keys()
+
+func get_hero_ids() -> Array:
+    return HERO_DEFINITIONS.keys()
+
+func get_pet_ids() -> Array:
+    return PET_DEFINITIONS.keys()
+
+func get_display_name(definition: Dictionary, fallback: String) -> String:
+    return str(definition.get("display_name", fallback))
+
+func apply_selected_loadout(player: Player) -> void:
+    if player == null:
+        return
+
+    player.apply_weapon_definition(get_selected_weapon_definition())
+
+    var hero_definition := get_selected_hero_definition()
+    var hp_bonus := int(hero_definition.get("max_hp_bonus", 0))
+    if hp_bonus != 0:
+        player.increase_max_hp(hp_bonus)
+    player.move_speed = max(player.move_speed + float(hero_definition.get("move_speed_bonus", 0.0)), 1.0)
+    player.projectile_damage += int(hero_definition.get("projectile_damage_bonus", 0))
+    player.hp_changed.emit(player.current_hp)
+
+func add_currency(amount: int) -> void:
+    _ensure_progression_loaded()
+    soft_currency = max(soft_currency + max(amount, 0), 0)
+    currency_changed.emit(soft_currency)
+    _save_progression()
+
+func grant_item(item_id: String, amount: int = 1) -> void:
+    _ensure_progression_loaded()
+    if item_id.is_empty() or amount <= 0:
+        return
+    inventory[item_id] = int(inventory.get(item_id, 0)) + amount
+    inventory_changed.emit(inventory.duplicate(true))
+    _save_progression()
+
+func get_mission_summary() -> String:
+    var lines := PackedStringArray()
+    for mission in MISSION_DEFINITIONS:
+        var stat := str(mission.get("stat", ""))
+        var target := int(mission.get("target", 1))
+        var value := clampi(int(mission_stats.get(stat, 0)), 0, target)
+        lines.append("%s: %d/%d" % [mission.get("label", ""), value, target])
+    return "\n".join(lines)
+
+func update_boss_health(current_hp: int, max_hp: int, visible: bool = true) -> void:
+    boss_health_changed.emit(max(current_hp, 0), max(max_hp, 1), visible)
 
 func load_level_by_index(level_index: int) -> void:
     _ensure_levels_loaded()
@@ -246,6 +510,8 @@ func unlock_level(level_index: int) -> void:
 func begin_upgrade_selection() -> void:
     if is_game_over:
         return
+    if is_upgrade_selection_active:
+        return
 
     is_upgrade_selection_active = true
     _update_gameplay_active()
@@ -277,12 +543,31 @@ func _ensure_progression_loaded() -> void:
     if save_manager != null:
         var save_data: Dictionary = save_manager.load_game()
         highest_unlocked_level = max(int(save_data.get("highest_unlocked_level", 1)), 1)
+        soft_currency = max(int(save_data.get("soft_currency", 0)), 0)
+        selected_hero_id = str(save_data.get("selected_hero_id", selected_hero_id))
+        selected_weapon_id = str(save_data.get("selected_weapon_id", selected_weapon_id))
+        selected_pet_id = str(save_data.get("selected_pet_id", selected_pet_id))
         var permanent_upgrades_value: Variant = save_data.get("permanent_upgrades", {})
         if typeof(permanent_upgrades_value) == TYPE_DICTIONARY:
             permanent_upgrades = permanent_upgrades_value
+        var unlocked_heroes_value: Variant = save_data.get("unlocked_heroes", unlocked_heroes)
+        if typeof(unlocked_heroes_value) == TYPE_ARRAY:
+            unlocked_heroes = unlocked_heroes_value
+        var unlocked_weapons_value: Variant = save_data.get("unlocked_weapons", unlocked_weapons)
+        if typeof(unlocked_weapons_value) == TYPE_ARRAY:
+            unlocked_weapons = unlocked_weapons_value
+        var unlocked_pets_value: Variant = save_data.get("unlocked_pets", unlocked_pets)
+        if typeof(unlocked_pets_value) == TYPE_ARRAY:
+            unlocked_pets = unlocked_pets_value
+        var inventory_value: Variant = save_data.get("inventory", {})
+        if typeof(inventory_value) == TYPE_DICTIONARY:
+            inventory = inventory_value
     _progression_loaded = true
     highest_unlocked_level_changed.emit(highest_unlocked_level)
     permanent_upgrades_changed.emit(permanent_upgrades.duplicate(true))
+    currency_changed.emit(soft_currency)
+    inventory_changed.emit(inventory.duplicate(true))
+    loadout_changed.emit()
 
 func _save_progression() -> void:
     var save_manager := get_node_or_null("/root/SaveManager") as SaveManager
@@ -290,6 +575,14 @@ func _save_progression() -> void:
         save_manager.save_game({
             "highest_unlocked_level": highest_unlocked_level,
             "permanent_upgrades": permanent_upgrades,
+            "soft_currency": soft_currency,
+            "selected_hero_id": selected_hero_id,
+            "selected_weapon_id": selected_weapon_id,
+            "selected_pet_id": selected_pet_id,
+            "unlocked_heroes": unlocked_heroes,
+            "unlocked_weapons": unlocked_weapons,
+            "unlocked_pets": unlocked_pets,
+            "inventory": inventory,
         })
 
 func _get_upgrade_options() -> Array:
@@ -310,3 +603,18 @@ func _apply_upgrade(player: Player, upgrade_id: StringName) -> void:
             player.increase_max_hp(2)
         &"restore_hp":
             player.restore_hp(4)
+        &"move_speed":
+            player.move_speed += 0.5
+        &"projectile_speed":
+            player.projectile_speed += 3.0
+        &"weapon_range":
+            player.increase_weapon_range(4.0)
+        &"projectile_count":
+            player.increase_projectile_count(1)
+
+func _reset_missions() -> void:
+    mission_stats = {"kills": 0, "xp": 0, "wave": 0}
+    _emit_mission_progress()
+
+func _emit_mission_progress() -> void:
+    mission_progress_changed.emit(get_mission_summary())

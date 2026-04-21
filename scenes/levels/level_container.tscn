@@ -1,3 +1,53 @@
-[gd_scene load_steps=3 format=3.5]
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/levels/endless_map.gd" id="1_endless_map"]
+[ext_resource type="PackedScene" path="res://assets/KayKit_Forest_Nature_Pack_1.0_FREE/KayKit_Forest_Nature_Pack_1.0_FREE/Assets/gltf/Grass_1_A_Color1.gltf" id="1_grass_a"]
+[ext_resource type="PackedScene" path="res://assets/KayKit_Forest_Nature_Pack_1.0_FREE/KayKit_Forest_Nature_Pack_1.0_FREE/Assets/gltf/Grass_2_B_Color1.gltf" id="2_grass_b"]
+[ext_resource type="PackedScene" path="res://assets/KayKit_Forest_Nature_Pack_1.0_FREE/KayKit_Forest_Nature_Pack_1.0_FREE/Assets/gltf/Rock_1_A_Color1.gltf" id="3_rock_a"]
+[ext_resource type="PackedScene" path="res://assets/KayKit_DungeonRemastered_1.1_FREE/KayKit_DungeonRemastered_1.1_FREE/Assets/gltf/barrel_small.gltf" id="4_barrel"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ground"]
+albedo_color = Color(0.28, 0.36, 0.25, 1)
+roughness = 0.9
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_ground"]
+size = Vector2(28, 28)
+material = SubResource("StandardMaterial3D_ground")
+
 [node name="LevelContainer" type="Node3D"]
-[node name="LevelRoot" type="Node3D" parent="LevelContainer"]
+script = ExtResource("1_endless_map")
+
+[node name="Ground" type="MeshInstance3D" parent="."]
+mesh = SubResource("PlaneMesh_ground")
+
+[node name="LevelRoot" type="Node3D" parent="."]
+
+[node name="Props" type="Node3D" parent="LevelRoot"]
+
+[node name="GrassA" parent="LevelRoot/Props" instance=ExtResource("1_grass_a")]
+position = Vector3(-5.5, 0, -4)
+
+[node name="GrassB" parent="LevelRoot/Props" instance=ExtResource("2_grass_b")]
+position = Vector3(4.5, 0, 3.5)
+rotation = Vector3(0, 1.5708, 0)
+
+[node name="GrassC" parent="LevelRoot/Props" instance=ExtResource("1_grass_a")]
+position = Vector3(6, 0, -5.5)
+rotation = Vector3(0, -0.9, 0)
+
+[node name="RockA" parent="LevelRoot/Props" instance=ExtResource("3_rock_a")]
+position = Vector3(-6, 0, 4.5)
+
+[node name="RockB" parent="LevelRoot/Props" instance=ExtResource("3_rock_a")]
+position = Vector3(5.75, 0, -2.5)
+rotation = Vector3(0, 0.7, 0)
+scale = Vector3(0.85, 0.85, 0.85)
+
+[node name="BarrelA" parent="LevelRoot/Props" instance=ExtResource("4_barrel")]
+position = Vector3(-3.5, 0, 5.25)
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+rotation = Vector3(-0.785398, -0.523599, 0)
+light_energy = 2.0
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]

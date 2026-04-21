@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/levels/level_container.tscn" id="1_level_container"]
 [ext_resource type="PackedScene" path="res://scenes/camera/fixed_camera_rig.tscn" id="2_fixed_camera_rig"]
@@ -9,6 +9,8 @@
 [ext_resource type="PackedScene" path="res://scenes/enemy/enemy.tscn" id="7_enemy"]
 [ext_resource type="Script" path="res://scripts/enemy/EnemySpawner.gd" id="8_enemy_spawner"]
 [ext_resource type="Script" path="res://scripts/core/WaveManager.gd" id="9_wave_manager"]
+[ext_resource type="PackedScene" path="res://scenes/ui/settings_screen.tscn" id="10_settings_screen"]
+[ext_resource type="PackedScene" path="res://scenes/entities/pet_companion.tscn" id="11_pet_companion"]
 
 [node name="GameRoot" type="Node3D"]
 script = ExtResource("5_game")
@@ -18,6 +20,10 @@ script = ExtResource("5_game")
 [node name="FixedCameraRig" parent="." instance=ExtResource("2_fixed_camera_rig")]
 
 [node name="Player" parent="." instance=ExtResource("6_player")]
+enable_auto_fire = true
+
+[node name="PetCompanion" parent="." instance=ExtResource("11_pet_companion")]
+position = Vector3(-1.2, 0.7, 0.8)
 
 [node name="EnemyContainer" type="Node3D" parent="."]
 
@@ -42,7 +48,10 @@ position = Vector3(6, 0, 2)
 
 [node name="WaveManager" type="Node" parent="."]
 script = ExtResource("9_wave_manager")
+enable_waves = true
 
 [node name="HUD" parent="." instance=ExtResource("3_hud")]
 
 [node name="PauseMenu" parent="." instance=ExtResource("4_pause_menu")]
+
+[node name="SettingsScreen" parent="." instance=ExtResource("10_settings_screen")]

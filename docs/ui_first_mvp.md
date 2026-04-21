@@ -158,7 +158,9 @@ Reusable popup:
 ## MUST implement
 
 * Player movement (X/Z plane)
-* Fixed camera
+* Fixed-angle camera following the hero
+* Large bounded repeated map
+* Play area uses a fixed physical radius, default 600 meters
 * Auto shooting
 * Enemy spawn
 * Enemy chase

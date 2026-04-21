@@ -8,10 +8,13 @@ class_name WaveManager
 @export var enemy_container_path: NodePath = NodePath("../EnemyContainer")
 @export var projectile_container_path: NodePath = NodePath("../ProjectileContainer")
 @export var pickup_container_path: NodePath = NodePath("../PickupContainer")
+@export var enable_waves: bool = false
 @export var spawn_count_increase_per_wave: int = 1
 @export var speed_bonus_per_wave: float = 0.15
 @export var boss_wave_interval: int = 5
 @export var boss_support_spawn_count: int = 2
+@export var enemy_recycle_distance_multiplier: float = 4.0
+@export var minimum_enemy_recycle_distance: float = 60.0
 @export var wave_definitions: Array[Dictionary] = [
     {"spawn_count": 2, "enemy_types": ["normal"]},
     {"spawn_count": 3, "enemy_types": ["normal", "fast"]},
@@ -39,10 +42,13 @@ func _ready() -> void:
         game_manager.level_changed.connect(_on_level_changed)
 
 func _process(_delta: float) -> void:
+    if not enable_waves:
+        return
     if game_manager == null or _enemy_container == null:
         return
     if not game_manager.is_gameplay_active or game_manager.is_game_over:
         return
+    _recycle_far_enemies()
     if current_wave <= 0:
         return
     if _waiting_for_upgrade_selection:
@@ -60,7 +66,26 @@ func _process(_delta: float) -> void:
     _waiting_for_upgrade_selection = true
     game_manager.begin_upgrade_selection()
 
+func _recycle_far_enemies() -> void:
+    if _spawner == null or _enemy_container == null or _spawner.player_target == null:
+        return
+
+    var recycle_distance := minimum_enemy_recycle_distance
+    if _spawner.player_target is Player:
+        recycle_distance = max(((_spawner.player_target as Player).weapon_range * enemy_recycle_distance_multiplier), minimum_enemy_recycle_distance)
+    var recycle_distance_squared := recycle_distance * recycle_distance
+
+    for child in _enemy_container.get_children():
+        if child is not Node3D:
+            continue
+        var enemy := child as Node3D
+        if enemy.global_position.distance_squared_to(_spawner.player_target.global_position) > recycle_distance_squared:
+            _spawner.recycle_enemy(enemy)
+
 func start_next_wave() -> void:
+    if not enable_waves:
+        return
+
     current_wave += 1
 
     if _spawner == null:
@@ -127,6 +152,10 @@ func _on_level_changed(_level_index: int, _level_id: StringName, _display_name: 
     current_wave = 0
     _waiting_for_upgrade_selection = false
     _clear_runtime_nodes()
+    if not enable_waves:
+        game_manager.set_wave(current_wave)
+        game_manager.set_boss_wave(false)
+        return
     call_deferred("start_next_wave")
 
 func _is_level_complete() -> bool:

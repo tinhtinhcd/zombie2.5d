@@ -1,35 +1,28 @@
 extends Node3D
 class_name FixedCameraRig
 
-# Fixed isometric-style camera rig for 2.5D gameplay.
-# The rig follows a target node each frame while keeping a constant
-# viewing angle, distance, and height. The offset is precomputed once
-# to avoid redundant trig every frame.
+# Fixed-angle camera that follows the hero with a stable offset.
 
-@export_range(-180.0, 180.0, 0.1, "degrees") var angle: float = -40.0
-@export_range(0.1, 100.0, 0.1) var distance: float = 14.0
-@export_range(0.0, 100.0, 0.1) var height: float = 8.0
-@export var follow_target: Node3D
+@export var target_path: NodePath = NodePath("../Player")
+@export var follow_offset: Vector3 = Vector3(0.0, 10.0, 10.0)
+@export var look_ahead: Vector3 = Vector3.ZERO
+@export var follow_speed: float = 10.0
 
 @onready var camera: Camera3D = $Camera3D
 
-var _camera_offset: Vector3 = Vector3.ZERO
+var _target: Node3D
 
 func _ready() -> void:
-    _recompute_offset()
+	_target = get_node_or_null(target_path) as Node3D
+	_update_camera(1.0)
 
-func _process(_delta: float) -> void:
-    # Follow the target each frame, then point the camera at the rig origin.
-    if follow_target != null:
-        global_position = follow_target.global_position
-    camera.position = _camera_offset
-    camera.look_at(global_position, Vector3.UP)
+func _process(delta: float) -> void:
+	_update_camera(delta)
 
-func _recompute_offset() -> void:
-    # Recalculate the camera offset from angle/distance/height exports.
-    # Call this again at runtime if you change those values dynamically.
-    var radians := deg_to_rad(angle)
-    _camera_offset = Vector3(sin(radians) * distance, height, cos(radians) * distance)
-    if is_node_ready():
-        camera.position = _camera_offset
-        camera.look_at(global_position, Vector3.UP)
+func _update_camera(delta: float) -> void:
+	if _target == null:
+		return
+
+	var desired_position := _target.global_position + follow_offset
+	camera.global_position = camera.global_position.lerp(desired_position, min(delta * follow_speed, 1.0))
+	camera.look_at(_target.global_position + look_ahead, Vector3.UP)

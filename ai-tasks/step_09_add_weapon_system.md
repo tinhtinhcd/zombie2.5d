@@ -83,6 +83,8 @@ Weapon
 - fire_rate
 - projectile_count
 - spread_angle
+- projectile_speed
+- range
 ```
 
 ---

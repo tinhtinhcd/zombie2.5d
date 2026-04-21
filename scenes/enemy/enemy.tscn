@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/enemy/enemy.gd" id="1_enemy"]
 [ext_resource type="PackedScene" path="res://scenes/effects/xp_pickup.tscn" id="2_xp_pickup"]
+[ext_resource type="PackedScene" path="res://assets/KayKit_Skeletons_1.1_FREE/KayKit_Skeletons_1.1_FREE/characters/gltf/Skeleton_Minion.glb" id="3_skeleton_minion"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_enemy"]
 radius = 0.45
@@ -18,4 +19,10 @@ xp_pickup_scene = ExtResource("2_xp_pickup")
 shape = SubResource("CapsuleShape3D_enemy")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+visible = false
 mesh = SubResource("BoxMesh_enemy")
+
+[node name="VisualRoot" type="Node3D" parent="."]
+scale = Vector3(0.85, 0.85, 0.85)
+
+[node name="SkeletonMinion" parent="VisualRoot" instance=ExtResource("3_skeleton_minion")]

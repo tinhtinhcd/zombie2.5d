@@ -88,7 +88,8 @@ Upgrade Selection screen must support:
 ## Rules
 
 * Every killed enemy drops XP
-* XP value can be fixed for MVP
+* XP drop starts from a simple base value
+* XP drop increases with the current game level so later levels reward more XP
 * XP is collected by touching the pickup
 
 ---

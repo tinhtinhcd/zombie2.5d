@@ -1,9 +1,9 @@
 [gd_scene load_steps=3 format=3]
 
-[ext_resource type="Script" path="res://scripts/ui/pause_menu.gd" id="1_pause_menu"]
+[ext_resource type="Script" path="res://scripts/ui/placeholder_popup.gd" id="1_popup"]
 [ext_resource type="Theme" path="res://config/ui_theme.tres" id="2_theme"]
 
-[node name="PauseMenu" type="Control"]
+[node name="PlaceholderPopup" type="Control"]
 visible = false
 layout_mode = 3
 anchors_preset = 15
@@ -11,8 +11,9 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 theme = ExtResource("2_theme")
-script = ExtResource("1_pause_menu")
+script = ExtResource("1_popup")
 
 [node name="Dimmer" type="ColorRect" parent="."]
 layout_mode = 1
@@ -21,7 +22,8 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0, 0, 0, 0.58)
+mouse_filter = 1
+color = Color(0, 0, 0, 0.68)
 
 [node name="CenterContainer" type="CenterContainer" parent="."]
 layout_mode = 1
@@ -32,7 +34,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="PanelContainer" type="PanelContainer" parent="CenterContainer"]
-custom_minimum_size = Vector2(360, 0)
+custom_minimum_size = Vector2(420, 0)
 layout_mode = 2
 
 [node name="MarginContainer" type="MarginContainer" parent="CenterContainer/PanelContainer"]
@@ -44,24 +46,20 @@ theme_override_constants/margin_bottom = 24
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer/PanelContainer/MarginContainer"]
 layout_mode = 2
-theme_override_constants/separation = 14
+theme_override_constants/separation = 16
 
 [node name="TitleLabel" type="Label" parent="CenterContainer/PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
-text = "Paused"
+text = "Coming Soon"
 horizontal_alignment = 1
 
-[node name="ResumeButton" type="Button" parent="CenterContainer/PanelContainer/MarginContainer/VBoxContainer"]
-custom_minimum_size = Vector2(0, 54)
+[node name="MessageLabel" type="Label" parent="CenterContainer/PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
-text = "Resume"
+text = "This system is planned for a later milestone."
+autowrap_mode = 3
+horizontal_alignment = 1
 
-[node name="SettingsButton" type="Button" parent="CenterContainer/PanelContainer/MarginContainer/VBoxContainer"]
-custom_minimum_size = Vector2(0, 54)
+[node name="CloseButton" type="Button" parent="CenterContainer/PanelContainer/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
-text = "Settings"
-
-[node name="HomeButton" type="Button" parent="CenterContainer/PanelContainer/MarginContainer/VBoxContainer"]
-custom_minimum_size = Vector2(0, 54)
-layout_mode = 2
-text = "Quit to Main Menu"
+text = "Close"

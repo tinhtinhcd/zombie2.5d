@@ -1,0 +1,90 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/settings_screen.gd" id="1_settings"]
+[ext_resource type="Theme" path="res://config/ui_theme.tres" id="2_theme"]
+
+[node name="SettingsScreen" type="Control"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = ExtResource("2_theme")
+script = ExtResource("1_settings")
+
+[node name="Dimmer" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+color = Color(0, 0, 0, 0.7)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(460, 0)
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="CenterContainer/PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer/PanelContainer/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Header" type="HBoxContainer" parent="CenterContainer/PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/PanelContainer/MarginContainer/VBoxContainer/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Settings"
+
+[node name="Content" type="VBoxContainer" parent="CenterContainer/PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="SoundToggle" type="CheckButton" parent="CenterContainer/PanelContainer/MarginContainer/VBoxContainer/Content"]
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+text = "Sound"
+
+[node name="MusicToggle" type="CheckButton" parent="CenterContainer/PanelContainer/MarginContainer/VBoxContainer/Content"]
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+text = "Music"
+
+[node name="VibrationToggle" type="CheckButton" parent="CenterContainer/PanelContainer/MarginContainer/VBoxContainer/Content"]
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+text = "Vibration"
+
+[node name="PlaceholderLabel" type="Label" parent="CenterContainer/PanelContainer/MarginContainer/VBoxContainer/Content"]
+layout_mode = 2
+autowrap_mode = 3
+text = "Settings persistence is intentionally lightweight for this milestone."
+
+[node name="Footer" type="HBoxContainer" parent="CenterContainer/PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+alignment = 2
+
+[node name="BackButton" type="Button" parent="CenterContainer/PanelContainer/MarginContainer/VBoxContainer/Footer"]
+custom_minimum_size = Vector2(160, 50)
+layout_mode = 2
+text = "Back"

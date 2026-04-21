@@ -65,10 +65,11 @@ Main (Node3D)
 
 ## Requirements
 
-* Fixed position
+* Fixed angle
+* Fixed offset from hero
 * Fixed rotation
-* No dynamic movement
-* No follow logic (simple is better)
+* Follow the hero position only
+* No camera rotation during gameplay
 
 ---
 
@@ -84,8 +85,26 @@ Rotation: (-45°, 0, 0)
 ## Rules
 
 * Do NOT rotate camera during gameplay
-* Do NOT attach camera to player
-* Keep camera stable
+* Do NOT attach camera directly to player
+* Keep camera movement stable and predictable
+
+---
+
+# Endless Map Setup
+
+## Requirements
+
+* Use repeated ground tiles
+* Keep only a small grid of tiles around the hero
+* Reposition tiles as the hero moves
+* Reuse the same lightweight tile art
+* Clamp the playable map to a large fixed physical radius, default 600 meters
+
+## Rules
+
+* Do NOT build procedural generation yet
+* Do NOT build rooms, doors, or pathfinding here
+* Keep the map visually continuous for basic survival movement
 
 ---
 
@@ -152,7 +171,7 @@ move_and_slide()
 * Add physics complexity
 * Add animation system yet
 * Add rotation smoothing system
-* Add camera tracking
+* Add camera behavior beyond fixed-offset hero follow
 
 ---
 
@@ -198,7 +217,8 @@ Provide:
 This step is complete when:
 
 * Player can move on X/Z plane
-* Camera is fixed and stable
+* Camera follows the hero with fixed angle and offset
+* Endless repeated map stays under the hero
 * Scene runs without errors
 * Movement feels smooth and controllable
 

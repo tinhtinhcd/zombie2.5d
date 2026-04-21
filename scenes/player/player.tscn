@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/player/player.gd" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/effects/projectile.tscn" id="2_projectile"]
+[ext_resource type="PackedScene" path="res://assets/KayKit_Adventurers_2.0_FREE/KayKit_Adventurers_2.0_FREE/Characters/gltf/Knight.glb" id="3_knight"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_player"]
 radius = 0.4
@@ -19,7 +20,13 @@ projectile_scene = ExtResource("2_projectile")
 shape = SubResource("CapsuleShape3D_player")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+visible = false
 mesh = SubResource("CapsuleMesh_player")
+
+[node name="VisualRoot" type="Node3D" parent="."]
+scale = Vector3(0.85, 0.85, 0.85)
+
+[node name="Knight" parent="VisualRoot" instance=ExtResource("3_knight")]
 
 [node name="ShootPoint" type="Marker3D" parent="."]
 position = Vector3(0, 0.8, -0.8)

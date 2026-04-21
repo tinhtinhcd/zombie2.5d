@@ -44,7 +44,17 @@ It can exist in UI, but not in logic.
 
 * Fixed angle
 * No rotation
-* No dynamic tracking system
+* Follow the hero with a fixed offset
+* No camera rotation during gameplay
+
+---
+
+## Map
+
+* Large bounded repeated map
+* Reuse a small ground tile around the hero
+* Play area uses a fixed physical radius, default 600 meters
+* Keep collision and terrain logic simple
 
 ---
 
@@ -63,6 +73,7 @@ It can exist in UI, but not in logic.
 
   * move toward player
   * damage on contact
+  * recycle near the hero when too far away
 
 ---
 
@@ -77,6 +88,7 @@ It can exist in UI, but not in logic.
 
 * Enemy drops XP
 * Player collects XP
+* XP drop increases with the current game level
 
 ---
 
