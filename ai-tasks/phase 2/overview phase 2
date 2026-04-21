@@ -1,0 +1,319 @@
+# 🚀 PHASE 2 — EXPANSION SYSTEMS
+
+## 🧟 Zombie Survival (2.5D)
+
+---
+
+# 🎯 1. Purpose
+
+Define all systems that are:
+
+* NOT part of MVP
+* BUT part of long-term vision
+* Derived from previous repos and missing ideas
+
+---
+
+# 🧠 2. Core Philosophy
+
+> Phase 2 adds depth without breaking the simplicity of the core loop.
+
+---
+
+# ⚠️ 3. Rule
+
+Do NOT implement these until:
+
+* MVP is fully playable
+* Game feel is polished
+* Core loop is stable
+
+---
+
+# 🧩 4. Phase 2 System Overview
+
+This phase introduces:
+
+* Room / map progression
+* Mission system
+* Advanced combat mechanics
+* Environment system
+* Tutorial / onboarding
+* Game modes expansion
+* Hub / meta UX layer
+* Audio & visual systems
+* (Future) Multiplayer (archived)
+
+---
+
+# 🗺️ 5. Room / Map Progression
+
+## Concept
+
+Instead of one static arena:
+
+* player unlocks new areas during run
+
+---
+
+## Features
+
+* locked areas
+* unlock cost (currency or condition)
+* different room layouts
+* difficulty scaling per room
+
+---
+
+## Gameplay Effect
+
+* creates decision-making
+* breaks monotony
+* adds spatial progression
+
+---
+
+# 🎯 6. Mission System
+
+## Concept
+
+Give players objectives beyond survival.
+
+---
+
+## Examples
+
+* kill 100 zombies
+* survive 5 minutes
+* defeat boss
+* use specific weapon
+
+---
+
+## Types
+
+* in-run missions
+* meta missions (across runs)
+
+---
+
+## Reward
+
+* bonus currency
+* unlock items
+* XP boost
+
+---
+
+# 🔫 7. Advanced Combat Mechanics
+
+## Add Later
+
+* reload system
+* weapon switching
+* manual aiming (optional)
+* sprint
+
+---
+
+## Purpose
+
+* increase skill ceiling
+* add player control depth
+
+---
+
+## Rule
+
+Only add after base combat is stable.
+
+---
+
+# 🌍 8. Environment System
+
+## Concept
+
+Environment becomes part of gameplay.
+
+---
+
+## Features
+
+* different map themes
+* visual patterns
+* hazards (optional)
+* interactive elements (later)
+
+---
+
+## Examples
+
+* slow zones
+* damage zones
+* obstacle layouts
+
+---
+
+# 🎓 9. Tutorial / Onboarding
+
+## Purpose
+
+Help new players understand:
+
+* movement
+* shooting
+* upgrade system
+* UI navigation
+
+---
+
+## Implementation
+
+* first-time tutorial
+* tooltips
+* guided steps
+
+---
+
+# 🧭 10. Hub / Meta Layer
+
+## Concept
+
+Add a layer outside gameplay.
+
+---
+
+## Features
+
+* main hub screen
+* access:
+
+  * hero select
+  * weapon select
+  * upgrades
+  * missions
+
+---
+
+## Purpose
+
+* make game feel like a full product
+* centralize progression
+
+---
+
+# 🎮 11. Game Modes Expansion
+
+## New Modes
+
+* Endless mode
+* Challenge mode
+* Boss rush
+
+---
+
+## Purpose
+
+* increase replayability
+* create different experiences
+
+---
+
+# 🔊 12. Audio & Feedback Systems
+
+## Systems
+
+* audio manager
+* hit sounds
+* ambient sounds
+* UI sounds
+
+---
+
+## Visual
+
+* particle system
+* animation system
+* shader effects
+
+---
+
+## Purpose
+
+* improve game feel
+* increase immersion
+
+---
+
+# ⚙️ 13. Performance System
+
+## Features
+
+* optimize enemy count
+* manage effects
+* maintain FPS
+
+---
+
+## Purpose
+
+* ensure mobile performance
+
+---
+
+# 🌐 14. Multiplayer (Future / Archived)
+
+## Concept
+
+* co-op survival
+* shared combat
+
+---
+
+## Status
+
+* NOT for current development
+* keep as future idea only
+
+---
+
+# 🧠 15. Integration Strategy
+
+## Order
+
+1. Mission system
+2. Room progression
+3. Environment system
+4. Advanced combat
+5. Hub layer
+6. Game modes
+7. Audio/visual polish
+
+---
+
+# ⚠️ 16. What NOT to Do
+
+Do NOT:
+
+* implement all systems at once
+* break MVP simplicity
+* overdesign early
+
+---
+
+# 🎯 17. Success Criteria
+
+Phase 2 is successful when:
+
+* gameplay feels deeper
+* replayability increases
+* systems integrate cleanly
+* performance remains stable
+
+---
+
+# 🧠 Final Principle
+
+> Expand carefully. Never break the core loop.
+
+---

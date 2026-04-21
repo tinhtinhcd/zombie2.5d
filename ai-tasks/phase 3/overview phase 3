@@ -1,0 +1,150 @@
+# 🌐 PHASE 3 — MULTIPLAYER (FUTURE)
+
+## 🧟 Zombie Survival (2.5D)
+
+---
+
+# 🎯 1. Purpose
+
+Define multiplayer as a **future expansion**, not part of core development.
+
+---
+
+# ⚠️ 2. Status
+
+Multiplayer is:
+
+* ❌ NOT part of MVP
+* ❌ NOT part of Phase 2
+* ✅ Optional future expansion
+
+---
+
+# 🧠 3. Core Principle
+
+> Multiplayer is built only after the single-player game is stable and successful.
+
+---
+
+# 🎮 4. Multiplayer Vision
+
+## Mode
+
+* Co-op survival
+
+---
+
+## Players
+
+* 2–4 players
+* shared arena
+* shared enemies
+
+---
+
+## Gameplay
+
+* same core loop:
+
+  * move
+  * shoot
+  * survive
+* multiple players fighting together
+
+---
+
+# 🧩 5. System Requirements
+
+To support multiplayer, the game must handle:
+
+* player synchronization
+* enemy synchronization
+* projectile synchronization
+* state authority
+
+---
+
+# ⚙️ 6. Architecture Decision
+
+## Two possible approaches:
+
+### Option A — Peer-to-peer (simpler)
+
+* easier to build
+* less stable
+
+---
+
+### Option B — Server authoritative (better)
+
+* more stable
+* harder to build
+
+---
+
+# ⚠️ 7. Complexity Warning
+
+Multiplayer introduces:
+
+* network latency
+* sync bugs
+* desync issues
+* debugging difficulty
+
+---
+
+# 🚫 8. Current Restriction
+
+Do NOT:
+
+* implement networking now
+* design systems around multiplayer
+* complicate current architecture
+
+---
+
+# 🧠 9. Preparation Strategy (IMPORTANT)
+
+Even without building multiplayer now:
+
+* keep systems simple
+* avoid tight coupling
+* avoid hardcoding single-player assumptions too deeply
+
+---
+
+# 🎯 10. When to Start Multiplayer
+
+Only start if:
+
+* game is stable
+* game is fun
+* game has users
+* core systems are complete
+
+---
+
+# 🧠 11. Realistic Expectation
+
+Multiplayer is:
+
+* a separate project phase
+* a major rewrite in some areas
+* not a small feature
+
+---
+
+# 🔥 12. Recommended Strategy
+
+1. Finish single-player game
+2. Polish and release
+3. Validate gameplay
+4. THEN consider multiplayer
+
+---
+
+# 🧠 Final Principle
+
+> Multiplayer is an upgrade, not a foundation.
+
+---
