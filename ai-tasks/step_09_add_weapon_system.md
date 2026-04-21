@@ -115,6 +115,13 @@ Update shooting logic to:
 
 * use current weapon stats
 * spawn projectiles based on weapon config
+* use weapon range for both target eligibility and combat facing
+
+## Player Facing Rule
+
+* Hero faces the nearest enemy only when that enemy is inside the active weapon range.
+* When all enemies are outside active weapon range, hero faces movement direction instead.
+* Weapon range changes should immediately affect this facing decision.
 
 ---
 

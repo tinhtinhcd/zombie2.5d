@@ -63,6 +63,10 @@ It can exist in UI, but not in logic.
 * Auto shooting
 * Single projectile type
 * Basic damage
+* Hero facing follows combat range:
+
+  * face the nearest enemy only when that enemy is inside current weapon range
+  * face movement direction when no enemy is inside current weapon range
 
 ---
 

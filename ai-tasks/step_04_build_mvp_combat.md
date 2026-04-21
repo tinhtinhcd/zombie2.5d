@@ -99,6 +99,14 @@ Use the simplest possible rule:
 * shoot toward the nearest enemy
 * if no enemy exists, do nothing
 
+## Player Facing
+
+Use weapon range as the boundary for combat facing:
+
+* if the nearest enemy is inside current weapon range, face that enemy
+* if no enemy is inside current weapon range, face the movement direction
+* do not rotate toward enemies that are too far away to shoot
+
 ---
 
 ## Rules

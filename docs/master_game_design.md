@@ -184,6 +184,10 @@ Manage loadout
 * Auto targeting
 * Projectile-based attacks
 * Damage calculation
+* Hero facing uses weapon range:
+
+  * nearest enemy inside weapon range takes facing priority
+  * movement direction controls facing when enemies are outside weapon range
 
 ## Flow
 
