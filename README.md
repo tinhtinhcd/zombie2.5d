@@ -1,120 +1,139 @@
-# 🧟 Zombie Survival (2.5D / 2D Hybrid)
+# 🧟 Zombie Survival (2.5D, AI-Driven)
 
-A fast-paced zombie survival game focused on **gameplay loop, progression, and replayability**.
-This project is designed to be **AI-assisted (Codex-driven)** where the human role focuses on **game design, balancing, and testing**, not coding.
+A 2.5D zombie survival game built with a **UI-first approach** and **AI-assisted development (Codex)**.
+
+This project focuses on:
+
+* Fast gameplay iteration
+* Clear product structure from the beginning
+* Minimal manual coding effort
 
 ---
 
 # 🎯 Project Vision
 
-This game aims to deliver a simple but addictive gameplay loop:
+Create a zombie survival game that feels complete from the start:
 
-> **Move → Shoot → Survive → Upgrade → Repeat**
+> **Full product UI + MVP gameplay + iterative expansion**
 
-Inspired by:
+The goal is not to build everything at once, but to:
 
-* Vampire Survivors
-* Brotato
-* Classic zombie survival games
+* show the full experience early
+* implement systems incrementally
 
 ---
 
 # 🧠 Development Philosophy
 
-This project follows a unique workflow:
+## Roles
 
-* ❌ No manual coding (or minimal)
+### 👤 Human (You)
 
-* ❌ No manual art creation
+* Game Designer
+* System Designer
+* Playtester
+* Balancer
 
-* ❌ No manual audio production
+### 🤖 AI (Codex)
 
-* ✅ Focus on **game design**
-
-* ✅ Focus on **gameplay feel**
-
-* ✅ Focus on **iteration and testing**
-
-* ✅ Use AI (Codex) for implementation
+* Code implementation
+* System integration
+* Iterative updates
 
 ---
 
-# 🎮 Core Gameplay
+## Core Principles
 
-## Player
+* UI must be **complete from the beginning**
+* Gameplay is built **in layers (MVP → expansion)**
+* Unfinished systems must remain **visible in the UI**
+* Use **placeholder states instead of hiding features**
+* Prefer **simple, testable systems**
 
-* 8-direction movement
-* Auto shooting
-* Stats:
+---
 
-  * Movement Speed
-  * Fire Rate
-  * Damage
-  * HP
+# 🧊 What is 2.5D in This Project?
 
-## Enemies (Zombies)
+This game uses:
 
-* Spawn in waves
-* Move toward player
-* Scale difficulty over time
+* 3D world (characters, environment)
+* Fixed camera (top-down / angled)
+* 2D-like gameplay logic
 
-## Combat
+### Key Rules:
 
-* Projectile-based shooting
-* Hit detection
-* Enemy death + rewards
+* Movement only on **X/Z plane**
+* No complex camera system
+* No physics-heavy gameplay
 
-## Progression
+---
 
-* Gain XP from kills
-* Level up system
-* Choose upgrades:
-
-  * +Damage
-  * +Fire Rate
-  * +Movement Speed
-
-## Game Loop
+# 🎮 Core Gameplay Loop
 
 ```text
-Move → Shoot → Kill → Gain XP → Level Up → Upgrade → Stronger → More Zombies
+Move → Auto Shoot → Kill Zombies → Gain XP → Level Up → Upgrade → Repeat
 ```
 
 ---
 
-# 🧩 Systems Overview
+# 🧩 Product Structure (Full UI Flow)
 
-## GameManager
+```text
+Main Menu
+→ Play
+→ Mode Select
+→ Hero Select
+→ Equipment Select
+→ Pet Select
+→ Start Game
+→ Gameplay
+→ Pause
+→ Upgrade Selection
+→ Game Over
+→ Result Screen
+→ Back to Main Menu
+```
 
-* Handles game state
-* Player stats
-* Score & progression
+---
 
-## WaveManager
+# 🧱 Systems Overview
 
-* Controls enemy spawning
-* Difficulty scaling
+## MVP Systems (Implemented First)
 
-## Player System
+* Player movement
+* Auto shooting
+* Enemy spawn & chase
+* Damage system
+* XP & leveling
+* Game over
 
-* Movement
-* Shooting
-* Stat scaling
+---
 
-## Enemy System
+## Full Systems (UI visible, logic may be placeholder)
 
-* AI movement (chase player)
-* Health & damage
+* Hero system
+* Weapon system
+* Equipment system
+* Pet system
+* Inventory
+* Loot system
+* Boss system
+* Meta progression
 
-## Projectile System
+---
 
-* Bullet movement
-* Collision detection
+# 🧩 UI Strategy
 
-## XP & Pickup System
+All systems must be visible in the UI from the beginning.
 
-* XP drops
-* Collection logic
+If a system is not implemented:
+
+* show UI normally
+* disable interaction OR
+* show "Coming Soon" OR
+* use mock data
+
+> ❗ Never remove UI for unfinished features
 
 ---
 
@@ -122,89 +141,76 @@ Move → Shoot → Kill → Gain XP → Level Up → Upgrade → Stronger → Mo
 
 ```text
 /scenes
-  main.tscn
-  player.tscn
-  enemy.tscn
-  projectile.tscn
-  hud.tscn
+  /ui
+  /game
 
 /scripts
-  player.gd
-  enemy.gd
-  projectile.gd
-  wave_manager.gd
-  game_manager.gd
+  /ui
+  /game
+  /autoload
 
+/docs
+/ai_tasks
 /assets
-  sprites/
-  audio/
 ```
 
 ---
 
-# 🤖 AI Development Rules (IMPORTANT)
+# 🎨 UI & Visual Strategy
 
-This project is designed to work with AI agents (Codex).
+## UI System
 
-## Rules:
+* Godot Control nodes
+* Shared Theme
+* Mobile-friendly layout
 
-* Modify only necessary files
-* Do NOT rewrite entire systems
-* Keep code simple and explicit
-* Prefer readable logic over abstraction
-* Follow existing naming conventions
-* Avoid unnecessary refactoring
+## Assets
 
-## Workflow:
-
-1. Define feature clearly
-2. Let AI implement
-3. Playtest
-4. Give feedback
-5. Iterate
+* Use consistent 3D asset style (low poly recommended)
+* Use a single UI asset pack
+* Avoid mixing multiple visual styles
 
 ---
 
-# 🚀 Development Roadmap
+# 🤖 AI Development Rules
 
-## Phase 1 — Core Gameplay
+Codex must follow:
 
-* Player movement
-* Shooting system
-* Basic enemies
-* Collision & damage
+* Modify only necessary files
+* Do not remove UI screens
+* Use placeholders for unfinished systems
+* Keep logic simple
+* Follow existing structure and naming
+* Avoid overengineering
 
-## Phase 2 — Game Loop
+---
 
-* Wave system
-* XP & leveling
-* Game over
+# 🚀 Development Phases
 
-## Phase 3 — Progression
+## Phase 1 — UI Skeleton
 
-* Upgrade system
-* Difficulty scaling
+* Build all UI screens
+* Connect navigation
+* Add placeholders
+
+## Phase 2 — MVP Gameplay
+
+* Core survival gameplay
+* Connect gameplay to UI
+
+## Phase 3 — System Expansion
+
+* Weapons
+* Heroes
+* Equipment
+* Loot
 
 ## Phase 4 — Polish
 
-* Animation
 * Effects
+* Animation
 * Sound
-
----
-
-# 🎨 Assets Strategy
-
-* Use free assets (itch.io, Kenney, OpenGameArt)
-* Keep consistent visual style
-* Replace assets later if needed
-
----
-
-# 📱 Target Platforms
-
-* Android
-* iOS
+* Mobile optimization
 
 ---
 
@@ -213,34 +219,22 @@ This project is designed to work with AI agents (Codex).
 * This project prioritizes **completion over perfection**
 * Gameplay comes before visuals
 * Iteration speed is critical
+* Avoid building complex systems too early
 
 ---
 
 # 🔥 Goal
 
-Ship a playable, fun, replayable zombie survival game
-with minimal manual coding effort.
+Ship a playable zombie survival game that:
 
----
-
-# 👤 Role Definition
-
-## You (Human)
-
-* Game Designer
-* Tester
-* Balancer
-
-## AI (Codex)
-
-* Developer
-* Implementer
-* Refactor assistant
+* Feels complete early
+* Is expandable over time
+* Requires minimal manual coding
 
 ---
 
 # 🧠 Final Philosophy
 
-> A fun game beats a perfect system.
+> Build the shell first. Fill it later.
 
 ---
