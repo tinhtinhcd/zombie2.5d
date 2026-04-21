@@ -1,0 +1,20 @@
+{
+  "hero_knight": {
+    "display_name": "Knight",
+    "max_hp_bonus": 4,
+    "move_speed_bonus": 0.0,
+    "projectile_damage_bonus": 1
+  },
+  "hero_rogue": {
+    "display_name": "Rogue",
+    "max_hp_bonus": 0,
+    "move_speed_bonus": 1.0,
+    "projectile_damage_bonus": 0
+  },
+  "hero_mage": {
+    "display_name": "Mage",
+    "max_hp_bonus": -2,
+    "move_speed_bonus": 0.2,
+    "projectile_damage_bonus": 2
+  }
+}

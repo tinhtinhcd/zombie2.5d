@@ -3,6 +3,8 @@ class_name GameManager
 
 # Central game state manager for session-level values.
 
+const GameDataScript := preload("res://scripts/data/GameData.gd")
+
 signal score_changed(new_score: int)
 signal xp_changed(new_xp: int)
 signal level_changed(level_index: int, level_id: StringName, display_name: String)
@@ -20,179 +22,6 @@ signal inventory_changed(inventory: Dictionary)
 signal mission_progress_changed(summary: String)
 signal player_level_changed(level: int, current_xp: int, required_xp: int)
 signal boss_health_changed(current_hp: int, max_hp: int, visible: bool)
-
-const UPGRADE_DEFINITIONS := [
-    {
-        "id": &"projectile_damage",
-        "title": "Power Shot",
-        "description": "Increase projectile damage by 1.",
-    },
-    {
-        "id": &"fire_rate",
-        "title": "Rapid Fire",
-        "description": "Reduce fire interval slightly.",
-    },
-    {
-        "id": &"max_hp",
-        "title": "Vitality",
-        "description": "Increase max HP by 2.",
-    },
-    {
-        "id": &"restore_hp",
-        "title": "Recover",
-        "description": "Restore 4 HP.",
-    },
-    {
-        "id": &"move_speed",
-        "title": "Sprint",
-        "description": "Increase movement speed.",
-    },
-    {
-        "id": &"projectile_speed",
-        "title": "Fast Rounds",
-        "description": "Projectiles travel faster.",
-    },
-    {
-        "id": &"weapon_range",
-        "title": "Long Barrel",
-        "description": "Increase weapon range.",
-    },
-    {
-        "id": &"projectile_count",
-        "title": "Extra Shot",
-        "description": "Add one projectile to the current weapon, up to five.",
-    },
-]
-
-const HERO_DEFINITIONS := {
-    "hero_knight": {
-        "display_name": "Knight",
-        "max_hp_bonus": 4,
-        "move_speed_bonus": 0.0,
-        "projectile_damage_bonus": 1,
-    },
-    "hero_rogue": {
-        "display_name": "Rogue",
-        "max_hp_bonus": 0,
-        "move_speed_bonus": 1.0,
-        "projectile_damage_bonus": 0,
-    },
-    "hero_mage": {
-        "display_name": "Mage",
-        "max_hp_bonus": -2,
-        "move_speed_bonus": 0.2,
-        "projectile_damage_bonus": 2,
-    },
-}
-
-const WEAPON_DEFINITIONS := {
-    "weapon_basic": {
-        "id": "weapon_basic",
-        "display_name": "Basic Gun",
-        "description": "Reliable starter weapon.",
-        "weapon_type": "basic",
-        "damage": 1,
-        "fire_rate": 0.6,
-        "projectile_count": 1,
-        "spread_angle": 0.0,
-        "projectile_speed": 14.0,
-        "range": 20.0,
-        "unlocked": true,
-        "implemented": true,
-        "icon": "",
-        "projectile_scene": "res://scenes/effects/projectile.tscn",
-    },
-    "weapon_spread": {
-        "id": "weapon_spread",
-        "display_name": "Spread Shot",
-        "description": "Fires a short cone of projectiles for crowd control.",
-        "weapon_type": "spread",
-        "damage": 1,
-        "fire_rate": 0.75,
-        "projectile_count": 3,
-        "spread_angle": 24.0,
-        "projectile_speed": 13.0,
-        "range": 17.0,
-        "unlocked": true,
-        "implemented": true,
-        "icon": "",
-        "projectile_scene": "res://scenes/effects/projectile.tscn",
-    },
-    "weapon_rapid": {
-        "id": "weapon_rapid",
-        "display_name": "Rapid Blaster",
-        "description": "Fast fire rate with lower per-shot impact.",
-        "weapon_type": "rapid",
-        "damage": 1,
-        "fire_rate": 0.32,
-        "projectile_count": 1,
-        "spread_angle": 0.0,
-        "projectile_speed": 16.0,
-        "range": 18.0,
-        "unlocked": true,
-        "implemented": true,
-        "icon": "",
-        "projectile_scene": "res://scenes/effects/projectile.tscn",
-    },
-    "weapon_heavy": {
-        "id": "weapon_heavy",
-        "display_name": "Heavy Launcher",
-        "description": "Slow, high-damage shot with longer reach.",
-        "weapon_type": "heavy",
-        "damage": 3,
-        "fire_rate": 0.9,
-        "projectile_count": 1,
-        "spread_angle": 0.0,
-        "projectile_speed": 11.0,
-        "range": 23.0,
-        "unlocked": true,
-        "implemented": true,
-        "icon": "",
-        "projectile_scene": "res://scenes/effects/projectile.tscn",
-    },
-}
-
-const PET_DEFINITIONS := {
-    "pet_drone": {
-        "display_name": "Drone",
-        "damage": 1,
-        "attack_interval": 1.2,
-    },
-    "pet_sprite": {
-        "display_name": "Sprite",
-        "damage": 1,
-        "attack_interval": 0.9,
-    },
-    "pet_wisp": {
-        "display_name": "Wisp",
-        "damage": 2,
-        "attack_interval": 1.6,
-    },
-}
-
-const MISSION_DEFINITIONS := [
-    {"id": "mission_kills", "label": "Defeat 15 enemies", "stat": "kills", "target": 15},
-    {"id": "mission_xp", "label": "Collect 20 XP", "stat": "xp", "target": 20},
-    {"id": "mission_waves", "label": "Reach wave 3", "stat": "wave", "target": 3},
-]
-
-const PERMANENT_UPGRADE_DEFINITIONS := {
-    "perm_max_hp": {
-        "title": "Vitality",
-        "description": "Permanent +2 max HP per rank.",
-        "max_rank": 5,
-    },
-    "perm_fire_rate": {
-        "title": "Trigger Discipline",
-        "description": "Permanent fire interval reduction per rank.",
-        "max_rank": 5,
-    },
-    "perm_projectile_damage": {
-        "title": "Sharpened Shot",
-        "description": "Permanent +1 projectile damage per rank.",
-        "max_rank": 5,
-    },
-}
 
 var score: int = 0
 var xp: int = 0
@@ -224,6 +53,7 @@ var unlocked_pets: Array = ["pet_drone", "pet_sprite", "pet_wisp"]
 var inventory: Dictionary = {}
 var mission_stats: Dictionary = {"kills": 0, "xp": 0, "wave": 0}
 var _progression_loaded: bool = false
+var _game_data: RefCounted = GameDataScript.new()
 
 func _ready() -> void:
     # Only load data here. reset_game() is called by game.gd when
@@ -332,7 +162,7 @@ func restart_game() -> void:
 func unlock_permanent_upgrade(upgrade_id: StringName) -> bool:
     _ensure_progression_loaded()
 
-    var definition: Dictionary = PERMANENT_UPGRADE_DEFINITIONS.get(String(upgrade_id), {})
+    var definition: Dictionary = _game_data.get_permanent_upgrade_definition(String(upgrade_id))
     if definition.is_empty():
         return false
 
@@ -370,11 +200,11 @@ func apply_permanent_upgrades(player: Player) -> void:
 
 func set_selected_loadout(hero_id: String, weapon_id: String, pet_id: String) -> void:
     _ensure_progression_loaded()
-    if HERO_DEFINITIONS.has(hero_id) and unlocked_heroes.has(hero_id):
+    if _game_data.has_hero(hero_id) and unlocked_heroes.has(hero_id):
         selected_hero_id = hero_id
-    if WEAPON_DEFINITIONS.has(weapon_id) and unlocked_weapons.has(weapon_id):
+    if _game_data.has_weapon(weapon_id) and unlocked_weapons.has(weapon_id):
         selected_weapon_id = weapon_id
-    if PET_DEFINITIONS.has(pet_id) and unlocked_pets.has(pet_id):
+    if _game_data.has_pet(pet_id) and unlocked_pets.has(pet_id):
         selected_pet_id = pet_id
     _save_progression()
     loadout_changed.emit()
@@ -389,22 +219,22 @@ func get_selected_pet_definition() -> Dictionary:
     return get_pet_definition(selected_pet_id)
 
 func get_hero_definition(hero_id: String) -> Dictionary:
-    return HERO_DEFINITIONS.get(hero_id, HERO_DEFINITIONS["hero_knight"])
+    return _game_data.get_hero_definition(hero_id)
 
 func get_weapon_definition(weapon_id: String) -> Dictionary:
-    return WEAPON_DEFINITIONS.get(weapon_id, WEAPON_DEFINITIONS["weapon_basic"])
+    return _game_data.get_weapon_definition(weapon_id)
 
 func get_pet_definition(pet_id: String) -> Dictionary:
-    return PET_DEFINITIONS.get(pet_id, PET_DEFINITIONS["pet_drone"])
+    return _game_data.get_pet_definition(pet_id)
 
 func get_weapon_ids() -> Array:
-    return WEAPON_DEFINITIONS.keys()
+    return _game_data.get_weapon_ids()
 
 func get_hero_ids() -> Array:
-    return HERO_DEFINITIONS.keys()
+    return _game_data.get_hero_ids()
 
 func get_pet_ids() -> Array:
-    return PET_DEFINITIONS.keys()
+    return _game_data.get_pet_ids()
 
 func get_display_name(definition: Dictionary, fallback: String) -> String:
     return str(definition.get("display_name", fallback))
@@ -439,7 +269,7 @@ func grant_item(item_id: String, amount: int = 1) -> void:
 
 func get_mission_summary() -> String:
     var lines := PackedStringArray()
-    for mission in MISSION_DEFINITIONS:
+    for mission in _game_data.get_missions():
         var stat := str(mission.get("stat", ""))
         var target := int(mission.get("target", 1))
         var value := clampi(int(mission_stats.get(stat, 0)), 0, target)
@@ -586,7 +416,7 @@ func _save_progression() -> void:
         })
 
 func _get_upgrade_options() -> Array:
-    var options := UPGRADE_DEFINITIONS.duplicate(true)
+    var options: Array = _game_data.get_upgrade_options()
     options.shuffle()
     return options.slice(0, 3)
 

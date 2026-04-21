@@ -1,0 +1,20 @@
+[
+  {
+    "id": "mission_kills",
+    "label": "Defeat 15 enemies",
+    "stat": "kills",
+    "target": 15
+  },
+  {
+    "id": "mission_xp",
+    "label": "Collect 20 XP",
+    "stat": "xp",
+    "target": 20
+  },
+  {
+    "id": "mission_waves",
+    "label": "Reach wave 3",
+    "stat": "wave",
+    "target": 3
+  }
+]

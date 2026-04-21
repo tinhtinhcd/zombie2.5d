@@ -1,0 +1,42 @@
+[
+  {
+    "id": "projectile_damage",
+    "title": "Power Shot",
+    "description": "Increase projectile damage by 1."
+  },
+  {
+    "id": "fire_rate",
+    "title": "Rapid Fire",
+    "description": "Reduce fire interval slightly."
+  },
+  {
+    "id": "max_hp",
+    "title": "Vitality",
+    "description": "Increase max HP by 2."
+  },
+  {
+    "id": "restore_hp",
+    "title": "Recover",
+    "description": "Restore 4 HP."
+  },
+  {
+    "id": "move_speed",
+    "title": "Sprint",
+    "description": "Increase movement speed."
+  },
+  {
+    "id": "projectile_speed",
+    "title": "Fast Rounds",
+    "description": "Projectiles travel faster."
+  },
+  {
+    "id": "weapon_range",
+    "title": "Long Barrel",
+    "description": "Increase weapon range."
+  },
+  {
+    "id": "projectile_count",
+    "title": "Extra Shot",
+    "description": "Add one projectile to the current weapon, up to five."
+  }
+]

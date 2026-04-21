@@ -1,0 +1,17 @@
+{
+  "pet_drone": {
+    "display_name": "Drone",
+    "damage": 1,
+    "attack_interval": 1.2
+  },
+  "pet_sprite": {
+    "display_name": "Sprite",
+    "damage": 1,
+    "attack_interval": 0.9
+  },
+  "pet_wisp": {
+    "display_name": "Wisp",
+    "damage": 2,
+    "attack_interval": 1.6
+  }
+}
