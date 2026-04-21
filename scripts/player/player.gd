@@ -180,7 +180,7 @@ func spawn_projectile() -> void:
         projectile.setup(shot_direction, weapon_range)
 
 func _face_combat_target_or_movement(move_direction: Vector3) -> void:
-    var target_enemy := _find_nearest_enemy(false)
+    var target_enemy := _find_nearest_enemy()
     if target_enemy != null:
         _face_direction(target_enemy.global_position - global_position)
         return

@@ -122,12 +122,20 @@ func _run() -> void:
 	for enemy in enemy_container.get_children():
 		if enemy is Node3D:
 			(enemy as Node3D).global_position = player.global_position + Vector3(0.0, 0.0, -20.0)
+	player.weapon_range = 10.0
 	var enemy_for_facing := enemy_container.get_child(0) as Node3D
 	enemy_for_facing.global_position = player.global_position + Vector3.RIGHT * 4.0
 	player.call("_face_combat_target_or_movement", Vector3.FORWARD)
 	await process_frame
 	if not is_equal_approx(player.get_node("ShootPoint").rotation.y, -PI * 0.5):
-		push_error("Smoke test failed: player did not face the nearest enemy over movement direction.")
+		push_error("Smoke test failed: player did not face the nearest in-range enemy over movement direction.")
+		quit(1)
+		return
+	player.weapon_range = 1.0
+	player.call("_face_combat_target_or_movement", Vector3.FORWARD)
+	await process_frame
+	if not is_equal_approx(player.get_node("ShootPoint").rotation.y, 0.0):
+		push_error("Smoke test failed: player did not face movement direction when enemies were out of weapon range.")
 		quit(1)
 		return
 
