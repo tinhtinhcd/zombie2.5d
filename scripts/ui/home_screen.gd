@@ -164,7 +164,7 @@ func _show_placeholder(title: String, message: String) -> void:
 
 func _select_hero(hero_id: String, available: bool) -> void:
 	if not available:
-		_show_placeholder("Hero Locked", "Only one hero is playable in the MVP. Locked and future heroes stay visible here on purpose.")
+		_show_placeholder("Hero Locked", "This hero is locked. Keep playing to unlock more heroes later.")
 		return
 
 	_selected_hero_id = hero_id
@@ -176,8 +176,8 @@ func _refresh_hero_summary() -> void:
 	var has_selection := _selected_hero_id != ""
 	hero_continue_button.disabled = not has_selection
 	hero_knight_button.text = "Selected" if _selected_hero_id == "hero_knight" else "Select"
-	hero_rogue_button.text = "Selected" if _selected_hero_id == "hero_rogue" else "Select"
-	hero_mage_button.text = "Selected" if _selected_hero_id == "hero_mage" else "Select"
+	hero_rogue_button.text = _get_select_button_text("hero_rogue", _selected_hero_id, game_manager.is_hero_unlocked("hero_rogue"))
+	hero_mage_button.text = _get_select_button_text("hero_mage", _selected_hero_id, game_manager.is_hero_unlocked("hero_mage"))
 	if has_selection:
 		var hero_definition := game_manager.get_hero_definition(_selected_hero_id)
 		hero_status_label.text = "Selected hero: %s\nStats apply when the run starts." % game_manager.get_display_name(hero_definition, "Hero")
@@ -187,12 +187,13 @@ func _refresh_hero_summary() -> void:
 func _refresh_equipment_summary() -> void:
 	var weapon_definition := game_manager.get_weapon_definition(_selected_weapon_id)
 	var weapon_name := game_manager.get_display_name(weapon_definition, "Basic Gun")
-	equipment_summary_label.text = "Selected loadout\nWeapon: %s\nDamage: %d\nFire: %.2fs\nProjectiles: %d\nRange: %.1f\nArmor: Placeholder\nAccessory: Placeholder" % [
+	equipment_summary_label.text = "Selected loadout\nWeapon: %s\nDamage: %d\nFire: %.2fs\nProjectiles: %d\nRange: %.1f\n%s\nArmor: Placeholder\nAccessory: Placeholder" % [
 		weapon_name,
 		int(weapon_definition.get("damage", weapon_definition.get("projectile_damage", 1))),
 		float(weapon_definition.get("fire_rate", weapon_definition.get("fire_interval", 0.6))),
 		int(weapon_definition.get("projectile_count", 1)),
 		float(weapon_definition.get("range", 20.0)),
+		_format_weapon_unlocks(),
 	]
 	weapon_slot_button.text = "Change Weapon"
 	armor_slot_button.text = "Locked"
@@ -200,7 +201,7 @@ func _refresh_equipment_summary() -> void:
 
 func _select_pet(pet_id: String, implemented: bool) -> void:
 	if not implemented:
-		_show_placeholder("Coming Soon", "Pet systems remain visible in the UI but are intentionally not implemented in MVP.")
+		_show_placeholder("Pet Locked", "This pet is locked. Pet progression will unlock more companions later.")
 		return
 
 	_selected_pet_id = pet_id
@@ -210,8 +211,8 @@ func _select_pet(pet_id: String, implemented: bool) -> void:
 
 func _refresh_pet_summary() -> void:
 	pet_drone_button.text = "Selected" if _selected_pet_id == "pet_drone" else "Select"
-	pet_sprite_button.text = "Selected" if _selected_pet_id == "pet_sprite" else "Select"
-	pet_wisp_button.text = "Selected" if _selected_pet_id == "pet_wisp" else "Select"
+	pet_sprite_button.text = _get_select_button_text("pet_sprite", _selected_pet_id, game_manager.is_pet_unlocked("pet_sprite"))
+	pet_wisp_button.text = _get_select_button_text("pet_wisp", _selected_pet_id, game_manager.is_pet_unlocked("pet_wisp"))
 	if _selected_pet_id == "":
 		pet_status_label.text = "No pet selected.\nThis is intentional for MVP, and Start Game still works."
 	else:
@@ -278,16 +279,16 @@ func _on_knight_pressed() -> void:
 	_select_hero("hero_knight", true)
 
 func _on_rogue_pressed() -> void:
-	_select_hero("hero_rogue", true)
+	_select_hero("hero_rogue", game_manager.is_hero_unlocked("hero_rogue"))
 
 func _on_mage_pressed() -> void:
-	_select_hero("hero_mage", true)
+	_select_hero("hero_mage", game_manager.is_hero_unlocked("hero_mage"))
 
 func _on_hero_continue_pressed() -> void:
 	_show_screen(SCREEN_EQUIPMENT_SELECT)
 
 func _on_weapon_slot_pressed() -> void:
-	var weapon_ids := game_manager.get_weapon_ids()
+	var weapon_ids := _get_unlocked_weapon_ids()
 	if weapon_ids.is_empty():
 		return
 	_weapon_cycle_index = (_weapon_cycle_index + 1) % weapon_ids.size()
@@ -309,10 +310,33 @@ func _on_drone_pressed() -> void:
 	_select_pet("pet_drone", true)
 
 func _on_sprite_pressed() -> void:
-	_select_pet("pet_sprite", true)
+	_select_pet("pet_sprite", game_manager.is_pet_unlocked("pet_sprite"))
 
 func _on_wisp_pressed() -> void:
-	_select_pet("pet_wisp", true)
+	_select_pet("pet_wisp", game_manager.is_pet_unlocked("pet_wisp"))
 
 func _on_placeholder_closed() -> void:
 	screen_root.mouse_filter = Control.MOUSE_FILTER_PASS
+
+func _get_select_button_text(item_id: String, selected_id: String, unlocked: bool) -> String:
+	if selected_id == item_id:
+		return "Selected"
+	if not unlocked:
+		return "Locked"
+	return "Select"
+
+func _get_unlocked_weapon_ids() -> Array:
+	var unlocked_weapon_ids := []
+	for weapon_id in game_manager.get_weapon_ids():
+		if game_manager.is_weapon_unlocked(str(weapon_id)):
+			unlocked_weapon_ids.append(weapon_id)
+	return unlocked_weapon_ids
+
+func _format_weapon_unlocks() -> String:
+	var lines := PackedStringArray()
+	lines.append("Weapons")
+	for weapon_id in game_manager.get_weapon_ids():
+		var weapon_definition := game_manager.get_weapon_definition(str(weapon_id))
+		var status := "Unlocked" if game_manager.is_weapon_unlocked(str(weapon_id)) else "Locked"
+		lines.append("%s: %s" % [game_manager.get_display_name(weapon_definition, str(weapon_id)), status])
+	return "\n".join(lines)

@@ -48,12 +48,33 @@ func _run() -> void:
 	var endless_map := game.get_node_or_null("LevelContainer") as EndlessMap
 	var wave_manager := game.get_node_or_null("WaveManager")
 	var game_manager := root.get_node_or_null("/root/GameManager") as GameManager
+	var save_manager := root.get_node_or_null("/root/SaveManager") as SaveManager
 	if projectile_container == null:
 		push_error("Smoke test failed: projectile container is missing.")
 		quit(1)
 		return
 	if game_manager == null:
 		push_error("Smoke test failed: GameManager autoload is missing.")
+		quit(1)
+		return
+	if save_manager == null:
+		push_error("Smoke test failed: SaveManager autoload is missing.")
+		quit(1)
+		return
+	if save_manager.DEFAULT_SAVE_DATA["unlocked_heroes"].size() != 1 or save_manager.DEFAULT_SAVE_DATA["unlocked_weapons"].size() != 1 or save_manager.DEFAULT_SAVE_DATA["unlocked_pets"].size() != 1:
+		push_error("Smoke test failed: default save unlocks are not minimal.")
+		quit(1)
+		return
+	var fallback_save: Dictionary = save_manager.call("_merge_with_defaults", {
+		"selected_hero_id": "hero_mage",
+		"selected_weapon_id": "weapon_heavy",
+		"selected_pet_id": "pet_wisp",
+		"unlocked_heroes": ["hero_knight"],
+		"unlocked_weapons": ["weapon_basic"],
+		"unlocked_pets": ["pet_drone"],
+	})
+	if fallback_save["selected_hero_id"] != "hero_knight" or fallback_save["selected_weapon_id"] != "weapon_basic" or fallback_save["selected_pet_id"] != "pet_drone":
+		push_error("Smoke test failed: invalid selected loadout did not fallback to starter defaults.")
 		quit(1)
 		return
 	if endless_map == null:

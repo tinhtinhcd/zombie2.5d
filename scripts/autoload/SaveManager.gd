@@ -13,9 +13,9 @@ const DEFAULT_SAVE_DATA := {
     "selected_hero_id": "hero_knight",
     "selected_weapon_id": "weapon_basic",
     "selected_pet_id": "pet_drone",
-    "unlocked_heroes": ["hero_knight", "hero_rogue", "hero_mage"],
-    "unlocked_weapons": ["weapon_basic", "weapon_spread", "weapon_rapid", "weapon_heavy"],
-    "unlocked_pets": ["pet_drone", "pet_sprite", "pet_wisp"],
+    "unlocked_heroes": ["hero_knight"],
+    "unlocked_weapons": ["weapon_basic"],
+    "unlocked_pets": ["pet_drone"],
     "inventory": {},
     "settings": {},
 }
@@ -100,17 +100,18 @@ func _merge_with_defaults(source: Dictionary) -> Dictionary:
     var unlocked_heroes_value: Variant = source.get("unlocked_heroes", DEFAULT_SAVE_DATA["unlocked_heroes"])
     if typeof(unlocked_heroes_value) == TYPE_ARRAY:
         merged["unlocked_heroes"] = unlocked_heroes_value.duplicate(true)
+    _ensure_array_contains(merged["unlocked_heroes"], "hero_knight")
 
     var unlocked_weapons_value: Variant = source.get("unlocked_weapons", DEFAULT_SAVE_DATA["unlocked_weapons"])
     if typeof(unlocked_weapons_value) == TYPE_ARRAY:
         merged["unlocked_weapons"] = unlocked_weapons_value.duplicate(true)
-    for weapon_id in DEFAULT_SAVE_DATA["unlocked_weapons"]:
-        if not merged["unlocked_weapons"].has(weapon_id):
-            merged["unlocked_weapons"].append(weapon_id)
+    _ensure_array_contains(merged["unlocked_weapons"], "weapon_basic")
 
     var unlocked_pets_value: Variant = source.get("unlocked_pets", DEFAULT_SAVE_DATA["unlocked_pets"])
     if typeof(unlocked_pets_value) == TYPE_ARRAY:
         merged["unlocked_pets"] = unlocked_pets_value.duplicate(true)
+    _ensure_array_contains(merged["unlocked_pets"], "pet_drone")
+    _validate_selected_loadout(merged)
 
     var inventory_value: Variant = source.get("inventory", {})
     if typeof(inventory_value) == TYPE_DICTIONARY:
@@ -123,3 +124,20 @@ func _merge_with_defaults(source: Dictionary) -> Dictionary:
         merged["settings"] = settings.duplicate(true)
 
     return merged
+
+func _ensure_array_contains(items: Array, item_id: String) -> void:
+    if not items.has(item_id):
+        items.append(item_id)
+
+func _validate_selected_loadout(save_data: Dictionary) -> void:
+    var unlocked_heroes_value: Array = save_data.get("unlocked_heroes", [])
+    if not unlocked_heroes_value.has(save_data.get("selected_hero_id", "")):
+        save_data["selected_hero_id"] = "hero_knight"
+
+    var unlocked_weapons_value: Array = save_data.get("unlocked_weapons", [])
+    if not unlocked_weapons_value.has(save_data.get("selected_weapon_id", "")):
+        save_data["selected_weapon_id"] = "weapon_basic"
+
+    var unlocked_pets_value: Array = save_data.get("unlocked_pets", [])
+    if not unlocked_pets_value.has(save_data.get("selected_pet_id", "")):
+        save_data["selected_pet_id"] = "pet_drone"

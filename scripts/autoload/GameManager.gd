@@ -47,9 +47,9 @@ var soft_currency: int = 0
 var selected_hero_id: String = "hero_knight"
 var selected_weapon_id: String = "weapon_basic"
 var selected_pet_id: String = "pet_drone"
-var unlocked_heroes: Array = ["hero_knight", "hero_rogue", "hero_mage"]
-var unlocked_weapons: Array = ["weapon_basic", "weapon_spread", "weapon_rapid", "weapon_heavy"]
-var unlocked_pets: Array = ["pet_drone", "pet_sprite", "pet_wisp"]
+var unlocked_heroes: Array = ["hero_knight"]
+var unlocked_weapons: Array = ["weapon_basic"]
+var unlocked_pets: Array = ["pet_drone"]
 var inventory: Dictionary = {}
 var mission_stats: Dictionary = {"kills": 0, "xp": 0, "wave": 0}
 var _progression_loaded: bool = false
@@ -208,6 +208,15 @@ func set_selected_loadout(hero_id: String, weapon_id: String, pet_id: String) ->
         selected_pet_id = pet_id
     _save_progression()
     loadout_changed.emit()
+
+func is_hero_unlocked(hero_id: String) -> bool:
+    return unlocked_heroes.has(hero_id)
+
+func is_weapon_unlocked(weapon_id: String) -> bool:
+    return unlocked_weapons.has(weapon_id)
+
+func is_pet_unlocked(pet_id: String) -> bool:
+    return unlocked_pets.has(pet_id)
 
 func get_selected_hero_definition() -> Dictionary:
     return get_hero_definition(selected_hero_id)
@@ -392,6 +401,7 @@ func _ensure_progression_loaded() -> void:
         var inventory_value: Variant = save_data.get("inventory", {})
         if typeof(inventory_value) == TYPE_DICTIONARY:
             inventory = inventory_value
+    _validate_selected_loadout()
     _progression_loaded = true
     highest_unlocked_level_changed.emit(highest_unlocked_level)
     permanent_upgrades_changed.emit(permanent_upgrades.duplicate(true))
@@ -414,6 +424,22 @@ func _save_progression() -> void:
             "unlocked_pets": unlocked_pets,
             "inventory": inventory,
         })
+
+func _validate_selected_loadout() -> void:
+    _ensure_unlocked_contains(unlocked_heroes, "hero_knight")
+    _ensure_unlocked_contains(unlocked_weapons, "weapon_basic")
+    _ensure_unlocked_contains(unlocked_pets, "pet_drone")
+
+    if not _game_data.has_hero(selected_hero_id) or not unlocked_heroes.has(selected_hero_id):
+        selected_hero_id = "hero_knight"
+    if not _game_data.has_weapon(selected_weapon_id) or not unlocked_weapons.has(selected_weapon_id):
+        selected_weapon_id = "weapon_basic"
+    if not _game_data.has_pet(selected_pet_id) or not unlocked_pets.has(selected_pet_id):
+        selected_pet_id = "pet_drone"
+
+func _ensure_unlocked_contains(items: Array, item_id: String) -> void:
+    if not items.has(item_id):
+        items.append(item_id)
 
 func _get_upgrade_options() -> Array:
     var options: Array = _game_data.get_upgrade_options()
