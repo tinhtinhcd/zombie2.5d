@@ -6,6 +6,15 @@ const SCREEN_HERO_SELECT = "HeroSelectScreen"
 const SCREEN_EQUIPMENT_SELECT = "EquipmentSelectScreen"
 const SCREEN_PET_SELECT = "PetSelectScreen"
 const SCREEN_INVENTORY = "InventoryScreen"
+const MOBILE_WIDTH_THRESHOLD = 700.0
+const COMPACT_HEIGHT_THRESHOLD = 520.0
+const MOBILE_MARGIN = 14
+const DESKTOP_MARGIN = 32
+const HUB_SUMMARY_PANEL_SCRIPT := preload("res://scripts/ui/home/HubSummaryPanel.gd")
+const HERO_SELECT_PANEL_SCRIPT := preload("res://scripts/ui/home/HeroSelectPanel.gd")
+const EQUIPMENT_PANEL_SCRIPT := preload("res://scripts/ui/home/EquipmentPanel.gd")
+const PET_SELECT_PANEL_SCRIPT := preload("res://scripts/ui/home/PetSelectPanel.gd")
+const INVENTORY_PANEL_SCRIPT := preload("res://scripts/ui/home/InventoryPanel.gd")
 
 @onready var screen_root: Control = $ScreenRoot
 @onready var main_menu_screen: Control = $ScreenRoot/MainMenuScreen
@@ -64,7 +73,11 @@ var _selected_mode_id: String = "mode_survival"
 var _selected_hero_id: String = "hero_knight"
 var _selected_weapon_id: String = "weapon_basic"
 var _selected_pet_id: String = "pet_drone"
-var _weapon_cycle_index: int = 0
+var _hub_summary_panel
+var _hero_select_panel
+var _equipment_panel
+var _pet_select_panel
+var _inventory_panel
 
 func _ready() -> void:
 	_screen_lookup = {
@@ -75,6 +88,18 @@ func _ready() -> void:
 		"PetSelectScreen": pet_select_screen,
 		"InventoryScreen": inventory_screen,
 	}
+
+	_hub_summary_panel = HUB_SUMMARY_PANEL_SCRIPT.new()
+	_hero_select_panel = HERO_SELECT_PANEL_SCRIPT.new()
+	_equipment_panel = EQUIPMENT_PANEL_SCRIPT.new()
+	_pet_select_panel = PET_SELECT_PANEL_SCRIPT.new()
+	_inventory_panel = INVENTORY_PANEL_SCRIPT.new()
+
+	_hub_summary_panel.setup(hub_preview_list, hub_preview_note, game_manager)
+	_hero_select_panel.setup(hero_status_label, hero_continue_button, hero_knight_button, hero_rogue_button, hero_mage_button, game_manager)
+	_equipment_panel.setup(equipment_summary_label, weapon_slot_button, armor_slot_button, accessory_slot_button, game_manager)
+	_pet_select_panel.setup(pet_status_label, pet_drone_button, pet_sprite_button, pet_wisp_button, game_manager)
+	_inventory_panel.setup(inventory_description_label, game_manager)
 
 	play_button.pressed.connect(_on_play_pressed)
 	inventory_button.pressed.connect(_on_inventory_pressed)
@@ -111,7 +136,9 @@ func _ready() -> void:
 	game_manager.currency_changed.connect(_refresh_hub_summary)
 	game_manager.inventory_changed.connect(_refresh_inventory_summary)
 	game_manager.loadout_changed.connect(_load_selection_from_manager)
+	get_viewport().size_changed.connect(_apply_responsive_layout)
 
+	_apply_responsive_layout()
 	_load_selection_from_manager()
 	_refresh_hero_summary()
 	_refresh_equipment_summary()
@@ -139,6 +166,7 @@ func _show_screen(screen_name: String, add_to_history: bool = true) -> void:
 		_refresh_equipment_summary()
 	elif screen_name == SCREEN_PET_SELECT:
 		_refresh_pet_summary()
+	_apply_responsive_layout()
 
 func _go_back() -> void:
 	if _screen_history.is_empty():
@@ -173,31 +201,10 @@ func _select_hero(hero_id: String, available: bool) -> void:
 	_refresh_hub_summary(game_manager.soft_currency)
 
 func _refresh_hero_summary() -> void:
-	var has_selection := _selected_hero_id != ""
-	hero_continue_button.disabled = not has_selection
-	hero_knight_button.text = "Selected" if _selected_hero_id == "hero_knight" else "Select"
-	hero_rogue_button.text = _get_select_button_text("hero_rogue", _selected_hero_id, game_manager.is_hero_unlocked("hero_rogue"))
-	hero_mage_button.text = _get_select_button_text("hero_mage", _selected_hero_id, game_manager.is_hero_unlocked("hero_mage"))
-	if has_selection:
-		var hero_definition := game_manager.get_hero_definition(_selected_hero_id)
-		hero_status_label.text = "Selected hero: %s\nStats apply when the run starts." % game_manager.get_display_name(hero_definition, "Hero")
-	else:
-		hero_status_label.text = "Select a hero to continue. Each hero changes basic run stats."
+	_hero_select_panel.refresh(_selected_hero_id)
 
 func _refresh_equipment_summary() -> void:
-	var weapon_definition := game_manager.get_weapon_definition(_selected_weapon_id)
-	var weapon_name := game_manager.get_display_name(weapon_definition, "Basic Gun")
-	equipment_summary_label.text = "Selected loadout\nWeapon: %s\nDamage: %d\nFire: %.2fs\nProjectiles: %d\nRange: %.1f\n%s\nArmor: Placeholder\nAccessory: Placeholder" % [
-		weapon_name,
-		int(weapon_definition.get("damage", weapon_definition.get("projectile_damage", 1))),
-		float(weapon_definition.get("fire_rate", weapon_definition.get("fire_interval", 0.6))),
-		int(weapon_definition.get("projectile_count", 1)),
-		float(weapon_definition.get("range", 20.0)),
-		_format_weapon_unlocks(),
-	]
-	weapon_slot_button.text = "Change Weapon"
-	armor_slot_button.text = "Locked"
-	accessory_slot_button.text = "Locked"
+	_equipment_panel.refresh(_selected_weapon_id)
 
 func _select_pet(pet_id: String, implemented: bool) -> void:
 	if not implemented:
@@ -210,14 +217,7 @@ func _select_pet(pet_id: String, implemented: bool) -> void:
 	_refresh_hub_summary(game_manager.soft_currency)
 
 func _refresh_pet_summary() -> void:
-	pet_drone_button.text = "Selected" if _selected_pet_id == "pet_drone" else "Select"
-	pet_sprite_button.text = _get_select_button_text("pet_sprite", _selected_pet_id, game_manager.is_pet_unlocked("pet_sprite"))
-	pet_wisp_button.text = _get_select_button_text("pet_wisp", _selected_pet_id, game_manager.is_pet_unlocked("pet_wisp"))
-	if _selected_pet_id == "":
-		pet_status_label.text = "No pet selected.\nThis is intentional for MVP, and Start Game still works."
-	else:
-		var pet_definition := game_manager.get_pet_definition(_selected_pet_id)
-		pet_status_label.text = "Selected pet: %s\nPet assists with light automatic damage." % game_manager.get_display_name(pet_definition, "Pet")
+	_pet_select_panel.refresh(_selected_pet_id)
 
 func _start_game() -> void:
 	if scene_router != null:
@@ -228,30 +228,13 @@ func _load_selection_from_manager() -> void:
 	_selected_hero_id = game_manager.selected_hero_id
 	_selected_weapon_id = game_manager.selected_weapon_id
 	_selected_pet_id = game_manager.selected_pet_id
-	var weapon_ids := game_manager.get_weapon_ids()
-	_weapon_cycle_index = max(weapon_ids.find(_selected_weapon_id), 0)
+	_equipment_panel.sync_selected_weapon(_selected_weapon_id)
 
 func _refresh_hub_summary(_currency: int = 0) -> void:
-	var hero_name := game_manager.get_display_name(game_manager.get_selected_hero_definition(), "Hero")
-	var weapon_name := game_manager.get_display_name(game_manager.get_selected_weapon_definition(), "Weapon")
-	var pet_name := game_manager.get_display_name(game_manager.get_selected_pet_definition(), "Pet")
-	var weapon_definition := game_manager.get_selected_weapon_definition()
-	hub_preview_list.text = "Coins: %d\nHero: %s\nWeapon: %s\nWeapon Range: %.1f\nPet: %s\nHighest Level: %d" % [
-		game_manager.soft_currency,
-		hero_name,
-		weapon_name,
-		float(weapon_definition.get("range", 20.0)),
-		pet_name,
-		game_manager.highest_unlocked_level,
-	]
-	hub_preview_note.text = "Survival is playable now. Other long-term systems are represented with simple readable UI."
+	_hub_summary_panel.refresh(_currency)
 
 func _refresh_inventory_summary(_inventory: Dictionary = {}) -> void:
-	var scrap_count := int(game_manager.inventory.get("scrap", 0))
-	inventory_description_label.text = "Coins: %d\nScrap: %d\nEnemies can drop scrap during runs. Equipment depth stays intentionally light." % [
-		game_manager.soft_currency,
-		scrap_count,
-	]
+	_inventory_panel.refresh(_inventory)
 
 func _on_play_pressed() -> void:
 	_show_screen(SCREEN_MODE_SELECT)
@@ -288,11 +271,10 @@ func _on_hero_continue_pressed() -> void:
 	_show_screen(SCREEN_EQUIPMENT_SELECT)
 
 func _on_weapon_slot_pressed() -> void:
-	var weapon_ids := _get_unlocked_weapon_ids()
-	if weapon_ids.is_empty():
+	var next_weapon_id: String = _equipment_panel.cycle_weapon(_selected_weapon_id)
+	if next_weapon_id == _selected_weapon_id:
 		return
-	_weapon_cycle_index = (_weapon_cycle_index + 1) % weapon_ids.size()
-	_selected_weapon_id = str(weapon_ids[_weapon_cycle_index])
+	_selected_weapon_id = next_weapon_id
 	game_manager.set_selected_loadout(_selected_hero_id, _selected_weapon_id, _selected_pet_id)
 	_refresh_equipment_summary()
 	_refresh_hub_summary(game_manager.soft_currency)
@@ -318,25 +300,74 @@ func _on_wisp_pressed() -> void:
 func _on_placeholder_closed() -> void:
 	screen_root.mouse_filter = Control.MOUSE_FILTER_PASS
 
-func _get_select_button_text(item_id: String, selected_id: String, unlocked: bool) -> String:
-	if selected_id == item_id:
-		return "Selected"
-	if not unlocked:
-		return "Locked"
-	return "Select"
+func _apply_responsive_layout() -> void:
+	var viewport_size := get_viewport_rect().size
+	var is_narrow := viewport_size.x <= MOBILE_WIDTH_THRESHOLD
+	var is_compact := is_narrow or viewport_size.y <= COMPACT_HEIGHT_THRESHOLD
+	var margin := MOBILE_MARGIN if is_compact else DESKTOP_MARGIN
 
-func _get_unlocked_weapon_ids() -> Array:
-	var unlocked_weapon_ids := []
-	for weapon_id in game_manager.get_weapon_ids():
-		if game_manager.is_weapon_unlocked(str(weapon_id)):
-			unlocked_weapon_ids.append(weapon_id)
-	return unlocked_weapon_ids
+	for layout_path in [
+		"ScreenRoot/MainMenuScreen/Layout",
+		"ScreenRoot/ModeSelectScreen/Layout",
+		"ScreenRoot/HeroSelectScreen/Layout",
+		"ScreenRoot/EquipmentSelectScreen/Layout",
+		"ScreenRoot/PetSelectScreen/Layout",
+		"ScreenRoot/InventoryScreen/Layout",
+	]:
+		_set_margin(layout_path, margin)
 
-func _format_weapon_unlocks() -> String:
-	var lines := PackedStringArray()
-	lines.append("Weapons")
-	for weapon_id in game_manager.get_weapon_ids():
-		var weapon_definition := game_manager.get_weapon_definition(str(weapon_id))
-		var status := "Unlocked" if game_manager.is_weapon_unlocked(str(weapon_id)) else "Locked"
-		lines.append("%s: %s" % [game_manager.get_display_name(weapon_definition, str(weapon_id)), status])
-	return "\n".join(lines)
+	_set_grid_columns("ScreenRoot/MainMenuScreen/Layout/Root/Footer", 1 if is_narrow else 2)
+	_set_grid_columns("ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards", 1 if is_narrow else 3)
+	_set_grid_columns("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns", 1 if is_narrow else 2)
+	_set_grid_columns("ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards", 1 if is_narrow else 3)
+	_set_grid_columns("ScreenRoot/InventoryScreen/Layout/Root/Content", 1 if is_narrow else 2)
+
+	for grid_path in [
+		"ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Weapons/Grid",
+		"ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Items/Grid",
+		"ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Pets/Grid",
+		"ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Materials/Grid",
+	]:
+		_set_grid_columns(grid_path, 1 if is_narrow else 2)
+
+	var portrait_height := 96.0 if is_compact else 180.0
+	for portrait_path in [
+		"ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/KnightCard/Margin/VBox/Portrait",
+		"ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/RogueCard/Margin/VBox/Portrait",
+		"ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/MageCard/Margin/VBox/Portrait",
+	]:
+		_set_minimum_size(portrait_path, Vector2(0.0, portrait_height))
+
+	_set_minimum_size("ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel", Vector2(0.0 if is_narrow else 280.0, 0.0))
+	_update_touch_targets(screen_root, is_compact)
+
+func _set_grid_columns(path: String, columns: int) -> void:
+	var grid := get_node_or_null(path) as GridContainer
+	if grid == null:
+		return
+	grid.columns = max(columns, 1)
+
+func _set_margin(path: String, margin: int) -> void:
+	var margin_container := get_node_or_null(path) as MarginContainer
+	if margin_container == null:
+		return
+	margin_container.add_theme_constant_override("margin_left", margin)
+	margin_container.add_theme_constant_override("margin_top", margin)
+	margin_container.add_theme_constant_override("margin_right", margin)
+	margin_container.add_theme_constant_override("margin_bottom", margin)
+
+func _set_minimum_size(path: String, minimum_size: Vector2) -> void:
+	var control := get_node_or_null(path) as Control
+	if control == null:
+		return
+	control.custom_minimum_size = minimum_size
+
+func _update_touch_targets(root: Node, is_compact: bool) -> void:
+	for child in root.get_children():
+		if child is Button:
+			var button := child as Button
+			button.custom_minimum_size = Vector2(0.0 if is_compact else button.custom_minimum_size.x, max(button.custom_minimum_size.y, 52.0))
+		elif child is CheckButton:
+			var check_button := child as CheckButton
+			check_button.custom_minimum_size = Vector2(0.0 if is_compact else check_button.custom_minimum_size.x, max(check_button.custom_minimum_size.y, 52.0))
+		_update_touch_targets(child, is_compact)

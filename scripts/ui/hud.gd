@@ -7,7 +7,11 @@ signal main_menu_requested
 signal upgrade_selected(upgrade_id: StringName)
 
 const XP_BAR_TARGET = 10
+const MOBILE_WIDTH_THRESHOLD = 700.0
+const MOBILE_MARGIN = 12.0
 
+@onready var hud_root: Control = $HUDRoot
+@onready var safe_margin: MarginContainer = $HUDRoot/SafeMargin
 @onready var pause_button: Button = $HUDRoot/SafeMargin/Root/TopBar/PauseButton
 @onready var debug_upgrade_button: Button = $HUDRoot/SafeMargin/Root/TopBar/DebugUpgradeButton
 @onready var debug_game_over_button: Button = $HUDRoot/SafeMargin/Root/TopBar/DebugGameOverButton
@@ -23,6 +27,7 @@ const XP_BAR_TARGET = 10
 @onready var hp_label: Label = $HUDRoot/SafeMargin/Root/StatusPanel/Margin/Content/Bars/HPRow/HPLabel
 @onready var xp_bar: ProgressBar = $HUDRoot/SafeMargin/Root/StatusPanel/Margin/Content/Bars/XPRow/XPBar
 @onready var xp_label: Label = $HUDRoot/SafeMargin/Root/StatusPanel/Margin/Content/Bars/XPRow/XPLabel
+@onready var mission_panel: PanelContainer = $HUDRoot/MissionPanel
 
 @onready var upgrade_panel: PanelContainer = $HUDRoot/UpgradePanel
 @onready var upgrade_button_1: Button = $HUDRoot/UpgradePanel/MarginContainer/VBoxContainer/UpgradeButtons/UpgradeButton1
@@ -55,10 +60,12 @@ func _ready() -> void:
 	upgrade_button_1.pressed.connect(_on_upgrade_button_1_pressed)
 	upgrade_button_2.pressed.connect(_on_upgrade_button_2_pressed)
 	upgrade_button_3.pressed.connect(_on_upgrade_button_3_pressed)
+	get_viewport().size_changed.connect(_apply_responsive_layout)
 	game_over_panel.visible = false
 	result_panel.visible = false
 	upgrade_panel.visible = false
 	boss_panel.visible = false
+	_apply_responsive_layout()
 
 	if game_manager != null:
 		game_manager.score_changed.connect(_on_score_changed)
@@ -224,3 +231,44 @@ func _format_time(total_seconds: float) -> String:
 	var minutes := int(seconds / 60)
 	var remaining_seconds := seconds % 60
 	return "%02d:%02d" % [minutes, remaining_seconds]
+
+func _apply_responsive_layout() -> void:
+	var viewport_size := get_viewport().get_visible_rect().size
+	var is_narrow := viewport_size.x <= MOBILE_WIDTH_THRESHOLD
+	var margin := MOBILE_MARGIN if is_narrow else 18.0
+
+	_set_margin(safe_margin, int(margin), 10, int(margin), 10)
+	_fit_bottom_left_panel(mission_panel, 328.0, 80.0, margin)
+	_fit_center_panel(upgrade_panel, 540.0, 340.0, margin)
+	_fit_center_panel(game_over_panel, 520.0, 360.0, margin)
+	_fit_center_panel(result_panel, 520.0, 320.0, margin)
+	_update_touch_targets(hud_root, is_narrow)
+
+func _fit_center_panel(panel: Control, desktop_width: float, desktop_height: float, margin: float) -> void:
+	var viewport_size := get_viewport().get_visible_rect().size
+	var panel_width: float = min(desktop_width, max(viewport_size.x - margin * 2.0, 240.0))
+	var panel_height: float = min(desktop_height, max(viewport_size.y - margin * 2.0, 260.0))
+	panel.offset_left = -panel_width * 0.5
+	panel.offset_right = panel_width * 0.5
+	panel.offset_top = -panel_height * 0.5
+	panel.offset_bottom = panel_height * 0.5
+
+func _fit_bottom_left_panel(panel: Control, desktop_width: float, desktop_height: float, margin: float) -> void:
+	var viewport_size := get_viewport().get_visible_rect().size
+	panel.offset_left = margin
+	panel.offset_right = min(desktop_width + margin, viewport_size.x - margin)
+	panel.offset_top = -desktop_height - margin
+	panel.offset_bottom = -margin
+
+func _set_margin(margin_container: MarginContainer, left: int, top: int, right: int, bottom: int) -> void:
+	margin_container.add_theme_constant_override("margin_left", left)
+	margin_container.add_theme_constant_override("margin_top", top)
+	margin_container.add_theme_constant_override("margin_right", right)
+	margin_container.add_theme_constant_override("margin_bottom", bottom)
+
+func _update_touch_targets(root: Node, is_narrow: bool) -> void:
+	for child in root.get_children():
+		if child is Button:
+			var button := child as Button
+			button.custom_minimum_size = Vector2(0.0 if is_narrow else button.custom_minimum_size.x, max(button.custom_minimum_size.y, 52.0))
+		_update_touch_targets(child, is_narrow)

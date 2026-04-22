@@ -1,87 +1,84 @@
-# 🗺️ CONTENT ROADMAP
+# Content Roadmap
 
-## 🧟 Zombie Survival (2.5D)
+## Purpose
 
----
+Define how game content should be expanded over time while keeping the current implementation honest.
 
-# 🎯 1. Purpose
+This roadmap distinguishes:
 
-Define how game content will be added over time:
+* implemented now
+* visible placeholder UI
+* planned later content
 
-* heroes
-* weapons
-* pets
-* enemies
-* rooms
-* missions
+## Current Implementation Snapshot
 
-This roadmap ensures:
+### Implemented Now
 
-* steady progression
-* controlled scope
-* consistent player experience
+* Survival flow is playable.
+* Hero, weapon, pet, upgrade, mission, and permanent upgrade content lives in `/data/*.json`.
+* `GameData.gd` loads and validates JSON content.
+* Fresh saves unlock only starter content:
 
----
+  * `hero_knight`
+  * `weapon_basic`
+  * `pet_drone`
 
-# 🧠 2. Core Philosophy
+* Locked heroes, weapons, and pets remain visible in UI.
+* Auto-fire, weapon range, enemy chase, XP, level-up upgrades, missions, boss wave support, game over, and result flow exist.
 
-* Start small, expand gradually
-* Each addition must improve gameplay
-* Avoid content explosion
-* Prioritize meaningful variation
+### Placeholder In UI
 
----
+* Armor slot
+* Accessory slot
+* Deep inventory behavior
+* Additional modes beyond Survival
+* Shop-style unlock economy
 
-# ⚠️ 3. Rule
+### Planned Later
 
-> Do not add new content types until existing ones feel good.
+* More unlock paths
+* More enemy behaviors
+* More bosses
+* Deeper inventory and equipment effects
+* Larger content batches
 
----
+Do not describe placeholder UI as playable content until gameplay logic exists.
 
-# 🧩 4. Content Categories
+## Core Philosophy
 
-This roadmap covers:
+* Start small, expand gradually.
+* Each addition must improve gameplay.
+* Avoid content explosion.
+* Prioritize meaningful variation.
+* Do not add new content types until existing ones feel good.
 
-* Heroes
-* Weapons
-* Pets
-* Enemies
-* Bosses
-* Rooms
-* Missions
+## Phase Overview
 
----
+### Phase 1 - MVP Content
 
-# 🚀 5. Phase Overview
+Minimal playable survival content:
 
-## Phase 1 — MVP Content
+* starter hero unlocked: `hero_knight`
+* starter weapon unlocked: `weapon_basic`
+* starter pet unlocked: `pet_drone`
+* basic enemy pressure
+* boss wave support
+* bounded repeated map
+* simple missions
 
-Minimal but complete gameplay:
+### Phase 2 - Core Expansion
 
-* 1 hero
-* 1 weapon
-* 1 enemy type
-* 1 boss
-* 1 room
-* 1–2 missions
+Add meaningful variety without making placeholder UI look fully playable:
 
----
+* unlock paths for existing locked heroes
+* unlock paths for existing locked weapons
+* unlock paths for existing locked pets
+* 2-3 enemy types with clear behavior differences
+* 1-2 boss variations
+* 3-5 missions
+* first real equipment/inventory effects only if the core loop is stable
 
-## Phase 2 — Core Expansion
-
-Add meaningful variety:
-
-* 3 heroes
-* 3 weapons
-* 2–3 enemy types
-* 1–2 bosses
-* 2–3 rooms
-* 3–5 missions
-* 1–2 pets
-
----
-
-## Phase 3 — Depth Expansion
+### Phase 3 - Depth Expansion
 
 Enhance replayability:
 
@@ -89,13 +86,11 @@ Enhance replayability:
 * 5+ weapons
 * 4+ enemy types
 * 3+ bosses
-* 4–6 rooms
-* 6–10 missions
-* 3–5 pets
+* 4-6 room/map variations
+* 6-10 missions
+* 3-5 pets
 
----
-
-## Phase 4 — Content Scaling
+### Phase 4 - Content Scaling
 
 Expand content volume:
 
@@ -103,298 +98,170 @@ Expand content volume:
 * themed content packs
 * challenge modes
 
----
+## Hero Roadmap
 
-# 🧍 6. Hero Roadmap
+### Phase 1
 
-## Phase 1
+* `hero_knight` is the only fresh-save unlocked hero.
+* Other hero entries may be visible but should remain locked until progression supports them.
 
-* Balanced Hero
+### Phase 2
 
----
+* Add unlock paths for current locked heroes.
+* Add one more hero only after hero selection and save validation remain stable.
 
-## Phase 2
+### Phase 3
 
-* Fast Hero
-* Power Hero
+* Specialist hero
+* Tank hero
 
----
+Design rule: each hero must feel different and be understandable in under 5 seconds.
 
-## Phase 3
+## Weapon Roadmap
 
-* Specialist Hero (e.g. high fire rate)
-* Tank Hero
+### Phase 1
 
----
+* `weapon_basic` is the only fresh-save unlocked weapon.
+* Other weapon entries may exist in data/UI but should remain locked until progression supports them.
 
-## Design Rule
+### Phase 2
 
-Each hero must:
+* Add unlock paths for current locked weapons.
+* Tune spread, rapid, and heavy style weapons after starter combat feels stable.
 
-* feel different
-* be understandable in <5 seconds
+### Phase 3
 
----
+* Piercing weapon
+* Area damage weapon
+* More distinct weapon behavior
 
-# 🔫 7. Weapon Roadmap
+Design rule: each weapon must change gameplay behavior, not just increase numbers.
 
-## Phase 1
+## Pet Roadmap
 
-* Basic Gun
+### Phase 1
 
----
+* `pet_drone` is unlocked by default as the safe starter pet option.
+* Other pets may remain visible as locked content.
 
-## Phase 2
+### Phase 2
 
-* Spread Shot
-* Rapid Gun
+* Add unlock paths for additional pets.
+* Expand pet behavior only after basic combat readability is stable.
 
----
+### Phase 3
 
-## Phase 3
+* Collector pet
+* Hybrid pet
 
-* Heavy Weapon
-* Piercing Weapon
-* Area Damage Weapon
+Design rule: each pet must provide a visible benefit without complex interaction.
 
----
+## Enemy Roadmap
 
-## Design Rule
+### Phase 1
 
-Each weapon must:
+* Basic zombie pressure.
+* Simple enemy variants and boss support may exist in code, but deeper enemy content should stay lightweight.
 
-* change gameplay behavior
-* not just increase numbers
+### Phase 2
 
----
+* Fast zombie
+* Tank zombie
 
-# 🐾 8. Pet Roadmap
+### Phase 3
 
-## Phase 2
+* Ranged enemy
+* Special ability enemy
 
-* Attack Pet
-* Support Pet
+Design rule: enemies must change player behavior and create pressure or strategy.
 
----
+## Boss Roadmap
 
-## Phase 3
+### Phase 1
 
-* Collector Pet
-* Hybrid Pet
+* Basic boss wave support.
 
----
+### Phase 2
 
-## Design Rule
-
-Each pet must:
-
-* provide visible benefit
-* not require complex interaction
-
----
-
-# 🧟 9. Enemy Roadmap
-
-## Phase 1
-
-* Basic Zombie
-
----
-
-## Phase 2
-
-* Fast Zombie
-* Tank Zombie
-
----
-
-## Phase 3
-
-* Ranged Enemy
-* Special Ability Enemy
-
----
-
-## Design Rule
-
-Enemies must:
-
-* change player behavior
-* create pressure or strategy
-
----
-
-# 👑 10. Boss Roadmap
-
-## Phase 1
-
-* 1 simple boss
-
----
-
-## Phase 2
-
-* 1–2 variations
+* 1-2 variations
 * slightly different behaviors
 
----
-
-## Phase 3
+### Phase 3
 
 * more distinct bosses
-* unique mechanics (still simple)
+* unique mechanics that remain simple
 
----
+Design rule: bosses must feel like milestones without requiring complex AI.
 
-## Design Rule
+## Map And Room Roadmap
 
-Bosses must:
+### Phase 1
 
-* feel like milestones
-* not require complex AI
+* Large bounded repeated map.
 
----
+### Phase 2
 
-# 🗺️ 11. Room Roadmap
+* 2-3 simple area variations.
 
-## Phase 1
+### Phase 3
 
-* 1 room
+* 4-6 themed area variations.
 
----
+Design rule: maps should change spatial gameplay while staying lightweight.
 
-## Phase 2
+## Mission Roadmap
 
-* 2–3 rooms
-* simple variations
+### Phase 1
 
----
+* simple kill mission
+* simple XP mission
+* simple wave mission
 
-## Phase 3
-
-* 4–6 rooms
-* themed areas
-
----
-
-## Design Rule
-
-Rooms must:
-
-* change spatial gameplay
-* remain lightweight
-
----
-
-# 🎯 12. Mission Roadmap
-
-## Phase 1
-
-* kill mission
-* survival mission
-
----
-
-## Phase 2
+### Phase 2
 
 * boss mission
 * mixed missions
 
----
-
-## Phase 3
+### Phase 3
 
 * multi-condition missions
 * meta missions
 
----
+Design rule: missions must be clear, short, and immediately understandable.
 
-## Design Rule
+## Content Scaling Strategy
 
-Missions must:
-
-* be clear
-* be short
-* reward immediately
-
----
-
-# 📈 13. Content Scaling Strategy
-
-## Add content when:
+Add content when:
 
 * current content feels repetitive
 * player has mastered current systems
 * gameplay needs variety
 
----
-
-## Do NOT add content when:
+Do not add content when:
 
 * bugs exist
 * performance issues exist
 * systems are unstable
 
----
-
-# ⚖️ 14. Balance Strategy
-
-## Principles
-
-* small incremental changes
-* avoid extreme stat jumps
-* test frequently
-
----
-
-## Goal
-
-* maintain challenge curve
-* keep progression satisfying
-
----
-
-# 📱 15. Mobile Consideration
+## Mobile Consideration
 
 * limit simultaneous entities
 * avoid visual clutter
-* ensure readability
+* keep UI readable in portrait
+* keep touch targets large enough
 
----
+## Codex Instructions
 
-# 🤖 16. Codex Instructions
-
-* add content using existing schema
+* add content using the existing schema
+* place supported content definitions in `/data/*.json`
+* keep `GameData.gd` validation assumptions in sync with new fields
 * follow naming conventions
 * keep balance reasonable
 * do not introduce new systems when adding content
 * keep additions small and testable
+* do not present locked or placeholder content as already playable
 
----
-
-# 📦 17. Content Batch Strategy
-
-Add content in small batches:
-
-Example:
-
-```text id="cr001"
-Batch 1:
-- 1 hero
-- 1 weapon
-
-Batch 2:
-- 1 enemy
-- 1 mission
-
-Batch 3:
-- 1 pet
-- 1 room
-```
-
----
-
-# 🎯 18. Success Criteria
+## Success Criteria
 
 Content roadmap is working when:
 
@@ -403,10 +270,6 @@ Content roadmap is working when:
 * player always has new goals
 * development remains controlled
 
----
+## Final Principle
 
-# 🧠 Final Principle
-
-> Add content to improve gameplay, not just to increase quantity.
-
----
+Add content to improve gameplay, not just to increase quantity.

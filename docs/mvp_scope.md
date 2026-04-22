@@ -197,7 +197,7 @@ Do NOT implement:
 Always choose:
 
 * simple logic over flexible systems
-* hardcoded values over config systems (for MVP)
+* simple JSON content data over complex config systems
 * one system over many variations
 
 ---

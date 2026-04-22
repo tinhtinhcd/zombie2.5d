@@ -89,9 +89,10 @@ autowrap_mode = 3
 custom_minimum_size = Vector2(0, 12)
 layout_mode = 2
 
-[node name="Footer" type="HBoxContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root"]
+[node name="Footer" type="GridContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root"]
 layout_mode = 2
 size_flags_vertical = 3
+columns = 2
 theme_override_constants/separation = 24
 
 [node name="PrimaryActions" type="VBoxContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/Footer"]
@@ -266,8 +267,11 @@ layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 16
 
-[node name="HeroCards" type="HBoxContainer" parent="ScreenRoot/HeroSelectScreen/Layout/Root/Content"]
+[node name="HeroCards" type="GridContainer" parent="ScreenRoot/HeroSelectScreen/Layout/Root/Content"]
 layout_mode = 2
+columns = 3
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 16
 theme_override_constants/separation = 16
 
 [node name="KnightCard" type="PanelContainer" parent="ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards"]
@@ -463,8 +467,11 @@ text = "Weapon is the only slot that will matter in MVP. Armor and accessory sta
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="Columns" type="HBoxContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content"]
+[node name="Columns" type="GridContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content"]
 layout_mode = 2
+columns = 2
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 16
 theme_override_constants/separation = 16
 
 [node name="LeftColumn" type="VBoxContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns"]
@@ -636,8 +643,11 @@ layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 16
 
-[node name="PetCards" type="HBoxContainer" parent="ScreenRoot/PetSelectScreen/Layout/Root/Content"]
+[node name="PetCards" type="GridContainer" parent="ScreenRoot/PetSelectScreen/Layout/Root/Content"]
 layout_mode = 2
+columns = 3
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 16
 theme_override_constants/separation = 16
 
 [node name="DroneCard" type="PanelContainer" parent="ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards"]
@@ -807,9 +817,12 @@ layout_mode = 2
 autowrap_mode = 3
 text = "Mock data only for now. Tabs exist to establish the future structure of the product."
 
-[node name="Content" type="HBoxContainer" parent="ScreenRoot/InventoryScreen/Layout/Root"]
+[node name="Content" type="GridContainer" parent="ScreenRoot/InventoryScreen/Layout/Root"]
 layout_mode = 2
 size_flags_vertical = 3
+columns = 2
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 16
 theme_override_constants/separation = 16
 
 [node name="TabContainer" type="TabContainer" parent="ScreenRoot/InventoryScreen/Layout/Root/Content"]

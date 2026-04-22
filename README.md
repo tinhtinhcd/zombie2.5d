@@ -1,240 +1,141 @@
-# 🧟 Zombie Survival (2.5D, AI-Driven)
+# Zombie Survival 2.5D
 
-A 2.5D zombie survival game built with a **UI-first approach** and **AI-assisted development (Codex)**.
+A Godot 4 zombie survival prototype built with a UI-first product shell and incremental gameplay implementation.
 
-This project focuses on:
+The project aims to keep the full product flow visible early while implementing gameplay systems in small, testable steps.
 
-* Fast gameplay iteration
-* Clear product structure from the beginning
-* Minimal manual coding effort
-
----
-
-# 🎯 Project Vision
-
-Create a zombie survival game that feels complete from the start:
-
-> **Full product UI + MVP gameplay + iterative expansion**
-
-The goal is not to build everything at once, but to:
-
-* show the full experience early
-* implement systems incrementally
-
----
-
-# 🧠 Development Philosophy
-
-## Roles
-
-### 👤 Human (You)
-
-* Game Designer
-* System Designer
-* Playtester
-* Balancer
-
-### 🤖 AI (Codex)
-
-* Code implementation
-* System integration
-* Iterative updates
-
----
-
-## Core Principles
-
-* UI must be **complete from the beginning**
-* Gameplay is built **in layers (MVP → expansion)**
-* Unfinished systems must remain **visible in the UI**
-* Use **placeholder states instead of hiding features**
-* Prefer **simple, testable systems**
-
----
-
-# 🧊 What is 2.5D in This Project?
-
-This game uses:
-
-* 3D world (characters, environment)
-* Fixed camera (top-down / angled)
-* 2D-like gameplay logic
-
-### Key Rules:
-
-* Movement only on **X/Z plane**
-* No complex camera system
-* No physics-heavy gameplay
-
----
-
-# 🎮 Core Gameplay Loop
+## Current Loop
 
 ```text
-Move → Auto Shoot → Kill Zombies → Gain XP → Level Up → Upgrade → Repeat
+Move -> Auto Shoot -> Kill Zombies -> Gain XP -> Level Up -> Choose Upgrade -> Repeat
 ```
 
----
-
-# 🧩 Product Structure (Full UI Flow)
+## Product Flow
 
 ```text
 Main Menu
-→ Play
-→ Mode Select
-→ Hero Select
-→ Equipment Select
-→ Pet Select
-→ Start Game
-→ Gameplay
-→ Pause
-→ Upgrade Selection
-→ Game Over
-→ Result Screen
-→ Back to Main Menu
+-> Mode Select
+-> Hero Select
+-> Equipment Select
+-> Pet Select
+-> Gameplay
+-> Pause / Upgrade Selection
+-> Game Over
+-> Result Screen
+-> Main Menu
 ```
 
----
+Some screens include locked or placeholder content by design. The UI should show the intended product structure without pretending unfinished systems are fully playable.
 
-# 🧱 Systems Overview
+## Current Architecture
 
-## MVP Systems (Implemented First)
+Runtime and content data are separated:
 
-* Player movement
-* Auto shooting
-* Enemy spawn & chase
-* Damage system
-* XP & leveling
-* Game over
+* `GameManager.gd` manages runtime/session state, gameplay progression, selected loadout, mission progress, and upgrade application.
+* `GameData.gd` loads and validates content definitions from `/data/*.json`.
+* `SaveManager.gd` owns persistence, fresh-save defaults, merge behavior, and selected loadout validation.
 
----
+Content definitions are no longer hardcoded as large dictionaries inside `GameManager.gd`.
 
-## Full Systems (UI visible, logic may be placeholder)
+## Data Layer
 
-* Hero system
-* Weapon system
-* Equipment system
-* Pet system
-* Inventory
-* Loot system
-* Boss system
-* Meta progression
-
----
-
-# 🧩 UI Strategy
-
-All systems must be visible in the UI from the beginning.
-
-If a system is not implemented:
-
-* show UI normally
-* disable interaction OR
-* show "Coming Soon" OR
-* use mock data
-
-> ❗ Never remove UI for unfinished features
-
----
-
-# 🏗️ Project Structure
+Content lives in simple JSON files:
 
 ```text
-/scenes
-  /ui
-  /game
-
-/scripts
-  /ui
-  /game
-  /autoload
-
-/docs
-/ai_tasks
-/assets
+/data
+  heroes.json
+  weapons.json
+  pets.json
+  upgrades.json
+  missions.json
+  permanent_upgrades.json
 ```
 
----
+`scripts/data/GameData.gd` loads these files once, validates their shape, fills safe defaults where possible, skips invalid upgrade entries, and injects required fallback content when needed.
 
-# 🎨 UI & Visual Strategy
+Required fallback IDs:
 
-## UI System
+* `hero_knight`
+* `weapon_basic`
+* `pet_drone`
 
-* Godot Control nodes
-* Shared Theme
-* Mobile-friendly layout
+If a JSON file is missing, malformed, empty, or has the wrong top-level type, `GameData.gd` falls back to built-in safe data and logs warnings such as:
 
-## Assets
+```text
+GameData warning: weapons.json entry "weapon_basic" invalid fire_rate; using 0.5.
+```
 
-* Use consistent 3D asset style (low poly recommended)
-* Use a single UI asset pack
-* Avoid mixing multiple visual styles
+## Progression Defaults
 
----
+A fresh save starts with minimal starter content:
 
-# 🤖 AI Development Rules
+* unlocked heroes: `["hero_knight"]`
+* unlocked weapons: `["weapon_basic"]`
+* unlocked pets: `["pet_drone"]`
 
-Codex must follow:
+Existing saves are preserved. Loading a save merges with defaults, keeps already-unlocked content, and validates the selected loadout. If a selected hero, weapon, or pet is missing from its unlocked list, `SaveManager.gd` falls back to the starter IDs above.
 
-* Modify only necessary files
-* Do not remove UI screens
-* Use placeholders for unfinished systems
-* Keep logic simple
-* Follow existing structure and naming
-* Avoid overengineering
+## Implemented Now
 
----
+* Mobile-oriented UI shell
+* Hero, weapon, and pet selection with locked states
+* Data-driven hero, weapon, pet, upgrade, mission, and permanent upgrade definitions
+* Save/load progression defaults
+* Player movement on the X/Z plane
+* Fixed camera
+* Auto shooting with weapon range
+* Enemy spawning, chasing, recycling, contact damage, and death
+* XP, level-up upgrade selection, missions, boss wave support, game over, and result flow
 
-# 🚀 Development Phases
+## Placeholder Or Planned
 
-## Phase 1 — UI Skeleton
+* Deep inventory and equipment logic
+* Armor and accessory gameplay
+* Full unlock economy/shop
+* Additional modes beyond Survival
+* Larger content batches
 
-* Build all UI screens
-* Connect navigation
-* Add placeholders
+## Project Structure
 
-## Phase 2 — MVP Gameplay
+```text
+/data                 JSON content definitions
+/scenes               Godot scenes
+  /core
+  /effects
+  /enemy
+  /entities
+  /levels
+  /player
+  /ui
+/scripts              GDScript logic
+  /autoload
+  /camera
+  /core
+  /data
+  /effects
+  /enemy
+  /entities
+  /levels
+  /player
+  /test
+  /ui
+/docs                 Design docs
+/ai-tasks             Implementation task docs and schema notes
+/assets               KayKit/Kenney assets
+```
 
-* Core survival gameplay
-* Connect gameplay to UI
+## Development Rules
 
-## Phase 3 — System Expansion
+* Keep UI screens visible even when systems are unfinished.
+* Use locked or placeholder states for incomplete features.
+* Keep data readable and compatible with `GameData.gd`.
+* Do not add new schema fields without updating the schema document.
+* Keep gameplay changes small and verify with the smoke test.
 
-* Weapons
-* Heroes
-* Equipment
-* Loot
+## Smoke Test
 
-## Phase 4 — Polish
+Use the Godot console binary available on this machine:
 
-* Effects
-* Animation
-* Sound
-* Mobile optimization
-
----
-
-# ⚠️ Important Notes
-
-* This project prioritizes **completion over perfection**
-* Gameplay comes before visuals
-* Iteration speed is critical
-* Avoid building complex systems too early
-
----
-
-# 🔥 Goal
-
-Ship a playable zombie survival game that:
-
-* Feels complete early
-* Is expandable over time
-* Requires minimal manual coding
-
----
-
-# 🧠 Final Philosophy
-
-> Build the shell first. Fill it later.
-
----
+```powershell
+& "C:\Users\tinht\Downloads\Godot_v4.5.1-stable_win64.exe\Godot_v4.5.1-stable_win64_console.exe" --headless --path "C:\Users\tinht\Godot2_5DScaffold" --script "res://scripts/test/smoke_test.gd"
+```

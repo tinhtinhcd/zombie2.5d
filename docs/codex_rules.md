@@ -53,7 +53,7 @@ Define strict rules for AI (Codex) to ensure:
 * Avoid unnecessary abstraction
 * Avoid generic systems for MVP
 * Avoid dynamic systems unless required
-* Prefer hardcoded values in MVP
+* Prefer simple readable data and direct logic in MVP
 
 ---
 
@@ -102,8 +102,9 @@ Define strict rules for AI (Codex) to ensure:
 
 * Use simple data structures
 * Avoid complex data systems
-* Use mock data for placeholder systems
-* Do not build full data persistence yet
+* Use `/data/*.json` for supported gameplay content
+* Use locked or placeholder states for unfinished systems
+* Keep persistence limited to `SaveManager.gd` progression data
 
 ---
 

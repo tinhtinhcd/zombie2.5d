@@ -21,6 +21,13 @@ SceneRouter="res://scripts/autoload/SceneRouter.gd"
 SaveManager="res://scripts/autoload/SaveManager.gd"
 AudioManager="res://scripts/autoload/AudioManager.gd"
 
+[display]
+
+window/size/viewport_width=390
+window/size/viewport_height=844
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
 [input]
 
 move_left={

@@ -1,642 +1,345 @@
-# 🗂️ DATA SCHEMA
+# Data Schema
 
-## 🧟 Zombie Survival (2.5D, Godot 4)
+## Purpose
 
----
+This document describes the data files currently used by the project. It matches the JSON files in `/data` and the validation rules in `scripts/data/GameData.gd`.
 
-# 🎯 1. Purpose
+The schema is intentionally small. Do not add fields unless the code that reads them is also updated.
 
-Define the data shapes used by the game so that:
+## Data Files
 
-* gameplay data is consistent
-* UI can read data safely
-* Codex can add content without guessing
-* future systems can expand without rewriting basic formats
-
-This schema is intentionally simple.
-
----
-
-# 🧠 2. Core Principles
-
-* Use flat, readable data
-* Prefer explicit fields over clever nesting
-* Keep IDs stable
-* Use booleans for UI states such as `unlocked` and `implemented`
-* Keep MVP-compatible defaults
-
----
-
-# 📁 3. Suggested Files
-
-```text id="ds001"
+```text
 /data
   heroes.json
   weapons.json
   pets.json
   upgrades.json
-  items.json
   missions.json
-  enemies.json
-  rooms.json
-  game_balance.json
+  permanent_upgrades.json
 ```
 
----
+There are no active JSON files for items, enemies, rooms, or global balance yet.
 
-# 🧩 4. Shared Rules
+## Loading And Validation
 
-## ID format
+`GameData.gd` loads all data once and validates it after parsing.
 
-Use lowercase snake_case:
+File-level safety:
 
-```text id="ds002"
+* missing file -> use fallback data and log a warning
+* malformed JSON -> use fallback data and log a warning
+* wrong top-level type -> use fallback data and log a warning
+* empty file data -> use fallback data and log a warning
+
+Required fallback IDs are always available:
+
+* `hero_knight`
+* `weapon_basic`
+* `pet_drone`
+
+Warnings use this style:
+
+```text
+GameData warning: weapons.json entry "weapon_basic" invalid fire_rate; using 0.5.
+```
+
+## ID Rules
+
+Use stable lowercase snake_case IDs.
+
+Examples:
+
+```text
 hero_knight
-weapon_basic_gun
+weapon_basic
 pet_drone
-upgrade_fire_rate_01
-enemy_fast_zombie
-room_west_hall
+projectile_damage
+mission_kills
+perm_max_hp
 ```
 
-## Common state fields
+## Heroes
 
-Use these where relevant:
+File: `/data/heroes.json`
 
-```text id="ds003"
-id
-name
-description
-unlocked
-implemented
-icon
+Top-level type: object keyed by hero ID.
+
+Required fields:
+
+```text
+display_name: string
+max_hp_bonus: int or float
+move_speed_bonus: int or float
+projectile_damage_bonus: int or float
 ```
 
-## Notes
+Example:
 
-* `unlocked` controls player access
-* `implemented` controls whether the feature is real or still placeholder
-* `icon` can be empty for placeholder content
-
----
-
-# 🧍 5. Hero Schema
-
-## Purpose
-
-Defines selectable heroes and their starting identity.
-
-## Fields
-
-```text id="ds004"
-id: string
-name: string
-description: string
-max_hp: int
-move_speed: float
-base_damage: float
-fire_rate_modifier: float
-unique_trait_name: string
-unique_trait_description: string
-unlocked: bool
-implemented: bool
-icon: string
-model_scene: string
-```
-
-## Example
-
-```json id="ds005"
-[
-  {
-    "id": "hero_knight",
-    "name": "Knight",
-    "description": "Balanced frontline survivor.",
-    "max_hp": 120,
-    "move_speed": 5.0,
-    "base_damage": 10.0,
-    "fire_rate_modifier": 1.0,
-    "unique_trait_name": "Steady",
-    "unique_trait_description": "Starts with balanced stats.",
-    "unlocked": true,
-    "implemented": true,
-    "icon": "res://assets/ui/heroes/knight.png",
-    "model_scene": "res://scenes/entities/heroes/Knight.tscn"
+```json
+{
+  "hero_knight": {
+    "display_name": "Knight",
+    "max_hp_bonus": 4,
+    "move_speed_bonus": 0.0,
+    "projectile_damage_bonus": 1
   }
-]
+}
 ```
 
----
+Validation behavior:
 
-# 🔫 6. Weapon Schema
+* missing or invalid `display_name` -> fill safe display name
+* missing or invalid numeric fields -> fill safe numeric defaults
+* missing `hero_knight` -> inject fallback hero
 
-## Purpose
+## Weapons
 
-Defines available weapons and their firing behavior.
+File: `/data/weapons.json`
 
-## Fields
+Top-level type: object keyed by weapon ID.
 
-```text id="ds006"
+Required fields used by gameplay/UI:
+
+```text
 id: string
-name: string
+display_name: string
+damage: int or float
+fire_rate: int or float
+projectile_count: int or float
+spread_angle: int or float
+projectile_speed: int or float
+range: int or float
+```
+
+Additional fields currently present and preserved:
+
+```text
 description: string
 weapon_type: string
-damage: float
-fire_rate: float
-projectile_count: int
-spread_angle: float
-projectile_speed: float
-range: float
 unlocked: bool
 implemented: bool
 icon: string
 projectile_scene: string
 ```
 
-## `weapon_type` examples
+Example:
 
-```text id="ds007"
-basic
-spread
-rapid
-heavy
-```
-
-## Example
-
-```json id="ds008"
-[
-  {
-    "id": "weapon_basic_gun",
-    "name": "Basic Gun",
+```json
+{
+  "weapon_basic": {
+    "id": "weapon_basic",
+    "display_name": "Basic Gun",
     "description": "Reliable starter weapon.",
     "weapon_type": "basic",
-    "damage": 10.0,
-    "fire_rate": 0.45,
+    "damage": 1,
+    "fire_rate": 0.6,
     "projectile_count": 1,
     "spread_angle": 0.0,
-    "projectile_speed": 16.0,
+    "projectile_speed": 14.0,
     "range": 20.0,
     "unlocked": true,
     "implemented": true,
-    "icon": "res://assets/ui/weapons/basic_gun.png",
-    "projectile_scene": "res://scenes/entities/projectiles/Bullet.tscn"
+    "icon": "",
+    "projectile_scene": "res://scenes/effects/projectile.tscn"
   }
-]
+}
 ```
 
----
+Validation behavior:
 
-# 🐾 7. Pet Schema
+* missing or invalid required fields -> fill safe defaults
+* `projectile_count < 1` -> set to `1`
+* `fire_rate <= 0` -> set to `0.5`
+* `range <= 0` -> set to `20.0`
+* missing `weapon_basic` -> inject fallback weapon
 
-## Purpose
+Gameplay notes:
 
-Defines selectable pets and their passive or support behavior.
+* `fire_rate` is the firing interval in seconds.
+* `range` controls both projectile max distance and combat target eligibility.
+* Hero facing uses active weapon range: face nearest enemy inside range; otherwise face movement direction.
 
-## Fields
+## Pets
 
-```text id="ds009"
+File: `/data/pets.json`
+
+Top-level type: object keyed by pet ID.
+
+Required fields:
+
+```text
+display_name: string
+damage: int or float
+attack_interval: int or float
+```
+
+Example:
+
+```json
+{
+  "pet_drone": {
+    "display_name": "Drone",
+    "damage": 1,
+    "attack_interval": 1.2
+  }
+}
+```
+
+Validation behavior:
+
+* missing or invalid required fields -> fill safe defaults
+* `attack_interval <= 0` -> set to `1.0`
+* missing `pet_drone` -> inject fallback pet
+
+## Upgrades
+
+File: `/data/upgrades.json`
+
+Top-level type: array.
+
+Required fields:
+
+```text
 id: string
-name: string
+title: string
 description: string
-pet_type: string
-behavior_type: string
-effect_type: string
-effect_value: float
-cooldown: float
-follow_distance: float
-unlocked: bool
-implemented: bool
-icon: string
-scene: string
 ```
 
-## `behavior_type` examples
+Example:
 
-```text id="ds010"
-attack
-support
-collect
-```
-
-## Example
-
-```json id="ds011"
+```json
 [
   {
-    "id": "pet_drone",
-    "name": "Drone",
-    "description": "Attacks nearby enemies periodically.",
-    "pet_type": "drone",
-    "behavior_type": "attack",
-    "effect_type": "damage",
-    "effect_value": 6.0,
-    "cooldown": 1.2,
-    "follow_distance": 1.5,
-    "unlocked": false,
-    "implemented": false,
-    "icon": "res://assets/ui/pets/drone.png",
-    "scene": "res://scenes/entities/pets/Drone.tscn"
+    "id": "projectile_damage",
+    "title": "Power Shot",
+    "description": "Increase projectile damage by 1."
   }
 ]
 ```
 
----
+Validation behavior:
 
-# 📈 8. Upgrade Schema
+* invalid entry type -> skip entry
+* missing `id`, `title`, or `description` -> skip entry
+* if no valid entries remain -> use fallback upgrades
 
-## Purpose
+Current upgrade IDs are handled by `GameManager.gd`. Do not add new upgrade IDs unless upgrade application logic is also updated.
 
-Defines run-based upgrades shown during level-up.
+## Missions
 
-## Fields
+File: `/data/missions.json`
 
-```text id="ds012"
+Top-level type: array.
+
+Required fields:
+
+```text
 id: string
-name: string
-description: string
-upgrade_type: string
-target_stat: string
-value: float
-max_stacks: int
-implemented: bool
-icon: string
+label: string
+stat: string
+target: int or float
 ```
 
-## `upgrade_type` examples
+Example:
 
-```text id="ds013"
-offense
-mobility
-survival
-utility
-```
-
-## `target_stat` examples
-
-```text id="ds014"
-damage
-fire_rate
-move_speed
-max_hp
-projectile_count
-pickup_range
-```
-
-## Example
-
-```json id="ds015"
+```json
 [
   {
-    "id": "upgrade_damage_01",
-    "name": "Sharpened Ammo",
-    "description": "+15% damage.",
-    "upgrade_type": "offense",
-    "target_stat": "damage",
-    "value": 0.15,
-    "max_stacks": 5,
-    "implemented": true,
-    "icon": "res://assets/ui/upgrades/damage.png"
+    "id": "mission_kills",
+    "label": "Defeat 15 enemies",
+    "stat": "kills",
+    "target": 15
   }
 ]
 ```
 
----
+Validation behavior:
 
-# 🎁 9. Item Schema
+* missing or invalid fields -> fill safe defaults
+* `target <= 0` -> set to `1`
+* if no valid entries remain -> use fallback missions
 
-## Purpose
+Current mission `stat` values used by the game include:
 
-Defines loot items used by inventory and drops.
-
-## Fields
-
-```text id="ds016"
-id: string
-name: string
-description: string
-item_type: string
-effect_type: string
-effect_value: float
-consumable: bool
-equippable: bool
-unlocked: bool
-implemented: bool
-icon: string
-```
-
-## `item_type` examples
-
-```text id="ds017"
-consumable
-equipment
-utility
-```
-
-## Example
-
-```json id="ds018"
-[
-  {
-    "id": "item_small_medkit",
-    "name": "Small Medkit",
-    "description": "Restore a small amount of HP.",
-    "item_type": "consumable",
-    "effect_type": "heal",
-    "effect_value": 20.0,
-    "consumable": true,
-    "equippable": false,
-    "unlocked": true,
-    "implemented": true,
-    "icon": "res://assets/ui/items/medkit_small.png"
-  }
-]
-```
-
----
-
-# 🎯 10. Mission Schema
-
-## Purpose
-
-Defines missions for in-run or meta progression.
-
-## Fields
-
-```text id="ds019"
-id: string
-name: string
-description: string
-mission_type: string
-target_value: int
-reward_type: string
-reward_value: int
-implemented: bool
-```
-
-## `mission_type` examples
-
-```text id="ds020"
-kill
-survive
-boss
-collect
-```
-
-## `reward_type` examples
-
-```text id="ds021"
+```text
+kills
 xp
-currency
-unlock_point
-upgrade
+wave
 ```
 
-## Example
+## Permanent Upgrades
 
-```json id="ds022"
-[
-  {
-    "id": "mission_kill_50",
-    "name": "Zombie Cleaner",
-    "description": "Kill 50 zombies in one run.",
-    "mission_type": "kill",
-    "target_value": 50,
-    "reward_type": "currency",
-    "reward_value": 100,
-    "implemented": true
-  }
-]
-```
+File: `/data/permanent_upgrades.json`
 
----
+Top-level type: object keyed by permanent upgrade ID.
 
-# 🧟 11. Enemy Schema
+Required fields:
 
-## Purpose
-
-Defines enemy variants using data instead of hardcoding each one.
-
-## Fields
-
-```text id="ds023"
-id: string
-name: string
+```text
+title: string
 description: string
-enemy_type: string
-max_hp: float
-move_speed: float
-contact_damage: float
-xp_drop: int
-item_drop_chance: float
-boss: bool
-implemented: bool
-icon: string
-scene: string
+max_rank: int or float
 ```
 
-## `enemy_type` examples
+Example:
 
-```text id="ds024"
-basic
-fast
-tank
-boss
-```
-
-## Example
-
-```json id="ds025"
-[
-  {
-    "id": "enemy_fast_zombie",
-    "name": "Fast Zombie",
-    "description": "Low HP but closes distance quickly.",
-    "enemy_type": "fast",
-    "max_hp": 18.0,
-    "move_speed": 6.2,
-    "contact_damage": 10.0,
-    "xp_drop": 8,
-    "item_drop_chance": 0.08,
-    "boss": false,
-    "implemented": true,
-    "icon": "res://assets/ui/enemies/fast_zombie.png",
-    "scene": "res://scenes/entities/enemies/FastZombie.tscn"
-  }
-]
-```
-
----
-
-# 🗺️ 12. Room Schema
-
-## Purpose
-
-Defines rooms or map areas for room progression.
-
-## Fields
-
-```text id="ds026"
-id: string
-name: string
-description: string
-unlock_type: string
-unlock_value: int
-spawn_profile: string
-implemented: bool
-scene: string
-```
-
-## `unlock_type` examples
-
-```text id="ds027"
-kill_count
-time
-currency
-boss_clear
-```
-
-## Example
-
-```json id="ds028"
-[
-  {
-    "id": "room_west_hall",
-    "name": "West Hall",
-    "description": "A wider room with heavier enemy density.",
-    "unlock_type": "kill_count",
-    "unlock_value": 30,
-    "spawn_profile": "mid_density",
-    "implemented": true,
-    "scene": "res://scenes/game/rooms/WestHall.tscn"
-  }
-]
-```
-
----
-
-# 💾 13. Meta Save Schema
-
-## Purpose
-
-Defines persistent player progress between runs.
-
-## Fields
-
-```text id="ds029"
-currency: int
-selected_hero_id: string
-selected_weapon_id: string
-selected_pet_id: string
-unlocked_heroes: string[]
-unlocked_weapons: string[]
-unlocked_pets: string[]
-completed_missions: string[]
-settings: object
-```
-
-## Example
-
-```json id="ds030"
+```json
 {
-  "currency": 250,
+  "perm_max_hp": {
+    "title": "Vitality",
+    "description": "Permanent +2 max HP per rank.",
+    "max_rank": 5
+  }
+}
+```
+
+Validation behavior:
+
+* missing or invalid fields -> fill safe defaults
+* `max_rank < 1` -> set to `1`
+
+Permanent upgrade effects are applied in `GameManager.gd`. Do not add new permanent upgrade IDs unless application logic supports them.
+
+## Save Data
+
+Save data is owned by `scripts/autoload/SaveManager.gd`.
+
+Current default save shape:
+
+```json
+{
+  "version": 1,
+  "highest_unlocked_level": 1,
+  "permanent_upgrades": {},
+  "soft_currency": 0,
   "selected_hero_id": "hero_knight",
-  "selected_weapon_id": "weapon_basic_gun",
-  "selected_pet_id": "",
-  "unlocked_heroes": ["hero_knight", "hero_runner"],
-  "unlocked_weapons": ["weapon_basic_gun"],
-  "unlocked_pets": [],
-  "completed_missions": ["mission_kill_50"],
-  "settings": {
-    "music_enabled": true,
-    "sound_enabled": true,
-    "vibration_enabled": false
-  }
+  "selected_weapon_id": "weapon_basic",
+  "selected_pet_id": "pet_drone",
+  "unlocked_heroes": ["hero_knight"],
+  "unlocked_weapons": ["weapon_basic"],
+  "unlocked_pets": ["pet_drone"],
+  "inventory": {},
+  "settings": {}
 }
 ```
 
----
+Rules:
 
-# ⚖️ 14. Game Balance Schema
+* fresh saves unlock only starter content
+* existing saved unlock arrays are preserved
+* empty or missing unlock arrays are initialized with starter defaults
+* selected loadout must be unlocked or it falls back to starter IDs
 
-## Purpose
+## Placeholder Rules
 
-Centralize global balancing values.
+Locked or placeholder content may remain visible in UI.
 
-## Fields
+Do not mark a system as playable in docs just because its UI exists. The current UI shell includes placeholders for deeper inventory, armor/accessory gameplay, and future modes.
 
-```text id="ds031"
-player_contact_damage_cooldown: float
-base_xp_to_next_level: int
-xp_growth_per_level: float
-boss_wave_interval: int
-max_active_enemies: int
-item_drop_base_chance: float
-```
+## Codex Rules For Data
 
-## Example
-
-```json id="ds032"
-{
-  "player_contact_damage_cooldown": 0.75,
-  "base_xp_to_next_level": 25,
-  "xp_growth_per_level": 1.2,
-  "boss_wave_interval": 10,
-  "max_active_enemies": 40,
-  "item_drop_base_chance": 0.12
-}
-```
-
----
-
-# 🧭 15. UI Placeholder Rules
-
-For any data entry where a feature is not ready yet:
-
-* keep the entry in data
-* set `implemented: false`
-* allow UI to display it
-* prevent gameplay usage if needed
-
-This supports the UI-first strategy.
-
----
-
-# ⚠️ 16. Validation Rules
-
-Codex should follow these rules when adding data:
-
-* every object must have a stable `id`
-* no duplicate IDs
-* no missing required fields
-* use correct field types
-* do not invent new fields unless the schema is updated
-* if a new field is needed, update this document first
-
----
-
-# 🤖 17. Codex Rules for Data Files
-
-* modify existing data files instead of inventing parallel ones
-* keep field order consistent
-* add new content in the same style as existing entries
-* do not mix placeholder-only objects with fully implemented objects without using `implemented`
-
----
-
-# 🎯 18. Success Criteria
-
-The schema is working well when:
-
-* UI can display all major systems safely
-* gameplay systems can load data without guessing
-* placeholder content can coexist with real content
-* Codex can add heroes, weapons, pets, items, and missions consistently
-
----
-
-# 🧠 Final Principle
-
-> Good data structure makes expansion easier than new code.
-
----
+* edit the existing JSON files instead of creating parallel data files
+* keep field names compatible with this schema
+* keep IDs stable once used in saves
+* avoid changing save format unless explicitly required
+* update this document when code starts reading a new field
