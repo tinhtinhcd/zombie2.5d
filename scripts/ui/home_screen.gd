@@ -17,6 +17,7 @@ const PET_SELECT_PANEL_SCRIPT := preload("res://scripts/ui/home/PetSelectPanel.g
 const INVENTORY_PANEL_SCRIPT := preload("res://scripts/ui/home/InventoryPanel.gd")
 const HOME_UI_MANAGER_SCRIPT := preload("res://scripts/ui/home/HomeUIManager.gd")
 const HOME_STATE_SCRIPT := preload("res://scripts/ui/home/HomeState.gd")
+const HOME_UI_STYLE := preload("res://scripts/ui/home/HomeUIStyle.gd")
 
 @onready var screen_root: Control = $ScreenRoot
 @onready var main_menu_screen: Control = $ScreenRoot/MainMenuScreen
@@ -166,6 +167,7 @@ func _ready() -> void:
 	get_viewport().size_changed.connect(_apply_responsive_layout)
 
 	_install_scroll_containers()
+	_apply_home_visual_style()
 	_apply_responsive_layout()
 	_load_selection_from_manager()
 	_refresh_hero_summary()
@@ -174,6 +176,20 @@ func _ready() -> void:
 	_refresh_hub_summary(game_manager.soft_currency)
 	_refresh_inventory_summary(game_manager.inventory)
 	_show_screen(SCREEN_MAIN_MENU, false)
+
+func _apply_home_visual_style() -> void:
+	HOME_UI_STYLE.apply_tree(screen_root)
+	HOME_UI_STYLE.apply_button_state(play_button, "selected")
+	HOME_UI_STYLE.apply_button_state(inventory_button, "secondary")
+	HOME_UI_STYLE.apply_button_state(settings_button, "secondary")
+	HOME_UI_STYLE.apply_button_state(exit_button, "locked")
+	HOME_UI_STYLE.apply_button_state(mode_back_button, "secondary")
+	HOME_UI_STYLE.apply_button_state(hero_back_button, "secondary")
+	HOME_UI_STYLE.apply_button_state(equipment_back_button, "secondary")
+	HOME_UI_STYLE.apply_button_state(pet_back_button, "secondary")
+	HOME_UI_STYLE.apply_button_state(inventory_back_button, "secondary")
+	HOME_UI_STYLE.apply_button_state(equipment_continue_button, "selected")
+	HOME_UI_STYLE.apply_button_state(pet_start_button, "selected")
 
 func _show_screen(screen_name: String, add_to_history: bool = true) -> void:
 	_home_ui_manager.open_panel(screen_name, add_to_history)

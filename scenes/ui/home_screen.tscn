@@ -82,7 +82,7 @@ text = "Zombie Survival"
 
 [node name="Subtitle" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/Header"]
 layout_mode = 2
-text = "UI-first product shell using KayKit placeholder art and unfinished systems kept visible."
+text = "Prepare your survivor, lock in gear, and push deeper into the outbreak."
 autowrap_mode = 3
 
 [node name="Spacer" type="Control" parent="ScreenRoot/MainMenuScreen/Layout/Root"]
@@ -142,16 +142,16 @@ theme_override_constants/separation = 10
 
 [node name="PreviewTitle" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/Footer/FeaturePreview/PreviewMargin/PreviewContent"]
 layout_mode = 2
-text = "Product Structure"
+text = "Run Briefing"
 
 [node name="PreviewList" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/Footer/FeaturePreview/PreviewMargin/PreviewContent"]
 layout_mode = 2
-text = "Survival Mode\nHero Select\nEquipment Select\nPet Select\nSettings\nResult Screen"
+text = "Survival Mode\nKnight\nBasic Gun\nDrone\nInventory"
 
 [node name="PreviewNote" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/Footer/FeaturePreview/PreviewMargin/PreviewContent"]
 layout_mode = 2
 autowrap_mode = 3
-text = "Unfinished systems stay visible with placeholders instead of being removed from the UI."
+text = "Choose a clean starter loadout before entering the survival run."
 
 [node name="ModeSelectScreen" type="Control" parent="ScreenRoot"]
 visible = false
@@ -189,7 +189,7 @@ text = "Mode Select"
 [node name="Subtitle" type="Label" parent="ScreenRoot/ModeSelectScreen/Layout/Root/Header"]
 layout_mode = 2
 autowrap_mode = 3
-text = "Only Survival is playable in MVP. Future modes remain visible to establish the full product shell."
+text = "Survive waves, collect scrap, and push your highest level."
 
 [node name="Content" type="VBoxContainer" parent="ScreenRoot/ModeSelectScreen/Layout/Root"]
 layout_mode = 2
@@ -260,7 +260,7 @@ text = "Hero Select"
 [node name="Subtitle" type="Label" parent="ScreenRoot/HeroSelectScreen/Layout/Root/Header"]
 layout_mode = 2
 autowrap_mode = 3
-text = "Only one hero is playable now. Locked and Coming Soon heroes remain visible by design."
+text = "Pick the survivor for this run. Locked heroes stay visible for progression."
 
 [node name="Content" type="VBoxContainer" parent="ScreenRoot/HeroSelectScreen/Layout/Root"]
 layout_mode = 2
@@ -303,7 +303,7 @@ text = "Knight"
 [node name="DescriptionLabel" type="Label" parent="ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/KnightCard/Margin/VBox"]
 layout_mode = 2
 autowrap_mode = 3
-text = "Balanced melee survivor."
+text = "Balanced survivor with reliable starter stats."
 
 [node name="StatusLabel" type="Label" parent="ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/KnightCard/Margin/VBox"]
 layout_mode = 2
@@ -343,7 +343,7 @@ text = "Rogue"
 [node name="DescriptionLabel" type="Label" parent="ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/RogueCard/Margin/VBox"]
 layout_mode = 2
 autowrap_mode = 3
-text = "Agile assassin reserved for future unlocks."
+text = "Fast survivor built for later unlock progression."
 
 [node name="StatusLabel" type="Label" parent="ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/RogueCard/Margin/VBox"]
 layout_mode = 2
@@ -383,7 +383,7 @@ text = "Mage"
 [node name="DescriptionLabel" type="Label" parent="ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/MageCard/Margin/VBox"]
 layout_mode = 2
 autowrap_mode = 3
-text = "Glass cannon placeholder for a later milestone."
+text = "High damage survivor planned for a future milestone."
 
 [node name="StatusLabel" type="Label" parent="ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/MageCard/Margin/VBox"]
 layout_mode = 2
@@ -407,7 +407,7 @@ theme_override_constants/margin_bottom = 16
 [node name="StatusLabel" type="Label" parent="ScreenRoot/HeroSelectScreen/Layout/Root/Content/SelectionSummary/SummaryMargin"]
 layout_mode = 2
 autowrap_mode = 3
-text = "Select the available hero to continue."
+text = "Select a hero to continue."
 
 [node name="Footer" type="HBoxContainer" parent="ScreenRoot/HeroSelectScreen/Layout/Root"]
 layout_mode = 2
@@ -461,7 +461,7 @@ text = "Equipment Select"
 [node name="Subtitle" type="Label" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Header"]
 layout_mode = 2
 autowrap_mode = 3
-text = "Weapon is the only slot that will matter in MVP. Armor and accessory stay visible as placeholders."
+text = "Check weapon stats, equip simple gear, and continue to companion selection."
 
 [node name="Content" type="VBoxContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root"]
 layout_mode = 2
@@ -526,7 +526,7 @@ text = "Armor Slot"
 
 [node name="DescriptionLabel" type="Label" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/ArmorSlot/Margin/VBox"]
 layout_mode = 2
-text = "Visible placeholder"
+text = "Empty"
 
 [node name="SlotButton" type="Button" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/ArmorSlot/Margin/VBox"]
 custom_minimum_size = Vector2(0, 46)
@@ -553,7 +553,7 @@ text = "Accessory Slot"
 
 [node name="DescriptionLabel" type="Label" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/AccessorySlot/Margin/VBox"]
 layout_mode = 2
-text = "Visible placeholder"
+text = "Empty"
 
 [node name="SlotButton" type="Button" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/AccessorySlot/Margin/VBox"]
 custom_minimum_size = Vector2(0, 46)
@@ -636,7 +636,7 @@ text = "Pet Select"
 [node name="Subtitle" type="Label" parent="ScreenRoot/PetSelectScreen/Layout/Root/Header"]
 layout_mode = 2
 autowrap_mode = 3
-text = "Pets stay visible but are intentionally not implemented yet. Start Game still works with no pet."
+text = "Choose a companion for light automatic support during the run."
 
 [node name="Content" type="VBoxContainer" parent="ScreenRoot/PetSelectScreen/Layout/Root"]
 layout_mode = 2
@@ -676,12 +676,12 @@ text = "Automatically attacks nearby enemies."
 
 [node name="StatusLabel" type="Label" parent="ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards/DroneCard/Margin/VBox"]
 layout_mode = 2
-text = "Coming Soon"
+text = "Available"
 
 [node name="SelectButton" type="Button" parent="ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards/DroneCard/Margin/VBox"]
 custom_minimum_size = Vector2(0, 46)
 layout_mode = 2
-text = "Coming Soon"
+text = "Select"
 
 [node name="SpriteCard" type="PanelContainer" parent="ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards"]
 layout_mode = 2
@@ -762,7 +762,7 @@ theme_override_constants/margin_bottom = 16
 [node name="StatusLabel" type="Label" parent="ScreenRoot/PetSelectScreen/Layout/Root/Content/SelectionSummary/SummaryMargin"]
 layout_mode = 2
 autowrap_mode = 3
-text = "No pet selected."
+text = "Select a companion or start with the starter drone."
 
 [node name="Footer" type="HBoxContainer" parent="ScreenRoot/PetSelectScreen/Layout/Root"]
 layout_mode = 2
@@ -815,7 +815,7 @@ text = "Inventory"
 [node name="Subtitle" type="Label" parent="ScreenRoot/InventoryScreen/Layout/Root/Header"]
 layout_mode = 2
 autowrap_mode = 3
-text = "Mock data only for now. Tabs exist to establish the future structure of the product."
+text = "Select a matching item for the active equipment slot."
 
 [node name="Content" type="GridContainer" parent="ScreenRoot/InventoryScreen/Layout/Root"]
 layout_mode = 2
@@ -970,7 +970,7 @@ text = "Item Details"
 [node name="DescriptionLabel" type="Label" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin/VBox"]
 layout_mode = 2
 autowrap_mode = 3
-text = "Select mock content later. This panel exists now so the structure never disappears from the product."
+text = "Choose an equipment slot first, then equip a matching item from the list."
 
 [node name="Footer" type="HBoxContainer" parent="ScreenRoot/InventoryScreen/Layout/Root"]
 layout_mode = 2

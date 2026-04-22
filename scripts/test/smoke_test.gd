@@ -158,6 +158,9 @@ func _run() -> void:
 		quit(1)
 		return
 
+	for enemy in enemy_container.get_children():
+		if enemy is Node3D:
+			(enemy as Node3D).global_position = player.global_position + Vector3(0.0, 0.0, -80.0)
 	player.call("_face_direction", Vector3.FORWARD)
 	player.call("_animate_visual", 0.2, Vector3.FORWARD)
 	await process_frame
@@ -169,15 +172,15 @@ func _run() -> void:
 		push_error("Smoke test failed: player visual animation did not move the visual root.")
 		quit(1)
 		return
-	var player_animation := player.get_node_or_null("VisualRoot/Knight/KayKitAnimationPlayer") as AnimationPlayer
+	var player_animation := player.get_node_or_null("VisualRoot/HeroModel/KayKitAnimationPlayer") as AnimationPlayer
 	if player_animation == null or not player_animation.is_playing():
-		push_error("Smoke test failed: player KayKit animation player is not running.")
+		push_error("Smoke test failed: player hero animation player is not running.")
 		quit(1)
 		return
-	player.call("_play_character_animation", "Running_A", 1.25)
-	var player_running_animation := player_animation.get_animation("Running_A")
+	player.call("_play_character_animation", "Jog_Fwd", 1.25)
+	var player_running_animation := player_animation.get_animation("Jog_Fwd")
 	if player_running_animation == null or player_running_animation.loop_mode != Animation.LOOP_LINEAR:
-		push_error("Smoke test failed: player KayKit running animation is not configured to loop.")
+		push_error("Smoke test failed: player UAL1 jog animation is not configured to loop.")
 		quit(1)
 		return
 
@@ -246,8 +249,9 @@ func _run() -> void:
 	enemy_before_recycle.global_position = player.global_position + Vector3(999.0, 0.0, 0.0)
 	if wave_manager != null:
 		wave_manager.call("_recycle_far_enemies")
-	if enemy_before_recycle.global_position.distance_to(player.global_position) > player.weapon_range * 2.5:
-		push_error("Smoke test failed: far enemy was not recycled near the player.")
+	var recycled_distance := enemy_before_recycle.global_position.distance_to(player.global_position)
+	if recycled_distance < 32.0 or recycled_distance > 70.0:
+		push_error("Smoke test failed: far enemy was not recycled into the fixed physical spawn ring.")
 		quit(1)
 		return
 	var enemy_animation := first_enemy.get_node_or_null("VisualRoot/SkeletonMinion/KayKitAnimationPlayer") as AnimationPlayer

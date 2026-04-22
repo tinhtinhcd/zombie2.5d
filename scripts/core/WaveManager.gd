@@ -13,8 +13,8 @@ class_name WaveManager
 @export var speed_bonus_per_wave: float = 0.15
 @export var boss_wave_interval: int = 5
 @export var boss_support_spawn_count: int = 2
-@export var enemy_recycle_distance_multiplier: float = 4.0
-@export var minimum_enemy_recycle_distance: float = 60.0
+@export var enemy_recycle_distance: float = 160.0
+@export var projectile_recycle_safe_distance: float = 28.0
 @export var wave_definitions: Array[Dictionary] = [
     {"spawn_count": 2, "enemy_types": ["normal"]},
     {"spawn_count": 3, "enemy_types": ["normal", "fast"]},
@@ -70,16 +70,14 @@ func _recycle_far_enemies() -> void:
     if _spawner == null or _enemy_container == null or _spawner.player_target == null:
         return
 
-    var recycle_distance := minimum_enemy_recycle_distance
-    if _spawner.player_target is Player:
-        recycle_distance = max(((_spawner.player_target as Player).weapon_range * enemy_recycle_distance_multiplier), minimum_enemy_recycle_distance)
-    var recycle_distance_squared := recycle_distance * recycle_distance
+    var recycle_distance: float = maxf(enemy_recycle_distance, 1.0)
+    var recycle_distance_squared: float = recycle_distance * recycle_distance
 
     for child in _enemy_container.get_children():
         if child is not Node3D:
             continue
         var enemy := child as Node3D
-        if enemy.global_position.distance_squared_to(_spawner.player_target.global_position) > recycle_distance_squared:
+        if enemy.global_position.distance_squared_to(_spawner.player_target.global_position) > recycle_distance_squared and not _is_enemy_near_active_projectile(enemy):
             _spawner.recycle_enemy(enemy)
 
 func start_next_wave() -> void:
@@ -182,6 +180,20 @@ func _get_active_boss_interval() -> int:
     if _active_level_data != null and _active_level_data.boss_wave_interval > 0:
         return _active_level_data.boss_wave_interval
     return boss_wave_interval
+
+func _is_enemy_near_active_projectile(enemy: Node3D) -> bool:
+    if _projectile_container == null:
+        return false
+
+    var safe_distance: float = maxf(projectile_recycle_safe_distance, 0.0)
+    var safe_distance_squared: float = safe_distance * safe_distance
+    for child in _projectile_container.get_children():
+        if child is not Node3D:
+            continue
+        var projectile := child as Node3D
+        if enemy.global_position.distance_squared_to(projectile.global_position) <= safe_distance_squared:
+            return true
+    return false
 
 func _clear_runtime_nodes() -> void:
     if _enemy_container != null:

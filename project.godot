@@ -25,9 +25,12 @@ AudioManager="res://scripts/autoload/AudioManager.gd"
 
 window/size/viewport_width=960
 window/size/viewport_height=540
-window/handheld/orientation=0
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
+
+[filesystem]
+
+import/blender/enabled=false
 
 [input]
 

@@ -3,6 +3,8 @@ class_name EquipmentPanel
 
 signal equip_slot_requested(slot_id: String)
 
+const HOME_UI_STYLE := preload("res://scripts/ui/home/HomeUIStyle.gd")
+
 var _summary_label: Label
 var _weapon_slot_button: Button
 var _armor_slot_button: Button
@@ -60,7 +62,7 @@ func refresh(selected_weapon_id: String) -> void:
 	var equipment_summary := "Armor: Placeholder\nAccessory: Placeholder"
 	if _home_state != null:
 		equipment_summary = _home_state.equipped_items_summary
-	_summary_label.text = "Selected loadout\nWeapon: %s\nDamage: %d\nFire: %.2fs\nProjectiles: %d\nRange: %.1f\n%s\n%s" % [
+	_summary_label.text = "Loadout\nWeapon: %s\nDamage: %d\nFire Rate: %.2fs\nProjectiles: %d\nRange: %.1fm\n\n%s\n\n%s" % [
 		weapon_name,
 		int(weapon_definition.get("damage", weapon_definition.get("projectile_damage", 1))),
 		float(weapon_definition.get("fire_rate", weapon_definition.get("fire_interval", 0.6))),
@@ -71,10 +73,16 @@ func refresh(selected_weapon_id: String) -> void:
 	]
 	if _weapon_slot_button != null:
 		_weapon_slot_button.text = "Equip Weapon"
+		HOME_UI_STYLE.apply_button_state(_weapon_slot_button, "selected" if _has_equipped_item("weapon") else "default")
+		HOME_UI_STYLE.apply_related_card_from_button(_weapon_slot_button, _home_state != null and _home_state.selected_equipment_slot == "weapon")
 	if _armor_slot_button != null:
 		_armor_slot_button.text = "Equip Armor"
+		HOME_UI_STYLE.apply_button_state(_armor_slot_button, "selected" if _has_equipped_item("armor") else "secondary")
+		HOME_UI_STYLE.apply_related_card_from_button(_armor_slot_button, _home_state != null and _home_state.selected_equipment_slot == "armor")
 	if _accessory_slot_button != null:
 		_accessory_slot_button.text = "Equip Accessory"
+		HOME_UI_STYLE.apply_button_state(_accessory_slot_button, "selected" if _has_equipped_item("accessory") else "secondary")
+		HOME_UI_STYLE.apply_related_card_from_button(_accessory_slot_button, _home_state != null and _home_state.selected_equipment_slot == "accessory")
 
 func _connect_slot_button(button: Button, slot_id: String) -> void:
 	if button == null:
@@ -86,7 +94,7 @@ func _on_slot_button_pressed(slot_id: String) -> void:
 
 func _format_weapon_unlocks() -> String:
 	var lines := PackedStringArray()
-	lines.append("Weapons")
+	lines.append("Weapon Unlocks")
 	if _game_manager == null:
 		return "\n".join(lines)
 
@@ -95,3 +103,8 @@ func _format_weapon_unlocks() -> String:
 		var status := "Unlocked" if _game_manager.is_weapon_unlocked(str(weapon_id)) else "Locked"
 		lines.append("%s: %s" % [_game_manager.get_display_name(weapon_definition, str(weapon_id)), status])
 	return "\n".join(lines)
+
+func _has_equipped_item(slot_id: String) -> bool:
+	if _home_state == null:
+		return false
+	return not _home_state.get_equipped_item(slot_id).is_empty()

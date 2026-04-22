@@ -31,12 +31,12 @@ func refresh(_currency: int = 0) -> void:
 	var gear_summary := "Gear: Empty"
 	if _home_state != null:
 		gear_summary = "Gear\n%s" % _home_state.equipped_items_summary
-	_preview_list.text = "Coins: %d\nHero: %s\nWeapon: %s\nWeapon Range: %.1f\nPet: %s\nHighest Level: %d\n%s" % [
-		_game_manager.soft_currency,
+	_preview_list.text = "Current Run\nHero: %s\nWeapon: %s  %.1fm\nPet: %s\n\nProgress\nCoins: %d\nHighest Level: %d\n\n%s" % [
 		hero_name,
 		weapon_name,
 		float(weapon_definition.get("range", 20.0)),
 		pet_name,
+		_game_manager.soft_currency,
 		_game_manager.highest_unlocked_level,
 		gear_summary,
 	]

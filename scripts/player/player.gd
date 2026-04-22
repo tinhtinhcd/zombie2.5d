@@ -28,14 +28,20 @@ signal died
 @export var idle_bob_amount: float = 0.035
 @export var run_bob_amount: float = 0.08
 @export var run_lean_amount: float = 0.12
+@export var shoot_recoil_amount: float = 0.08
+@export var shoot_recoil_roll_amount: float = 0.025
+@export var shoot_recoil_duration: float = 0.16
 @export var movement_animation_scene: PackedScene
+@export var character_root_path: NodePath = NodePath("VisualRoot/Knight")
+@export var idle_animation_name: String = "Walking_A"
+@export var run_animation_name: String = "Running_A"
 
 @onready var collision_shape: CollisionShape3D = $CollisionShape3D
 @onready var mesh_instance: MeshInstance3D = $MeshInstance3D
 @onready var visual_root: Node3D = $VisualRoot
-@onready var character_root: Node3D = $VisualRoot/Knight
 @onready var shoot_point: Marker3D = $ShootPoint
 
+var character_root: Node3D
 var current_hp: int = 0
 var _plane_origin: Vector3 = Vector3.ZERO
 var _plane_normal: Vector3 = Vector3.UP
@@ -47,6 +53,7 @@ var _feedback_material: StandardMaterial3D
 var _feedback_tween: Tween
 var _visual_base_position: Vector3 = Vector3.ZERO
 var _visual_anim_time: float = 0.0
+var _shoot_recoil_timer: float = 0.0
 var _animation_player: AnimationPlayer
 var _current_animation: String = ""
 var current_weapon_id: String = "weapon_basic"
@@ -64,12 +71,14 @@ func _ready() -> void:
     _constrain_to_plane()
     _fire_timer = max(fire_interval, 0.01)
     _visual_base_position = visual_root.position
+    character_root = _resolve_character_root()
     _setup_character_animation_player()
     _setup_feedback_material()
     hp_changed.emit(current_hp)
 
 func _physics_process(delta: float) -> void:
     _damage_cooldown_timer = max(_damage_cooldown_timer - delta, 0.0)
+    _shoot_recoil_timer = max(_shoot_recoil_timer - delta, 0.0)
     if game_manager != null and not game_manager.is_gameplay_active:
         velocity = Vector3.ZERO
         return
@@ -154,6 +163,7 @@ func spawn_projectile() -> void:
     if target_enemy == null:
         return
     _face_direction(target_enemy.global_position - global_position)
+    _trigger_shoot_feedback()
 
     var projectile_container := get_node_or_null(projectile_container_path) as Node3D
     if projectile_container == null:
@@ -275,11 +285,17 @@ func _animate_visual(delta: float, move_direction: Vector3) -> void:
     var bob_amount := run_bob_amount if is_moving else idle_bob_amount
     var bob_speed := 11.0 if is_moving else 3.0
     var bob := sin(_visual_anim_time * bob_speed) * bob_amount
+    var recoil_weight := 0.0
+    if shoot_recoil_duration > 0.0 and _shoot_recoil_timer > 0.0:
+        recoil_weight = sin((_shoot_recoil_timer / shoot_recoil_duration) * PI)
 
     visual_root.position = _visual_base_position + Vector3(0.0, bob, 0.0)
-    visual_root.rotation.x = sin(_visual_anim_time * bob_speed) * (run_lean_amount if is_moving else 0.025)
-    visual_root.rotation.z = cos(_visual_anim_time * bob_speed * 0.5) * (run_lean_amount * 0.35 if is_moving else 0.018)
-    _play_character_animation("Running_A" if is_moving else "Walking_A", 1.25 if is_moving else 0.45)
+    visual_root.rotation.x = sin(_visual_anim_time * bob_speed) * (run_lean_amount if is_moving else 0.025) - recoil_weight * shoot_recoil_amount
+    visual_root.rotation.z = cos(_visual_anim_time * bob_speed * 0.5) * (run_lean_amount * 0.35 if is_moving else 0.018) + recoil_weight * shoot_recoil_roll_amount
+    _play_character_animation(run_animation_name if is_moving else idle_animation_name, 1.25 if is_moving else 0.45)
+
+func _trigger_shoot_feedback() -> void:
+    _shoot_recoil_timer = max(shoot_recoil_duration, 0.0)
 
 func _setup_character_animation_player() -> void:
     var source_scene := movement_animation_scene
@@ -307,10 +323,24 @@ func _setup_character_animation_player() -> void:
     _animation_player.add_animation_library("", library)
     _animation_player.animation_finished.connect(_on_character_animation_finished)
     source_root.queue_free()
-    _play_character_animation("Walking_A", 0.45)
+    _play_character_animation(idle_animation_name, 0.45)
+
+func _resolve_character_root() -> Node3D:
+    var configured_root := get_node_or_null(character_root_path) as Node3D
+    if configured_root != null:
+        return configured_root
+    if visual_root != null:
+        for child in visual_root.get_children():
+            if child is Node3D:
+                return child as Node3D
+    return null
 
 func _play_character_animation(animation_name: String, speed: float) -> void:
-    if _animation_player == null or not _animation_player.has_animation(animation_name):
+    if _animation_player == null:
+        return
+    if not _animation_player.has_animation(animation_name):
+        animation_name = _get_first_available_animation([run_animation_name, idle_animation_name, "Jog_Fwd", "Sprint", "Walk", "Idle", "Running_A", "Walking_A", "Sword_Dash_RM", "Shield_Dash_RM", "Walk_Carry", "Idle_Shield", "A_TPose"])
+    if animation_name.is_empty() or not _animation_player.has_animation(animation_name):
         return
     var animation := _animation_player.get_animation(animation_name)
     if animation != null:
@@ -320,6 +350,17 @@ func _play_character_animation(animation_name: String, speed: float) -> void:
         _current_animation = animation_name
     else:
         _animation_player.speed_scale = speed
+
+func _get_first_available_animation(animation_names: Array[String]) -> String:
+    if _animation_player == null:
+        return ""
+    for animation_name in animation_names:
+        if _animation_player.has_animation(animation_name):
+            return animation_name
+    var available_names := _animation_player.get_animation_list()
+    if available_names.is_empty():
+        return ""
+    return str(available_names[0])
 
 func _on_character_animation_finished(animation_name: StringName) -> void:
     if _animation_player == null:

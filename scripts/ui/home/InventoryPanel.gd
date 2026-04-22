@@ -3,6 +3,8 @@ class_name InventoryPanel
 
 signal item_selected(item_id: String)
 
+const HOME_UI_STYLE := preload("res://scripts/ui/home/HomeUIStyle.gd")
+
 var _description_label: Label
 var _item_buttons: Array[Button] = []
 var _visible_items: Array = []
@@ -33,7 +35,7 @@ func refresh(_inventory: Dictionary = {}) -> void:
 	var summary := "Enemies can drop scrap during runs. Equipment depth stays intentionally light."
 	if _home_state != null:
 		summary = _home_state.inventory_summary
-	_description_label.text = "Coins: %d\nScrap: %d\n%s" % [
+	_description_label.text = "Inventory\nCoins: %d\nScrap: %d\n\n%s" % [
 		_game_manager.soft_currency,
 		scrap_count,
 		summary,
@@ -51,13 +53,22 @@ func _refresh_item_buttons() -> void:
 		var item: Dictionary = _visible_items[index]
 		button.visible = true
 		button.disabled = false
-		button.text = "%s\n%s" % [str(item.get("name", "Item")), _format_stats(item)]
+		var is_equipped := _is_equipped(item)
+		button.text = "%s%s\n%s" % [str(item.get("name", "Item")), "  Equipped" if is_equipped else "", _format_stats(item)]
+		HOME_UI_STYLE.apply_item_button(button, is_equipped)
 
 func _on_item_button_pressed(index: int) -> void:
 	if index < 0 or index >= _visible_items.size():
 		return
 	var item: Dictionary = _visible_items[index]
 	item_selected.emit(str(item.get("id", "")))
+
+func _is_equipped(item: Dictionary) -> bool:
+	if _home_state == null:
+		return false
+	var slot_id := str(item.get("slot", ""))
+	var equipped_item: Dictionary = _home_state.get_equipped_item(slot_id)
+	return str(equipped_item.get("id", "")) == str(item.get("id", ""))
 
 func _format_stats(item: Dictionary) -> String:
 	var stats_value: Variant = item.get("stats", {})

@@ -18,6 +18,7 @@ const TYPE_STATS := {
 @export var contact_damage: int = 1
 @export var contact_damage_interval: float = 0.8
 @export var contact_range: float = 0.9
+@export var spawn_warmup_duration: float = 0.35
 @export var xp_pickup_scene: PackedScene
 @export var pickup_container_path: NodePath = NodePath("../../PickupContainer")
 @export var xp_drop_amount: int = 1
@@ -35,6 +36,7 @@ var _plane_origin: Vector3 = Vector3.ZERO
 var _plane_normal: Vector3 = Vector3.UP
 var _is_dead: bool = false
 var _contact_damage_cooldown: float = 0.0
+var _spawn_warmup_timer: float = 0.0
 var _base_scale: Vector3 = Vector3.ONE
 var _base_color: Color = Color(1.0, 1.0, 1.0, 1.0)
 var _feedback_material: StandardMaterial3D
@@ -70,6 +72,12 @@ func _physics_process(delta: float) -> void:
 		velocity = Vector3.ZERO
 		return
 
+	if _spawn_warmup_timer > 0.0:
+		_spawn_warmup_timer = max(_spawn_warmup_timer - delta, 0.0)
+		velocity = Vector3.ZERO
+		_animate_visual(delta, false)
+		return
+
 	var move_direction := _get_move_direction_to_target()
 	velocity = move_direction * move_speed
 	velocity -= _plane_normal * velocity.dot(_plane_normal)
@@ -85,6 +93,11 @@ func _physics_process(delta: float) -> void:
 
 func set_target(new_target: Node3D) -> void:
 	target = new_target
+
+func prepare_spawn(new_target: Node3D) -> void:
+	target = new_target
+	_spawn_warmup_timer = max(spawn_warmup_duration, 0.0)
+	_contact_damage_cooldown = max(_contact_damage_cooldown, spawn_warmup_duration)
 
 func apply_enemy_type(type_key: StringName) -> void:
 	enemy_type = type_key
