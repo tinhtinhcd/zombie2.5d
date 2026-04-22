@@ -7,18 +7,22 @@ var _knight_button: Button
 var _rogue_button: Button
 var _mage_button: Button
 var _game_manager: GameManager
+var _home_state
 
-func setup(status_label: Label, continue_button: Button, knight_button: Button, rogue_button: Button, mage_button: Button, game_manager: GameManager) -> void:
+func setup(status_label: Label, continue_button: Button, knight_button: Button, rogue_button: Button, mage_button: Button, game_manager: GameManager, home_state = null) -> void:
 	_status_label = status_label
 	_continue_button = continue_button
 	_knight_button = knight_button
 	_rogue_button = rogue_button
 	_mage_button = mage_button
 	_game_manager = game_manager
+	_home_state = home_state
 
 func refresh(selected_hero_id: String) -> void:
 	if _status_label == null or _continue_button == null or _game_manager == null:
 		return
+	if selected_hero_id.is_empty() and _home_state != null:
+		selected_hero_id = _home_state.selected_hero_id
 
 	var has_selection := selected_hero_id != ""
 	_continue_button.disabled = not has_selection

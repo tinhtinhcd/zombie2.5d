@@ -1,19 +1,26 @@
 extends RefCounted
 class_name EquipmentPanel
 
+signal equip_slot_requested(slot_id: String)
+
 var _summary_label: Label
 var _weapon_slot_button: Button
 var _armor_slot_button: Button
 var _accessory_slot_button: Button
 var _game_manager: GameManager
+var _home_state
 var _weapon_cycle_index: int = 0
 
-func setup(summary_label: Label, weapon_slot_button: Button, armor_slot_button: Button, accessory_slot_button: Button, game_manager: GameManager) -> void:
+func setup(summary_label: Label, weapon_slot_button: Button, armor_slot_button: Button, accessory_slot_button: Button, game_manager: GameManager, home_state = null) -> void:
 	_summary_label = summary_label
 	_weapon_slot_button = weapon_slot_button
 	_armor_slot_button = armor_slot_button
 	_accessory_slot_button = accessory_slot_button
 	_game_manager = game_manager
+	_home_state = home_state
+	_connect_slot_button(_weapon_slot_button, "weapon")
+	_connect_slot_button(_armor_slot_button, "armor")
+	_connect_slot_button(_accessory_slot_button, "accessory")
 
 func sync_selected_weapon(selected_weapon_id: String) -> void:
 	if _game_manager == null:
@@ -45,23 +52,37 @@ func get_unlocked_weapon_ids() -> Array:
 func refresh(selected_weapon_id: String) -> void:
 	if _summary_label == null or _game_manager == null:
 		return
+	if selected_weapon_id.is_empty() and _home_state != null:
+		selected_weapon_id = _home_state.selected_weapon_id
 
 	var weapon_definition := _game_manager.get_weapon_definition(selected_weapon_id)
 	var weapon_name := _game_manager.get_display_name(weapon_definition, "Basic Gun")
-	_summary_label.text = "Selected loadout\nWeapon: %s\nDamage: %d\nFire: %.2fs\nProjectiles: %d\nRange: %.1f\n%s\nArmor: Placeholder\nAccessory: Placeholder" % [
+	var equipment_summary := "Armor: Placeholder\nAccessory: Placeholder"
+	if _home_state != null:
+		equipment_summary = _home_state.equipped_items_summary
+	_summary_label.text = "Selected loadout\nWeapon: %s\nDamage: %d\nFire: %.2fs\nProjectiles: %d\nRange: %.1f\n%s\n%s" % [
 		weapon_name,
 		int(weapon_definition.get("damage", weapon_definition.get("projectile_damage", 1))),
 		float(weapon_definition.get("fire_rate", weapon_definition.get("fire_interval", 0.6))),
 		int(weapon_definition.get("projectile_count", 1)),
 		float(weapon_definition.get("range", 20.0)),
 		_format_weapon_unlocks(),
+		equipment_summary,
 	]
 	if _weapon_slot_button != null:
-		_weapon_slot_button.text = "Change Weapon"
+		_weapon_slot_button.text = "Equip Weapon"
 	if _armor_slot_button != null:
-		_armor_slot_button.text = "Locked"
+		_armor_slot_button.text = "Equip Armor"
 	if _accessory_slot_button != null:
-		_accessory_slot_button.text = "Locked"
+		_accessory_slot_button.text = "Equip Accessory"
+
+func _connect_slot_button(button: Button, slot_id: String) -> void:
+	if button == null:
+		return
+	button.pressed.connect(_on_slot_button_pressed.bind(slot_id))
+
+func _on_slot_button_pressed(slot_id: String) -> void:
+	equip_slot_requested.emit(slot_id)
 
 func _format_weapon_unlocks() -> String:
 	var lines := PackedStringArray()

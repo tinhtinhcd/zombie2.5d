@@ -6,17 +6,21 @@ var _drone_button: Button
 var _sprite_button: Button
 var _wisp_button: Button
 var _game_manager: GameManager
+var _home_state
 
-func setup(status_label: Label, drone_button: Button, sprite_button: Button, wisp_button: Button, game_manager: GameManager) -> void:
+func setup(status_label: Label, drone_button: Button, sprite_button: Button, wisp_button: Button, game_manager: GameManager, home_state = null) -> void:
 	_status_label = status_label
 	_drone_button = drone_button
 	_sprite_button = sprite_button
 	_wisp_button = wisp_button
 	_game_manager = game_manager
+	_home_state = home_state
 
 func refresh(selected_pet_id: String) -> void:
 	if _status_label == null or _game_manager == null:
 		return
+	if selected_pet_id.is_empty() and _home_state != null:
+		selected_pet_id = _home_state.selected_pet_id
 
 	if _drone_button != null:
 		_drone_button.text = "Selected" if selected_pet_id == "pet_drone" else "Select"

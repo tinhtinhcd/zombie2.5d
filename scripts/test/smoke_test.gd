@@ -16,6 +16,68 @@ func _run() -> void:
 	var home := home_scene.instantiate()
 	root.add_child(home)
 	await process_frame
+	home.call("_on_play_pressed")
+	await process_frame
+	if not bool(home.get_node("ScreenRoot/ModeSelectScreen").visible):
+		push_error("Smoke test failed: home UI manager did not open mode select.")
+		quit(1)
+		return
+	home.call("_on_survival_pressed")
+	await process_frame
+	if not bool(home.get_node("ScreenRoot/HeroSelectScreen").visible):
+		push_error("Smoke test failed: home UI manager did not open hero select.")
+		quit(1)
+		return
+	home.call("_on_knight_pressed")
+	await process_frame
+	var home_state: Variant = home.get("_home_state")
+	if home_state == null or home_state.selected_hero_id != "hero_knight":
+		push_error("Smoke test failed: selecting a hero did not update home state.")
+		quit(1)
+		return
+	var hub_summary := home.call("_get_ui_node", "ScreenRoot/MainMenuScreen/Layout/Root/Footer/FeaturePreview/PreviewMargin/PreviewContent/PreviewList") as Label
+	if hub_summary == null or not hub_summary.text.contains("Hero: Knight"):
+		push_error("Smoke test failed: hub summary did not react to hero selection.")
+		quit(1)
+		return
+	home.call("_on_hero_continue_pressed")
+	await process_frame
+	if not bool(home.get_node("ScreenRoot/EquipmentSelectScreen").visible):
+		push_error("Smoke test failed: home UI manager did not open equipment select.")
+		quit(1)
+		return
+	home.call("_on_equipment_slot_requested", "armor")
+	await process_frame
+	if home_state.selected_equipment_slot != "armor" or not bool(home.get_node("ScreenRoot/InventoryScreen").visible):
+		push_error("Smoke test failed: equipment slot selection did not open inventory for armor.")
+		quit(1)
+		return
+	if bool(home_state.equip_item("training_blade")):
+		push_error("Smoke test failed: mismatched inventory item was equipped into armor slot.")
+		quit(1)
+		return
+	home.call("_on_inventory_item_selected", "leather_vest")
+	await process_frame
+	var equipped_armor: Dictionary = home_state.get_equipped_item("armor")
+	if str(equipped_armor.get("id", "")) != "leather_vest":
+		push_error("Smoke test failed: selecting an inventory item did not equip armor.")
+		quit(1)
+		return
+	var loadout_summary := home.call("_get_ui_node", "ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/LoadoutCard/Margin/LoadoutSummary") as Label
+	if loadout_summary == null or not loadout_summary.text.contains("Leather Vest"):
+		push_error("Smoke test failed: equipment panel did not refresh after equipping armor.")
+		quit(1)
+		return
+	if not hub_summary.text.contains("Leather Vest"):
+		push_error("Smoke test failed: hub summary did not refresh after equipping armor.")
+		quit(1)
+		return
+	home.call("_go_back")
+	await process_frame
+	if not bool(home.get_node("ScreenRoot/HeroSelectScreen").visible):
+		push_error("Smoke test failed: home UI manager back navigation did not return to hero select.")
+		quit(1)
+		return
 	home.queue_free()
 	await process_frame
 

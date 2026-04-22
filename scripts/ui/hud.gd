@@ -8,6 +8,7 @@ signal upgrade_selected(upgrade_id: StringName)
 
 const XP_BAR_TARGET = 10
 const MOBILE_WIDTH_THRESHOLD = 700.0
+const COMPACT_HEIGHT_THRESHOLD = 620.0
 const MOBILE_MARGIN = 12.0
 
 @onready var hud_root: Control = $HUDRoot
@@ -47,6 +48,7 @@ const MOBILE_MARGIN = 12.0
 var _upgrade_option_ids: Array = []
 var _elapsed_time: float = 0.0
 var game_manager: GameManager
+var _original_minimum_sizes: Dictionary = {}
 
 func _ready() -> void:
 	game_manager = get_node("/root/GameManager") as GameManager
@@ -235,14 +237,15 @@ func _format_time(total_seconds: float) -> String:
 func _apply_responsive_layout() -> void:
 	var viewport_size := get_viewport().get_visible_rect().size
 	var is_narrow := viewport_size.x <= MOBILE_WIDTH_THRESHOLD
-	var margin := MOBILE_MARGIN if is_narrow else 18.0
+	var is_compact := is_narrow or viewport_size.y <= COMPACT_HEIGHT_THRESHOLD
+	var margin := MOBILE_MARGIN if is_compact else 18.0
 
 	_set_margin(safe_margin, int(margin), 10, int(margin), 10)
 	_fit_bottom_left_panel(mission_panel, 328.0, 80.0, margin)
 	_fit_center_panel(upgrade_panel, 540.0, 340.0, margin)
 	_fit_center_panel(game_over_panel, 520.0, 360.0, margin)
 	_fit_center_panel(result_panel, 520.0, 320.0, margin)
-	_update_touch_targets(hud_root, is_narrow)
+	_update_touch_targets(hud_root, is_compact)
 
 func _fit_center_panel(panel: Control, desktop_width: float, desktop_height: float, margin: float) -> void:
 	var viewport_size := get_viewport().get_visible_rect().size
@@ -266,9 +269,17 @@ func _set_margin(margin_container: MarginContainer, left: int, top: int, right: 
 	margin_container.add_theme_constant_override("margin_right", right)
 	margin_container.add_theme_constant_override("margin_bottom", bottom)
 
-func _update_touch_targets(root: Node, is_narrow: bool) -> void:
+func _get_original_minimum_size(control: Control) -> Vector2:
+	var id := control.get_instance_id()
+	if not _original_minimum_sizes.has(id):
+		_original_minimum_sizes[id] = control.custom_minimum_size
+	return _original_minimum_sizes[id]
+
+func _update_touch_targets(root: Node, is_compact: bool) -> void:
 	for child in root.get_children():
 		if child is Button:
 			var button := child as Button
-			button.custom_minimum_size = Vector2(0.0 if is_narrow else button.custom_minimum_size.x, max(button.custom_minimum_size.y, 52.0))
-		_update_touch_targets(child, is_narrow)
+			var original_size := _get_original_minimum_size(button)
+			var compact_height: float = min(max(original_size.y, 42.0), 48.0)
+			button.custom_minimum_size = Vector2(0.0 if is_compact else original_size.x, compact_height if is_compact else original_size.y)
+		_update_touch_targets(child, is_compact)

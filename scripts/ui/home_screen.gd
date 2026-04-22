@@ -7,14 +7,16 @@ const SCREEN_EQUIPMENT_SELECT = "EquipmentSelectScreen"
 const SCREEN_PET_SELECT = "PetSelectScreen"
 const SCREEN_INVENTORY = "InventoryScreen"
 const MOBILE_WIDTH_THRESHOLD = 700.0
-const COMPACT_HEIGHT_THRESHOLD = 520.0
-const MOBILE_MARGIN = 14
+const COMPACT_HEIGHT_THRESHOLD = 620.0
+const MOBILE_MARGIN = 10
 const DESKTOP_MARGIN = 32
 const HUB_SUMMARY_PANEL_SCRIPT := preload("res://scripts/ui/home/HubSummaryPanel.gd")
 const HERO_SELECT_PANEL_SCRIPT := preload("res://scripts/ui/home/HeroSelectPanel.gd")
 const EQUIPMENT_PANEL_SCRIPT := preload("res://scripts/ui/home/EquipmentPanel.gd")
 const PET_SELECT_PANEL_SCRIPT := preload("res://scripts/ui/home/PetSelectPanel.gd")
 const INVENTORY_PANEL_SCRIPT := preload("res://scripts/ui/home/InventoryPanel.gd")
+const HOME_UI_MANAGER_SCRIPT := preload("res://scripts/ui/home/HomeUIManager.gd")
+const HOME_STATE_SCRIPT := preload("res://scripts/ui/home/HomeState.gd")
 
 @onready var screen_root: Control = $ScreenRoot
 @onready var main_menu_screen: Control = $ScreenRoot/MainMenuScreen
@@ -64,20 +66,35 @@ const INVENTORY_PANEL_SCRIPT := preload("res://scripts/ui/home/InventoryPanel.gd
 @onready var hub_preview_list: Label = $ScreenRoot/MainMenuScreen/Layout/Root/Footer/FeaturePreview/PreviewMargin/PreviewContent/PreviewList
 @onready var hub_preview_note: Label = $ScreenRoot/MainMenuScreen/Layout/Root/Footer/FeaturePreview/PreviewMargin/PreviewContent/PreviewNote
 @onready var inventory_description_label: Label = $ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin/VBox/DescriptionLabel
+@onready var inventory_item_buttons: Array[Button] = [
+	$ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Weapons/Grid/WeaponA,
+	$ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Weapons/Grid/WeaponB,
+	$ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Weapons/Grid/WeaponC,
+	$ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Weapons/Grid/WeaponD,
+	$ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Items/Grid/ItemA,
+	$ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Items/Grid/ItemB,
+	$ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Items/Grid/ItemC,
+	$ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Pets/Grid/PetA,
+	$ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Pets/Grid/PetB,
+	$ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Materials/Grid/MaterialA,
+	$ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Materials/Grid/MaterialB,
+]
 
 var _screen_lookup: Dictionary = {}
-var _screen_history: Array = []
-var _active_screen: String = SCREEN_MAIN_MENU
 var _return_screen_after_settings: String = SCREEN_MAIN_MENU
 var _selected_mode_id: String = "mode_survival"
 var _selected_hero_id: String = "hero_knight"
 var _selected_weapon_id: String = "weapon_basic"
 var _selected_pet_id: String = "pet_drone"
+var _home_ui_manager
+var _home_state
 var _hub_summary_panel
 var _hero_select_panel
 var _equipment_panel
 var _pet_select_panel
 var _inventory_panel
+var _original_minimum_sizes: Dictionary = {}
+var _scroll_containers: Dictionary = {}
 
 func _ready() -> void:
 	_screen_lookup = {
@@ -89,17 +106,30 @@ func _ready() -> void:
 		"InventoryScreen": inventory_screen,
 	}
 
+	_home_ui_manager = HOME_UI_MANAGER_SCRIPT.new()
+	_home_ui_manager.setup(_screen_lookup, SCREEN_MAIN_MENU)
+	_home_ui_manager.panel_changed.connect(_on_home_panel_changed)
+	_home_state = HOME_STATE_SCRIPT.new()
+	_home_state.hero_changed.connect(_on_home_state_hero_changed)
+	_home_state.weapon_changed.connect(_on_home_state_weapon_changed)
+	_home_state.pet_changed.connect(_on_home_state_pet_changed)
+	_home_state.equipment_slot_changed.connect(_on_home_state_equipment_slot_changed)
+	_home_state.equipment_summary_changed.connect(_on_home_state_equipment_summary_changed)
+	_home_state.inventory_summary_changed.connect(_on_home_state_inventory_summary_changed)
+
 	_hub_summary_panel = HUB_SUMMARY_PANEL_SCRIPT.new()
 	_hero_select_panel = HERO_SELECT_PANEL_SCRIPT.new()
 	_equipment_panel = EQUIPMENT_PANEL_SCRIPT.new()
 	_pet_select_panel = PET_SELECT_PANEL_SCRIPT.new()
 	_inventory_panel = INVENTORY_PANEL_SCRIPT.new()
 
-	_hub_summary_panel.setup(hub_preview_list, hub_preview_note, game_manager)
-	_hero_select_panel.setup(hero_status_label, hero_continue_button, hero_knight_button, hero_rogue_button, hero_mage_button, game_manager)
-	_equipment_panel.setup(equipment_summary_label, weapon_slot_button, armor_slot_button, accessory_slot_button, game_manager)
-	_pet_select_panel.setup(pet_status_label, pet_drone_button, pet_sprite_button, pet_wisp_button, game_manager)
-	_inventory_panel.setup(inventory_description_label, game_manager)
+	_hub_summary_panel.setup(hub_preview_list, hub_preview_note, game_manager, _home_state)
+	_hero_select_panel.setup(hero_status_label, hero_continue_button, hero_knight_button, hero_rogue_button, hero_mage_button, game_manager, _home_state)
+	_equipment_panel.setup(equipment_summary_label, weapon_slot_button, armor_slot_button, accessory_slot_button, game_manager, _home_state)
+	_pet_select_panel.setup(pet_status_label, pet_drone_button, pet_sprite_button, pet_wisp_button, game_manager, _home_state)
+	_inventory_panel.setup(inventory_description_label, inventory_item_buttons, game_manager, _home_state)
+	_equipment_panel.equip_slot_requested.connect(_on_equipment_slot_requested)
+	_inventory_panel.item_selected.connect(_on_inventory_item_selected)
 
 	play_button.pressed.connect(_on_play_pressed)
 	inventory_button.pressed.connect(_on_inventory_pressed)
@@ -117,9 +147,6 @@ func _ready() -> void:
 	hero_continue_button.pressed.connect(_on_hero_continue_pressed)
 	hero_back_button.pressed.connect(_go_back)
 
-	weapon_slot_button.pressed.connect(_on_weapon_slot_pressed)
-	armor_slot_button.pressed.connect(_on_armor_slot_pressed)
-	accessory_slot_button.pressed.connect(_on_accessory_slot_pressed)
 	equipment_inventory_button.pressed.connect(_on_inventory_pressed)
 	equipment_continue_button.pressed.connect(_on_equipment_continue_pressed)
 	equipment_back_button.pressed.connect(_go_back)
@@ -138,6 +165,7 @@ func _ready() -> void:
 	game_manager.loadout_changed.connect(_load_selection_from_manager)
 	get_viewport().size_changed.connect(_apply_responsive_layout)
 
+	_install_scroll_containers()
 	_apply_responsive_layout()
 	_load_selection_from_manager()
 	_refresh_hero_summary()
@@ -148,14 +176,9 @@ func _ready() -> void:
 	_show_screen(SCREEN_MAIN_MENU, false)
 
 func _show_screen(screen_name: String, add_to_history: bool = true) -> void:
-	if add_to_history and screen_name != _active_screen:
-		_screen_history.append(_active_screen)
+	_home_ui_manager.open_panel(screen_name, add_to_history)
 
-	for name in _screen_lookup.keys():
-		var screen := _screen_lookup[name] as Control
-		screen.visible = name == screen_name
-
-	_active_screen = screen_name
+func _on_home_panel_changed(screen_name: String) -> void:
 	settings_screen.visible = false
 	placeholder_popup.visible = false
 	screen_root.mouse_filter = Control.MOUSE_FILTER_PASS
@@ -167,14 +190,10 @@ func _show_screen(screen_name: String, add_to_history: bool = true) -> void:
 	elif screen_name == SCREEN_PET_SELECT:
 		_refresh_pet_summary()
 	_apply_responsive_layout()
+	_reset_scroll_position(screen_name)
 
 func _go_back() -> void:
-	if _screen_history.is_empty():
-		_show_screen(SCREEN_MAIN_MENU, false)
-		return
-
-	var previous_screen: String = str(_screen_history.pop_back())
-	_show_screen(previous_screen, false)
+	_home_ui_manager.go_back()
 
 func _open_settings(return_screen: String) -> void:
 	_return_screen_after_settings = return_screen
@@ -197,8 +216,6 @@ func _select_hero(hero_id: String, available: bool) -> void:
 
 	_selected_hero_id = hero_id
 	game_manager.set_selected_loadout(_selected_hero_id, _selected_weapon_id, _selected_pet_id)
-	_refresh_hero_summary()
-	_refresh_hub_summary(game_manager.soft_currency)
 
 func _refresh_hero_summary() -> void:
 	_hero_select_panel.refresh(_selected_hero_id)
@@ -213,8 +230,6 @@ func _select_pet(pet_id: String, implemented: bool) -> void:
 
 	_selected_pet_id = pet_id
 	game_manager.set_selected_loadout(_selected_hero_id, _selected_weapon_id, _selected_pet_id)
-	_refresh_pet_summary()
-	_refresh_hub_summary(game_manager.soft_currency)
 
 func _refresh_pet_summary() -> void:
 	_pet_select_panel.refresh(_selected_pet_id)
@@ -229,6 +244,7 @@ func _load_selection_from_manager() -> void:
 	_selected_weapon_id = game_manager.selected_weapon_id
 	_selected_pet_id = game_manager.selected_pet_id
 	_equipment_panel.sync_selected_weapon(_selected_weapon_id)
+	_home_state.sync_loadout(_selected_hero_id, _selected_weapon_id, _selected_pet_id, true)
 
 func _refresh_hub_summary(_currency: int = 0) -> void:
 	_hub_summary_panel.refresh(_currency)
@@ -270,21 +286,6 @@ func _on_mage_pressed() -> void:
 func _on_hero_continue_pressed() -> void:
 	_show_screen(SCREEN_EQUIPMENT_SELECT)
 
-func _on_weapon_slot_pressed() -> void:
-	var next_weapon_id: String = _equipment_panel.cycle_weapon(_selected_weapon_id)
-	if next_weapon_id == _selected_weapon_id:
-		return
-	_selected_weapon_id = next_weapon_id
-	game_manager.set_selected_loadout(_selected_hero_id, _selected_weapon_id, _selected_pet_id)
-	_refresh_equipment_summary()
-	_refresh_hub_summary(game_manager.soft_currency)
-
-func _on_armor_slot_pressed() -> void:
-	_show_placeholder("Not Available In MVP", "Armor remains visible in the shell but has no gameplay logic yet.")
-
-func _on_accessory_slot_pressed() -> void:
-	_show_placeholder("Not Available In MVP", "Accessories stay visible as product structure but are not implemented yet.")
-
 func _on_equipment_continue_pressed() -> void:
 	_show_screen(SCREEN_PET_SELECT)
 
@@ -300,11 +301,52 @@ func _on_wisp_pressed() -> void:
 func _on_placeholder_closed() -> void:
 	screen_root.mouse_filter = Control.MOUSE_FILTER_PASS
 
+func _on_equipment_slot_requested(slot_id: String) -> void:
+	_home_state.set_selected_equipment_slot(slot_id)
+	_refresh_inventory_summary(game_manager.inventory)
+	_show_screen(SCREEN_INVENTORY)
+
+func _on_inventory_item_selected(item_id: String) -> void:
+	if _home_state.equip_item(item_id):
+		_home_ui_manager.go_back()
+		return
+	_show_placeholder("Cannot Equip", "That item does not fit the selected equipment slot.")
+
+func _on_home_state_hero_changed(_hero_id: String) -> void:
+	_refresh_hero_summary()
+	_refresh_hub_summary(game_manager.soft_currency)
+
+func _on_home_state_weapon_changed(_weapon_id: String) -> void:
+	_refresh_equipment_summary()
+	_refresh_hub_summary(game_manager.soft_currency)
+
+func _on_home_state_pet_changed(_pet_id: String) -> void:
+	_refresh_pet_summary()
+	_refresh_hub_summary(game_manager.soft_currency)
+
+func _on_home_state_equipment_summary_changed(_summary: String) -> void:
+	_refresh_equipment_summary()
+	_refresh_hub_summary(game_manager.soft_currency)
+
+func _on_home_state_inventory_summary_changed(_summary: String) -> void:
+	_refresh_inventory_summary(game_manager.inventory)
+
+func _on_home_state_equipment_slot_changed(_slot_id: String) -> void:
+	_refresh_inventory_summary(game_manager.inventory)
+
 func _apply_responsive_layout() -> void:
 	var viewport_size := get_viewport_rect().size
 	var is_narrow := viewport_size.x <= MOBILE_WIDTH_THRESHOLD
 	var is_compact := is_narrow or viewport_size.y <= COMPACT_HEIGHT_THRESHOLD
 	var margin := MOBILE_MARGIN if is_compact else DESKTOP_MARGIN
+	var root_separation := 10 if is_compact else 20
+	var content_separation := 8 if is_compact else 16
+	var grid_separation := 8 if is_compact else 16
+	var inner_margin := 10 if is_compact else 16
+	var preview_margin := 12 if is_compact else 20
+
+	for screen_name in _scroll_containers.keys():
+		_set_scroll_container_enabled(str(screen_name), is_compact)
 
 	for layout_path in [
 		"ScreenRoot/MainMenuScreen/Layout",
@@ -316,11 +358,44 @@ func _apply_responsive_layout() -> void:
 	]:
 		_set_margin(layout_path, margin)
 
+	for root_path in [
+		"ScreenRoot/MainMenuScreen/Layout/Root",
+		"ScreenRoot/ModeSelectScreen/Layout/Root",
+		"ScreenRoot/HeroSelectScreen/Layout/Root",
+		"ScreenRoot/EquipmentSelectScreen/Layout/Root",
+		"ScreenRoot/PetSelectScreen/Layout/Root",
+		"ScreenRoot/InventoryScreen/Layout/Root",
+	]:
+		_set_box_separation(root_path, root_separation)
+
+	for content_path in [
+		"ScreenRoot/ModeSelectScreen/Layout/Root/Content",
+		"ScreenRoot/ModeSelectScreen/Layout/Root/Content/ModeList",
+		"ScreenRoot/HeroSelectScreen/Layout/Root/Content",
+		"ScreenRoot/PetSelectScreen/Layout/Root/Content",
+		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content",
+		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn",
+		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn",
+		"ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin/VBox",
+	]:
+		_set_box_separation(content_path, content_separation)
+
+	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/Header", 4 if is_compact else 8)
+	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/Footer/PrimaryActions", content_separation)
+	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/Footer/PrimaryActions/SecondaryActions", 8 if is_compact else 12)
+	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/Footer/FeaturePreview/PreviewMargin/PreviewContent", 6 if is_compact else 10)
+	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/Spacer", Vector2(0.0, 4.0 if is_compact else 12.0))
+
 	_set_grid_columns("ScreenRoot/MainMenuScreen/Layout/Root/Footer", 1 if is_narrow else 2)
 	_set_grid_columns("ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards", 1 if is_narrow else 3)
 	_set_grid_columns("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns", 1 if is_narrow else 2)
 	_set_grid_columns("ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards", 1 if is_narrow else 3)
 	_set_grid_columns("ScreenRoot/InventoryScreen/Layout/Root/Content", 1 if is_narrow else 2)
+	_set_grid_separation("ScreenRoot/MainMenuScreen/Layout/Root/Footer", grid_separation, grid_separation)
+	_set_grid_separation("ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards", grid_separation, grid_separation)
+	_set_grid_separation("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns", grid_separation, grid_separation)
+	_set_grid_separation("ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards", grid_separation, grid_separation)
+	_set_grid_separation("ScreenRoot/InventoryScreen/Layout/Root/Content", grid_separation, grid_separation)
 
 	for grid_path in [
 		"ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Weapons/Grid",
@@ -329,8 +404,27 @@ func _apply_responsive_layout() -> void:
 		"ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Materials/Grid",
 	]:
 		_set_grid_columns(grid_path, 1 if is_narrow else 2)
+		_set_grid_separation(grid_path, 6 if is_compact else 10, 6 if is_compact else 10)
 
-	var portrait_height := 96.0 if is_compact else 180.0
+	for inner_margin_path in [
+		"ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/KnightCard/Margin",
+		"ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/RogueCard/Margin",
+		"ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/MageCard/Margin",
+		"ScreenRoot/HeroSelectScreen/Layout/Root/Content/SelectionSummary/SummaryMargin",
+		"ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards/DroneCard/Margin",
+		"ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards/SpriteCard/Margin",
+		"ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards/WispCard/Margin",
+		"ScreenRoot/PetSelectScreen/Layout/Root/Content/SelectionSummary/SummaryMargin",
+		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/WeaponSlot/Margin",
+		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/ArmorSlot/Margin",
+		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/AccessorySlot/Margin",
+		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/LoadoutCard/Margin",
+		"ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin",
+	]:
+		_set_margin(inner_margin_path, inner_margin)
+	_set_margin("ScreenRoot/MainMenuScreen/Layout/Root/Footer/FeaturePreview/PreviewMargin", preview_margin)
+
+	var portrait_height := 72.0 if is_compact else 180.0
 	for portrait_path in [
 		"ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/KnightCard/Margin/VBox/Portrait",
 		"ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/RogueCard/Margin/VBox/Portrait",
@@ -338,17 +432,91 @@ func _apply_responsive_layout() -> void:
 	]:
 		_set_minimum_size(portrait_path, Vector2(0.0, portrait_height))
 
-	_set_minimum_size("ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel", Vector2(0.0 if is_narrow else 280.0, 0.0))
+	var details_width := 0.0 if is_narrow else (220.0 if is_compact else 280.0)
+	_set_minimum_size("ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel", Vector2(details_width, 0.0))
 	_update_touch_targets(screen_root, is_compact)
 
+func _install_scroll_containers() -> void:
+	for screen_name in [
+		SCREEN_MAIN_MENU,
+		SCREEN_MODE_SELECT,
+		SCREEN_HERO_SELECT,
+		SCREEN_EQUIPMENT_SELECT,
+		SCREEN_PET_SELECT,
+		SCREEN_INVENTORY,
+	]:
+		_install_screen_scroll_container(screen_name)
+
+func _install_screen_scroll_container(screen_name: String) -> void:
+	var layout := get_node_or_null("ScreenRoot/%s/Layout" % screen_name) as MarginContainer
+	var root := get_node_or_null("ScreenRoot/%s/Layout/Root" % screen_name) as Control
+	if layout == null or root == null:
+		return
+	if root.get_parent() != layout:
+		return
+
+	var scroll := ScrollContainer.new()
+	scroll.name = "RootScroll"
+	scroll.anchor_right = 1.0
+	scroll.anchor_bottom = 1.0
+	scroll.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	scroll.grow_vertical = Control.GROW_DIRECTION_BOTH
+	scroll.follow_focus = true
+	scroll.clip_contents = true
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+
+	var root_index := root.get_index()
+	layout.add_child(scroll)
+	layout.move_child(scroll, root_index)
+	root.reparent(scroll)
+	root.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	root.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_scroll_containers[screen_name] = scroll
+
+func _set_scroll_container_enabled(screen_name: String, is_enabled: bool) -> void:
+	var scroll := _scroll_containers.get(screen_name) as ScrollContainer
+	if scroll == null:
+		return
+	scroll.vertical_scroll_mode = 1 if is_enabled else 0
+	scroll.horizontal_scroll_mode = 0
+
+func _reset_scroll_position(screen_name: String) -> void:
+	var scroll := _scroll_containers.get(screen_name) as ScrollContainer
+	if scroll == null:
+		return
+	scroll.scroll_vertical = 0
+
+func _get_ui_node(path: String) -> Node:
+	var node := get_node_or_null(path)
+	if node != null:
+		return node
+	if path.find("/Layout/Root") == -1:
+		return null
+	return get_node_or_null(path.replace("/Layout/Root", "/Layout/RootScroll/Root"))
+
 func _set_grid_columns(path: String, columns: int) -> void:
-	var grid := get_node_or_null(path) as GridContainer
+	var grid := _get_ui_node(path) as GridContainer
 	if grid == null:
 		return
 	grid.columns = max(columns, 1)
 
+func _set_grid_separation(path: String, horizontal: int, vertical: int) -> void:
+	var grid := _get_ui_node(path) as GridContainer
+	if grid == null:
+		return
+	grid.add_theme_constant_override("h_separation", horizontal)
+	grid.add_theme_constant_override("v_separation", vertical)
+	grid.add_theme_constant_override("separation", max(horizontal, vertical))
+
+func _set_box_separation(path: String, separation: int) -> void:
+	var container := _get_ui_node(path) as BoxContainer
+	if container == null:
+		return
+	container.add_theme_constant_override("separation", separation)
+
 func _set_margin(path: String, margin: int) -> void:
-	var margin_container := get_node_or_null(path) as MarginContainer
+	var margin_container := _get_ui_node(path) as MarginContainer
 	if margin_container == null:
 		return
 	margin_container.add_theme_constant_override("margin_left", margin)
@@ -357,17 +525,27 @@ func _set_margin(path: String, margin: int) -> void:
 	margin_container.add_theme_constant_override("margin_bottom", margin)
 
 func _set_minimum_size(path: String, minimum_size: Vector2) -> void:
-	var control := get_node_or_null(path) as Control
+	var control := _get_ui_node(path) as Control
 	if control == null:
 		return
 	control.custom_minimum_size = minimum_size
+
+func _get_original_minimum_size(control: Control) -> Vector2:
+	var id := control.get_instance_id()
+	if not _original_minimum_sizes.has(id):
+		_original_minimum_sizes[id] = control.custom_minimum_size
+	return _original_minimum_sizes[id]
 
 func _update_touch_targets(root: Node, is_compact: bool) -> void:
 	for child in root.get_children():
 		if child is Button:
 			var button := child as Button
-			button.custom_minimum_size = Vector2(0.0 if is_compact else button.custom_minimum_size.x, max(button.custom_minimum_size.y, 52.0))
+			var original_size := _get_original_minimum_size(button)
+			var compact_height: float = min(max(original_size.y, 44.0), 46.0)
+			button.custom_minimum_size = Vector2(0.0 if is_compact else original_size.x, compact_height if is_compact else original_size.y)
 		elif child is CheckButton:
 			var check_button := child as CheckButton
-			check_button.custom_minimum_size = Vector2(0.0 if is_compact else check_button.custom_minimum_size.x, max(check_button.custom_minimum_size.y, 52.0))
+			var original_size := _get_original_minimum_size(check_button)
+			var compact_height: float = min(max(original_size.y, 44.0), 46.0)
+			check_button.custom_minimum_size = Vector2(0.0 if is_compact else original_size.x, compact_height if is_compact else original_size.y)
 		_update_touch_targets(child, is_compact)
