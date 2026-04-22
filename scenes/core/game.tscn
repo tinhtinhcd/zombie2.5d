@@ -52,6 +52,9 @@ enable_waves = true
 
 [node name="HUD" parent="." instance=ExtResource("3_hud")]
 
-[node name="PauseMenu" parent="." instance=ExtResource("4_pause_menu")]
+[node name="GameOverlayLayer" type="CanvasLayer" parent="."]
+layer = 20
 
-[node name="SettingsScreen" parent="." instance=ExtResource("10_settings_screen")]
+[node name="PauseMenu" parent="GameOverlayLayer" instance=ExtResource("4_pause_menu")]
+
+[node name="SettingsScreen" parent="GameOverlayLayer" instance=ExtResource("10_settings_screen")]

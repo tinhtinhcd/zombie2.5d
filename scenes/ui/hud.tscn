@@ -152,7 +152,16 @@ size_flags_horizontal = 3
 max_value = 18.0
 show_percentage = false
 
-[node name="MissionPanel" type="PanelContainer" parent="HUDRoot"]
+[node name="OverlayRoot" type="Control" parent="HUDRoot"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="MissionPanel" type="PanelContainer" parent="HUDRoot/OverlayRoot"]
 layout_mode = 1
 anchors_preset = 2
 anchor_top = 1.0
@@ -163,162 +172,141 @@ offset_right = 340.0
 offset_bottom = -12.0
 grow_vertical = 0
 
-[node name="Margin" type="MarginContainer" parent="HUDRoot/MissionPanel"]
+[node name="Margin" type="MarginContainer" parent="HUDRoot/OverlayRoot/MissionPanel"]
 layout_mode = 2
 theme_override_constants/margin_left = 8
 theme_override_constants/margin_top = 6
 theme_override_constants/margin_right = 8
 theme_override_constants/margin_bottom = 6
 
-[node name="MissionLabel" type="Label" parent="HUDRoot/MissionPanel/Margin"]
+[node name="MissionLabel" type="Label" parent="HUDRoot/OverlayRoot/MissionPanel/Margin"]
 layout_mode = 2
 text = "Defeat 15 enemies: 0/15\nCollect 20 XP: 0/20\nReach wave 3: 0/3"
 autowrap_mode = 3
 
-[node name="UpgradePanel" type="PanelContainer" parent="HUDRoot"]
-visible = false
+[node name="ModalCenter" type="CenterContainer" parent="HUDRoot/OverlayRoot"]
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -270.0
-offset_top = -170.0
-offset_right = 270.0
-offset_bottom = 170.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="HUDRoot/UpgradePanel"]
+[node name="UpgradePanel" type="PanelContainer" parent="HUDRoot/OverlayRoot/ModalCenter"]
+visible = false
+custom_minimum_size = Vector2(540, 340)
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="HUDRoot/OverlayRoot/ModalCenter/UpgradePanel"]
 layout_mode = 2
 theme_override_constants/margin_left = 20
 theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 20
 
-[node name="VBoxContainer" type="VBoxContainer" parent="HUDRoot/UpgradePanel/MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="HUDRoot/OverlayRoot/ModalCenter/UpgradePanel/MarginContainer"]
 layout_mode = 2
 theme_override_constants/separation = 16
 
-[node name="TitleLabel" type="Label" parent="HUDRoot/UpgradePanel/MarginContainer/VBoxContainer"]
+[node name="TitleLabel" type="Label" parent="HUDRoot/OverlayRoot/ModalCenter/UpgradePanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
 text = "Choose an Upgrade"
 horizontal_alignment = 1
 
-[node name="UpgradeButtons" type="VBoxContainer" parent="HUDRoot/UpgradePanel/MarginContainer/VBoxContainer"]
+[node name="UpgradeButtons" type="VBoxContainer" parent="HUDRoot/OverlayRoot/ModalCenter/UpgradePanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="UpgradeButton1" type="Button" parent="HUDRoot/UpgradePanel/MarginContainer/VBoxContainer/UpgradeButtons"]
+[node name="UpgradeButton1" type="Button" parent="HUDRoot/OverlayRoot/ModalCenter/UpgradePanel/MarginContainer/VBoxContainer/UpgradeButtons"]
 custom_minimum_size = Vector2(0, 70)
 layout_mode = 2
 text = "Upgrade 1"
 
-[node name="UpgradeButton2" type="Button" parent="HUDRoot/UpgradePanel/MarginContainer/VBoxContainer/UpgradeButtons"]
+[node name="UpgradeButton2" type="Button" parent="HUDRoot/OverlayRoot/ModalCenter/UpgradePanel/MarginContainer/VBoxContainer/UpgradeButtons"]
 custom_minimum_size = Vector2(0, 70)
 layout_mode = 2
 text = "Upgrade 2"
 
-[node name="UpgradeButton3" type="Button" parent="HUDRoot/UpgradePanel/MarginContainer/VBoxContainer/UpgradeButtons"]
+[node name="UpgradeButton3" type="Button" parent="HUDRoot/OverlayRoot/ModalCenter/UpgradePanel/MarginContainer/VBoxContainer/UpgradeButtons"]
 custom_minimum_size = Vector2(0, 70)
 layout_mode = 2
 text = "Upgrade 3"
 
-[node name="GameOverPanel" type="PanelContainer" parent="HUDRoot"]
+[node name="GameOverPanel" type="PanelContainer" parent="HUDRoot/OverlayRoot/ModalCenter"]
 visible = false
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -260.0
-offset_top = -180.0
-offset_right = 260.0
-offset_bottom = 180.0
-grow_horizontal = 2
-grow_vertical = 2
+custom_minimum_size = Vector2(520, 360)
+layout_mode = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="HUDRoot/GameOverPanel"]
+[node name="MarginContainer" type="MarginContainer" parent="HUDRoot/OverlayRoot/ModalCenter/GameOverPanel"]
 layout_mode = 2
 theme_override_constants/margin_left = 22
 theme_override_constants/margin_top = 22
 theme_override_constants/margin_right = 22
 theme_override_constants/margin_bottom = 22
 
-[node name="VBoxContainer" type="VBoxContainer" parent="HUDRoot/GameOverPanel/MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="HUDRoot/OverlayRoot/ModalCenter/GameOverPanel/MarginContainer"]
 layout_mode = 2
 theme_override_constants/separation = 16
 
-[node name="TitleLabel" type="Label" parent="HUDRoot/GameOverPanel/MarginContainer/VBoxContainer"]
+[node name="TitleLabel" type="Label" parent="HUDRoot/OverlayRoot/ModalCenter/GameOverPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
 text = "Game Over"
 horizontal_alignment = 1
 
-[node name="StatsLabel" type="Label" parent="HUDRoot/GameOverPanel/MarginContainer/VBoxContainer"]
+[node name="StatsLabel" type="Label" parent="HUDRoot/OverlayRoot/ModalCenter/GameOverPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
 autowrap_mode = 3
 text = "Enemies killed: 0\nTime survived: 00:00\nXP gained: 0"
 horizontal_alignment = 1
 
-[node name="Actions" type="VBoxContainer" parent="HUDRoot/GameOverPanel/MarginContainer/VBoxContainer"]
+[node name="Actions" type="VBoxContainer" parent="HUDRoot/OverlayRoot/ModalCenter/GameOverPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="RestartButton" type="Button" parent="HUDRoot/GameOverPanel/MarginContainer/VBoxContainer/Actions"]
+[node name="RestartButton" type="Button" parent="HUDRoot/OverlayRoot/ModalCenter/GameOverPanel/MarginContainer/VBoxContainer/Actions"]
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 text = "Restart"
 
-[node name="ResultsButton" type="Button" parent="HUDRoot/GameOverPanel/MarginContainer/VBoxContainer/Actions"]
+[node name="ResultsButton" type="Button" parent="HUDRoot/OverlayRoot/ModalCenter/GameOverPanel/MarginContainer/VBoxContainer/Actions"]
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 text = "View Results"
 
-[node name="HomeButton" type="Button" parent="HUDRoot/GameOverPanel/MarginContainer/VBoxContainer/Actions"]
+[node name="HomeButton" type="Button" parent="HUDRoot/OverlayRoot/ModalCenter/GameOverPanel/MarginContainer/VBoxContainer/Actions"]
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 text = "Back to Main Menu"
 
-[node name="ResultPanel" type="PanelContainer" parent="HUDRoot"]
+[node name="ResultPanel" type="PanelContainer" parent="HUDRoot/OverlayRoot/ModalCenter"]
 visible = false
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -260.0
-offset_top = -160.0
-offset_right = 260.0
-offset_bottom = 160.0
-grow_horizontal = 2
-grow_vertical = 2
+custom_minimum_size = Vector2(520, 320)
+layout_mode = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="HUDRoot/ResultPanel"]
+[node name="MarginContainer" type="MarginContainer" parent="HUDRoot/OverlayRoot/ModalCenter/ResultPanel"]
 layout_mode = 2
 theme_override_constants/margin_left = 22
 theme_override_constants/margin_top = 22
 theme_override_constants/margin_right = 22
 theme_override_constants/margin_bottom = 22
 
-[node name="VBoxContainer" type="VBoxContainer" parent="HUDRoot/ResultPanel/MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="HUDRoot/OverlayRoot/ModalCenter/ResultPanel/MarginContainer"]
 layout_mode = 2
 theme_override_constants/separation = 16
 
-[node name="TitleLabel" type="Label" parent="HUDRoot/ResultPanel/MarginContainer/VBoxContainer"]
+[node name="TitleLabel" type="Label" parent="HUDRoot/OverlayRoot/ModalCenter/ResultPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
 text = "Result"
 horizontal_alignment = 1
 
-[node name="SummaryLabel" type="Label" parent="HUDRoot/ResultPanel/MarginContainer/VBoxContainer"]
+[node name="SummaryLabel" type="Label" parent="HUDRoot/OverlayRoot/ModalCenter/ResultPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
 autowrap_mode = 3
 text = "Run Summary\nScore: 0\nSurvival time: 00:00\nXP gained: 0"
 horizontal_alignment = 1
 
-[node name="ContinueButton" type="Button" parent="HUDRoot/ResultPanel/MarginContainer/VBoxContainer"]
+[node name="ContinueButton" type="Button" parent="HUDRoot/OverlayRoot/ModalCenter/ResultPanel/MarginContainer/VBoxContainer"]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 text = "Continue"

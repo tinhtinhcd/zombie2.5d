@@ -31,10 +31,10 @@ const HOME_UI_STYLE := preload("res://scripts/ui/home/HomeUIStyle.gd")
 @onready var scene_router: SceneRouter = get_node("/root/SceneRouter") as SceneRouter
 @onready var game_manager: GameManager = get_node("/root/GameManager") as GameManager
 
-@onready var play_button: Button = $ScreenRoot/MainMenuScreen/Layout/Root/Footer/PrimaryActions/PlayButton
-@onready var inventory_button: Button = $ScreenRoot/MainMenuScreen/Layout/Root/Footer/PrimaryActions/InventoryButton
-@onready var settings_button: Button = $ScreenRoot/MainMenuScreen/Layout/Root/Footer/PrimaryActions/SecondaryActions/SettingsButton
-@onready var exit_button: Button = $ScreenRoot/MainMenuScreen/Layout/Root/Footer/PrimaryActions/SecondaryActions/ExitButton
+@onready var play_button: Button = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin/PrimaryActions/PlayButton
+@onready var inventory_button: Button = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin/PrimaryActions/InventoryButton
+@onready var settings_button: Button = $ScreenRoot/MainMenuScreen/Layout/Root/Header/TopSettingsButton
+@onready var exit_button: Button = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin/PrimaryActions/ExitButton
 
 @onready var survival_button: Button = $ScreenRoot/ModeSelectScreen/Layout/Root/Content/ModeList/SurvivalButton
 @onready var endless_button: Button = $ScreenRoot/ModeSelectScreen/Layout/Root/Content/ModeList/EndlessButton
@@ -64,21 +64,26 @@ const HOME_UI_STYLE := preload("res://scripts/ui/home/HomeUIStyle.gd")
 @onready var pet_wisp_button: Button = $ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards/WispCard/Margin/VBox/SelectButton
 
 @onready var inventory_back_button: Button = $ScreenRoot/InventoryScreen/Layout/Root/Footer/BackButton
-@onready var hub_preview_list: Label = $ScreenRoot/MainMenuScreen/Layout/Root/Footer/FeaturePreview/PreviewMargin/PreviewContent/PreviewList
-@onready var hub_preview_note: Label = $ScreenRoot/MainMenuScreen/Layout/Root/Footer/FeaturePreview/PreviewMargin/PreviewContent/PreviewNote
+@onready var hub_preview_list: Label = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/FeaturePreview/PreviewMargin/PreviewContent/PreviewList
+@onready var hub_preview_note: Label = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/FeaturePreview/PreviewMargin/PreviewContent/PreviewNote
+@onready var hub_weapon_preview: Label = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin/VBox/WeaponPreview
+@onready var hub_armor_preview: Label = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin/VBox/ArmorPreview
+@onready var hub_pet_preview: Label = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin/VBox/PetPreview
+@onready var inventory_name_label: Label = $ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin/VBox/NameLabel
+@onready var inventory_type_label: Label = $ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin/VBox/TypeLabel
+@onready var inventory_stats_label: Label = $ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin/VBox/StatsLabel
 @onready var inventory_description_label: Label = $ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin/VBox/DescriptionLabel
+@onready var inventory_equip_button: Button = $ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin/VBox/ActionRow/EquipButton
+@onready var inventory_drop_button: Button = $ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin/VBox/ActionRow/DropButton
 @onready var inventory_item_buttons: Array[Button] = [
-	$ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Weapons/Grid/WeaponA,
-	$ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Weapons/Grid/WeaponB,
-	$ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Weapons/Grid/WeaponC,
-	$ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Weapons/Grid/WeaponD,
-	$ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Items/Grid/ItemA,
-	$ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Items/Grid/ItemB,
-	$ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Items/Grid/ItemC,
-	$ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Pets/Grid/PetA,
-	$ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Pets/Grid/PetB,
-	$ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Materials/Grid/MaterialA,
-	$ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Materials/Grid/MaterialB,
+	$ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/ItemGrid/SlotA,
+	$ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/ItemGrid/SlotB,
+	$ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/ItemGrid/SlotC,
+	$ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/ItemGrid/SlotD,
+	$ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/ItemGrid/SlotE,
+	$ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/ItemGrid/SlotF,
+	$ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/ItemGrid/SlotG,
+	$ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/ItemGrid/SlotH,
 ]
 
 var _screen_lookup: Dictionary = {}
@@ -124,18 +129,27 @@ func _ready() -> void:
 	_pet_select_panel = PET_SELECT_PANEL_SCRIPT.new()
 	_inventory_panel = INVENTORY_PANEL_SCRIPT.new()
 
-	_hub_summary_panel.setup(hub_preview_list, hub_preview_note, game_manager, _home_state)
+	_hub_summary_panel.setup(hub_preview_list, hub_preview_note, game_manager, _home_state, hub_weapon_preview, hub_armor_preview, hub_pet_preview)
 	_hero_select_panel.setup(hero_status_label, hero_continue_button, hero_knight_button, hero_rogue_button, hero_mage_button, game_manager, _home_state)
 	_equipment_panel.setup(equipment_summary_label, weapon_slot_button, armor_slot_button, accessory_slot_button, game_manager, _home_state)
 	_pet_select_panel.setup(pet_status_label, pet_drone_button, pet_sprite_button, pet_wisp_button, game_manager, _home_state)
-	_inventory_panel.setup(inventory_description_label, inventory_item_buttons, game_manager, _home_state)
+	_inventory_panel.setup(inventory_description_label, inventory_item_buttons, game_manager, _home_state, inventory_name_label, inventory_type_label, inventory_stats_label, inventory_equip_button, inventory_drop_button)
 	_equipment_panel.equip_slot_requested.connect(_on_equipment_slot_requested)
-	_inventory_panel.item_selected.connect(_on_inventory_item_selected)
+	_inventory_panel.equip_requested.connect(_on_inventory_item_selected)
 
 	play_button.pressed.connect(_on_play_pressed)
 	inventory_button.pressed.connect(_on_inventory_pressed)
 	settings_button.pressed.connect(_on_settings_pressed)
 	exit_button.pressed.connect(_on_exit_pressed)
+	var hero_nav_button := get_node_or_null("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin/PrimaryActions/HeroButton") as Button
+	if hero_nav_button != null:
+		hero_nav_button.pressed.connect(_on_hub_hero_pressed)
+	var pet_nav_button := get_node_or_null("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin/PrimaryActions/PetButton") as Button
+	if pet_nav_button != null:
+		pet_nav_button.pressed.connect(_on_hub_pet_pressed)
+	var map_nav_button := get_node_or_null("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin/PrimaryActions/MapButton") as Button
+	if map_nav_button != null:
+		map_nav_button.pressed.connect(_on_map_pressed)
 
 	survival_button.pressed.connect(_on_survival_pressed)
 	endless_button.pressed.connect(_on_endless_pressed)
@@ -274,6 +288,15 @@ func _on_play_pressed() -> void:
 func _on_inventory_pressed() -> void:
 	_show_screen(SCREEN_INVENTORY)
 
+func _on_hub_hero_pressed() -> void:
+	_show_screen(SCREEN_HERO_SELECT)
+
+func _on_hub_pet_pressed() -> void:
+	_show_screen(SCREEN_PET_SELECT)
+
+func _on_map_pressed() -> void:
+	_show_placeholder("Map", "Map selection is planned for a later content step.")
+
 func _on_settings_pressed() -> void:
 	_open_settings(SCREEN_MAIN_MENU)
 
@@ -393,33 +416,37 @@ func _apply_responsive_layout() -> void:
 		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn",
 		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn",
 		"ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin/VBox",
+		"ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/ItemGrid",
 	]:
 		_set_box_separation(content_path, content_separation)
 
 	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/Header", 4 if is_compact else 8)
-	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/Footer/PrimaryActions", content_separation)
-	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/Footer/PrimaryActions/SecondaryActions", 8 if is_compact else 12)
-	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/Footer/FeaturePreview/PreviewMargin/PreviewContent", 6 if is_compact else 10)
-	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/Spacer", Vector2(0.0, 4.0 if is_compact else 12.0))
+	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent", grid_separation)
+	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin/PrimaryActions", 8 if is_compact else 10)
+	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/VBox", 8 if is_compact else 12)
+	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel", 8 if is_compact else 14)
+	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin/VBox", 6 if is_compact else 10)
+	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/FeaturePreview/PreviewMargin/PreviewContent", 6 if is_compact else 8)
 
-	_set_grid_columns("ScreenRoot/MainMenuScreen/Layout/Root/Footer", 1 if is_narrow else 2)
 	_set_grid_columns("ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards", 1 if is_narrow else 3)
 	_set_grid_columns("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns", 1 if is_narrow else 2)
+	_set_grid_columns("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn", 1 if is_narrow else 3)
 	_set_grid_columns("ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards", 1 if is_narrow else 3)
 	_set_grid_columns("ScreenRoot/InventoryScreen/Layout/Root/Content", 1 if is_narrow else 2)
-	_set_grid_separation("ScreenRoot/MainMenuScreen/Layout/Root/Footer", grid_separation, grid_separation)
 	_set_grid_separation("ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards", grid_separation, grid_separation)
 	_set_grid_separation("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns", grid_separation, grid_separation)
+	_set_grid_separation("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn", grid_separation, grid_separation)
 	_set_grid_separation("ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards", grid_separation, grid_separation)
 	_set_grid_separation("ScreenRoot/InventoryScreen/Layout/Root/Content", grid_separation, grid_separation)
 
 	for grid_path in [
+		"ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/ItemGrid",
 		"ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Weapons/Grid",
 		"ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Items/Grid",
 		"ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Pets/Grid",
 		"ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Materials/Grid",
 	]:
-		_set_grid_columns(grid_path, 1 if is_narrow else 2)
+		_set_grid_columns(grid_path, 2 if is_narrow else 4)
 		_set_grid_separation(grid_path, 6 if is_compact else 10, 6 if is_compact else 10)
 
 	for inner_margin_path in [
@@ -431,14 +458,19 @@ func _apply_responsive_layout() -> void:
 		"ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards/SpriteCard/Margin",
 		"ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards/WispCard/Margin",
 		"ScreenRoot/PetSelectScreen/Layout/Root/Content/SelectionSummary/SummaryMargin",
+		"ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin",
+		"ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin",
+		"ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/VBox/StatsPanel/StatsMargin",
+		"ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin",
+		"ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/FeaturePreview/PreviewMargin",
 		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/WeaponSlot/Margin",
 		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/ArmorSlot/Margin",
 		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/AccessorySlot/Margin",
 		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/LoadoutCard/Margin",
+		"ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin",
 		"ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin",
 	]:
 		_set_margin(inner_margin_path, inner_margin)
-	_set_margin("ScreenRoot/MainMenuScreen/Layout/Root/Footer/FeaturePreview/PreviewMargin", preview_margin)
 
 	var portrait_height := 72.0 if is_compact else 180.0
 	for portrait_path in [

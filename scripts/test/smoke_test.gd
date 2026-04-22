@@ -35,7 +35,7 @@ func _run() -> void:
 		push_error("Smoke test failed: selecting a hero did not update home state.")
 		quit(1)
 		return
-	var hub_summary := home.call("_get_ui_node", "ScreenRoot/MainMenuScreen/Layout/Root/Footer/FeaturePreview/PreviewMargin/PreviewContent/PreviewList") as Label
+	var hub_summary := home.call("_get_ui_node", "ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/FeaturePreview/PreviewMargin/PreviewContent/PreviewList") as Label
 	if hub_summary == null or not hub_summary.text.contains("Hero: Knight"):
 		push_error("Smoke test failed: hub summary did not react to hero selection.")
 		quit(1)
@@ -117,6 +117,17 @@ func _run() -> void:
 		return
 	if game_manager == null:
 		push_error("Smoke test failed: GameManager autoload is missing.")
+		quit(1)
+		return
+	game.call("_toggle_pause_menu")
+	var pause_menu := game.get_node("GameOverlayLayer/PauseMenu")
+	if not paused or game_manager.is_gameplay_active or not bool(pause_menu.visible):
+		push_error("Smoke test failed: pause menu did not pause gameplay.")
+		quit(1)
+		return
+	game.call("_hide_pause_menu")
+	if paused or not game_manager.is_gameplay_active or bool(pause_menu.visible):
+		push_error("Smoke test failed: pause menu did not resume gameplay.")
 		quit(1)
 		return
 	if save_manager == null:

@@ -15,31 +15,36 @@ const MOCK_INVENTORY_ITEMS := [
 		"id": "training_blade",
 		"name": "Training Blade",
 		"slot": "weapon",
-		"stats": {"damage": "+1 placeholder"},
+		"stats": {"atk": "+1 placeholder"},
+		"description": "Reliable backup weapon for testing the equip flow.",
 	},
 	{
 		"id": "leather_vest",
 		"name": "Leather Vest",
 		"slot": "armor",
-		"stats": {"hp": "+2 placeholder"},
+		"stats": {"def": "+2 placeholder"},
+		"description": "Light armor scavenged from an abandoned checkpoint.",
 	},
 	{
 		"id": "scout_cloak",
 		"name": "Scout Cloak",
 		"slot": "armor",
 		"stats": {"speed": "+0.2 placeholder"},
+		"description": "Flexible outerwear for moving through infected streets.",
 	},
 	{
 		"id": "lucky_charm",
 		"name": "Lucky Charm",
 		"slot": "accessory",
 		"stats": {"xp": "+5% placeholder"},
+		"description": "Small survivor keepsake with placeholder progression value.",
 	},
 	{
 		"id": "focus_ring",
 		"name": "Focus Ring",
 		"slot": "accessory",
 		"stats": {"fire": "-0.03s placeholder"},
+		"description": "Mock accessory used to validate detail and equip UI.",
 	},
 ]
 

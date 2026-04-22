@@ -3,14 +3,20 @@ class_name HubSummaryPanel
 
 var _preview_list: Label
 var _preview_note: Label
+var _weapon_preview: Label
+var _armor_preview: Label
+var _pet_preview: Label
 var _game_manager: GameManager
 var _home_state
 
-func setup(preview_list: Label, preview_note: Label, game_manager: GameManager, home_state = null) -> void:
+func setup(preview_list: Label, preview_note: Label, game_manager: GameManager, home_state = null, weapon_preview: Label = null, armor_preview: Label = null, pet_preview: Label = null) -> void:
 	_preview_list = preview_list
 	_preview_note = preview_note
 	_game_manager = game_manager
 	_home_state = home_state
+	_weapon_preview = weapon_preview
+	_armor_preview = armor_preview
+	_pet_preview = pet_preview
 
 func refresh(_currency: int = 0) -> void:
 	if _preview_list == null or _preview_note == null or _game_manager == null:
@@ -41,3 +47,14 @@ func refresh(_currency: int = 0) -> void:
 		gear_summary,
 	]
 	_preview_note.text = "Survival is playable now. Other long-term systems are represented with simple readable UI."
+	if _weapon_preview != null:
+		_weapon_preview.text = "Weapon: %s" % weapon_name
+	if _armor_preview != null:
+		var armor_name := "Empty"
+		if _home_state != null:
+			var armor_item: Dictionary = _home_state.get_equipped_item("armor")
+			if not armor_item.is_empty():
+				armor_name = str(armor_item.get("name", armor_name))
+		_armor_preview.text = "Armor: %s" % armor_name
+	if _pet_preview != null:
+		_pet_preview.text = "Pet: %s" % pet_name

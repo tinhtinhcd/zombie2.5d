@@ -63,6 +63,7 @@ func _ready() -> void:
 
 func reset_game() -> void:
     # Restore default session state for a fresh run.
+    get_tree().paused = false
     _ensure_levels_loaded()
     _ensure_progression_loaded()
     score = 0
@@ -87,17 +88,17 @@ func reset_game() -> void:
     upgrade_selection_closed.emit()
 
 func pause_game() -> void:
-    # Reserve engine pause and gameplay coordination for later systems.
     if is_game_over:
         return
     is_paused = true
+    get_tree().paused = true
     _update_gameplay_active()
 
 func resume_game() -> void:
-    # Clear the pause flag without affecting gameplay systems yet.
     if is_game_over:
         return
     is_paused = false
+    get_tree().paused = false
     _update_gameplay_active()
 
 func add_score(amount: int) -> void:
@@ -146,6 +147,8 @@ func set_boss_wave(is_boss_wave_now: bool) -> void:
 func trigger_game_over() -> void:
     if is_game_over:
         return
+    get_tree().paused = false
+    is_paused = false
     is_game_over = true
     _update_gameplay_active()
     game_over_changed.emit(is_game_over)

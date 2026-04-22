@@ -20,7 +20,7 @@ const MOBILE_MARGIN = 12.0
 @onready var timer_label: Label = $HUDRoot/SafeMargin/Root/TopBar/TimerLabel
 @onready var level_label: Label = $HUDRoot/SafeMargin/Root/StatusPanel/Margin/Content/StatsGrid/LevelLabel
 @onready var wave_label: Label = $HUDRoot/SafeMargin/Root/StatusPanel/Margin/Content/StatsGrid/WaveLabel
-@onready var mission_label: Label = $HUDRoot/MissionPanel/Margin/MissionLabel
+@onready var mission_label: Label = $HUDRoot/OverlayRoot/MissionPanel/Margin/MissionLabel
 @onready var boss_panel: PanelContainer = $HUDRoot/SafeMargin/Root/BossPanel
 @onready var boss_bar: ProgressBar = $HUDRoot/SafeMargin/Root/BossPanel/Margin/BossContent/BossBar
 @onready var boss_label: Label = $HUDRoot/SafeMargin/Root/BossPanel/Margin/BossContent/BossLabel
@@ -28,22 +28,22 @@ const MOBILE_MARGIN = 12.0
 @onready var hp_label: Label = $HUDRoot/SafeMargin/Root/StatusPanel/Margin/Content/Bars/HPRow/HPLabel
 @onready var xp_bar: ProgressBar = $HUDRoot/SafeMargin/Root/StatusPanel/Margin/Content/Bars/XPRow/XPBar
 @onready var xp_label: Label = $HUDRoot/SafeMargin/Root/StatusPanel/Margin/Content/Bars/XPRow/XPLabel
-@onready var mission_panel: PanelContainer = $HUDRoot/MissionPanel
+@onready var mission_panel: PanelContainer = $HUDRoot/OverlayRoot/MissionPanel
 
-@onready var upgrade_panel: PanelContainer = $HUDRoot/UpgradePanel
-@onready var upgrade_button_1: Button = $HUDRoot/UpgradePanel/MarginContainer/VBoxContainer/UpgradeButtons/UpgradeButton1
-@onready var upgrade_button_2: Button = $HUDRoot/UpgradePanel/MarginContainer/VBoxContainer/UpgradeButtons/UpgradeButton2
-@onready var upgrade_button_3: Button = $HUDRoot/UpgradePanel/MarginContainer/VBoxContainer/UpgradeButtons/UpgradeButton3
+@onready var upgrade_panel: PanelContainer = $HUDRoot/OverlayRoot/ModalCenter/UpgradePanel
+@onready var upgrade_button_1: Button = $HUDRoot/OverlayRoot/ModalCenter/UpgradePanel/MarginContainer/VBoxContainer/UpgradeButtons/UpgradeButton1
+@onready var upgrade_button_2: Button = $HUDRoot/OverlayRoot/ModalCenter/UpgradePanel/MarginContainer/VBoxContainer/UpgradeButtons/UpgradeButton2
+@onready var upgrade_button_3: Button = $HUDRoot/OverlayRoot/ModalCenter/UpgradePanel/MarginContainer/VBoxContainer/UpgradeButtons/UpgradeButton3
 
-@onready var game_over_panel: PanelContainer = $HUDRoot/GameOverPanel
-@onready var game_over_stats_label: Label = $HUDRoot/GameOverPanel/MarginContainer/VBoxContainer/StatsLabel
-@onready var restart_button: Button = $HUDRoot/GameOverPanel/MarginContainer/VBoxContainer/Actions/RestartButton
-@onready var results_button: Button = $HUDRoot/GameOverPanel/MarginContainer/VBoxContainer/Actions/ResultsButton
-@onready var game_over_home_button: Button = $HUDRoot/GameOverPanel/MarginContainer/VBoxContainer/Actions/HomeButton
+@onready var game_over_panel: PanelContainer = $HUDRoot/OverlayRoot/ModalCenter/GameOverPanel
+@onready var game_over_stats_label: Label = $HUDRoot/OverlayRoot/ModalCenter/GameOverPanel/MarginContainer/VBoxContainer/StatsLabel
+@onready var restart_button: Button = $HUDRoot/OverlayRoot/ModalCenter/GameOverPanel/MarginContainer/VBoxContainer/Actions/RestartButton
+@onready var results_button: Button = $HUDRoot/OverlayRoot/ModalCenter/GameOverPanel/MarginContainer/VBoxContainer/Actions/ResultsButton
+@onready var game_over_home_button: Button = $HUDRoot/OverlayRoot/ModalCenter/GameOverPanel/MarginContainer/VBoxContainer/Actions/HomeButton
 
-@onready var result_panel: PanelContainer = $HUDRoot/ResultPanel
-@onready var result_summary_label: Label = $HUDRoot/ResultPanel/MarginContainer/VBoxContainer/SummaryLabel
-@onready var result_continue_button: Button = $HUDRoot/ResultPanel/MarginContainer/VBoxContainer/ContinueButton
+@onready var result_panel: PanelContainer = $HUDRoot/OverlayRoot/ModalCenter/ResultPanel
+@onready var result_summary_label: Label = $HUDRoot/OverlayRoot/ModalCenter/ResultPanel/MarginContainer/VBoxContainer/SummaryLabel
+@onready var result_continue_button: Button = $HUDRoot/OverlayRoot/ModalCenter/ResultPanel/MarginContainer/VBoxContainer/ContinueButton
 
 var _upgrade_option_ids: Array = []
 var _elapsed_time: float = 0.0
@@ -251,10 +251,7 @@ func _fit_center_panel(panel: Control, desktop_width: float, desktop_height: flo
 	var viewport_size := get_viewport().get_visible_rect().size
 	var panel_width: float = min(desktop_width, max(viewport_size.x - margin * 2.0, 240.0))
 	var panel_height: float = min(desktop_height, max(viewport_size.y - margin * 2.0, 260.0))
-	panel.offset_left = -panel_width * 0.5
-	panel.offset_right = panel_width * 0.5
-	panel.offset_top = -panel_height * 0.5
-	panel.offset_bottom = panel_height * 0.5
+	panel.custom_minimum_size = Vector2(panel_width, panel_height)
 
 func _fit_bottom_left_panel(panel: Control, desktop_width: float, desktop_height: float, margin: float) -> void:
 	var viewport_size := get_viewport().get_visible_rect().size

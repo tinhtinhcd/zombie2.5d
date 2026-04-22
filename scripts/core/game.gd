@@ -3,12 +3,16 @@ extends Node3D
 @onready var player: Player = $Player
 @onready var pet_companion = $PetCompanion
 @onready var hud: HUD = $HUD
-@onready var pause_menu: PauseMenuUI = $PauseMenu
-@onready var settings_screen: SettingsScreen = $SettingsScreen
+@onready var pause_menu: PauseMenuUI = $GameOverlayLayer/PauseMenu
+@onready var settings_screen: SettingsScreen = $GameOverlayLayer/SettingsScreen
 @onready var game_manager: GameManager = get_node("/root/GameManager") as GameManager
 @onready var scene_router: SceneRouter = get_node("/root/SceneRouter") as SceneRouter
 
 func _ready() -> void:
+    process_mode = Node.PROCESS_MODE_ALWAYS
+    hud.process_mode = Node.PROCESS_MODE_ALWAYS
+    pause_menu.process_mode = Node.PROCESS_MODE_ALWAYS
+    settings_screen.process_mode = Node.PROCESS_MODE_ALWAYS
     # This scene is the single entry point for a fresh gameplay run.
     # reset_game() clears session state; apply_permanent_upgrades() layers
     # in any persistent progression the player has earned across runs.
@@ -31,6 +35,22 @@ func _ready() -> void:
     player.died.connect(_on_player_died)
     hud.set_hp(player.current_hp)
 
+func _unhandled_input(event: InputEvent) -> void:
+    if _is_pause_event(event):
+        get_viewport().set_input_as_handled()
+        if settings_screen.visible:
+            _hide_settings_menu()
+            return
+        _toggle_pause_menu()
+
+func _is_pause_event(event: InputEvent) -> bool:
+    if InputMap.has_action("ui_cancel") and event.is_action_pressed("ui_cancel"):
+        return true
+    if event is InputEventKey:
+        var key_event := event as InputEventKey
+        return key_event.pressed and not key_event.echo and (key_event.keycode == KEY_ESCAPE or key_event.keycode == KEY_BACK)
+    return false
+
 func _apply_map_radius_from_player() -> void:
     var endless_map := $LevelContainer as EndlessMap
     if endless_map == null or player == null:
@@ -39,6 +59,8 @@ func _apply_map_radius_from_player() -> void:
 
 func _toggle_pause_menu() -> void:
     if game_manager.is_game_over:
+        return
+    if game_manager.is_upgrade_selection_active:
         return
 
     pause_menu.visible = not pause_menu.visible
@@ -66,10 +88,12 @@ func _on_player_died() -> void:
     game_manager.trigger_game_over()
 
 func _restart_game() -> void:
+    game_manager.resume_game()
     game_manager.restart_game()
 
 func _on_upgrade_selected(upgrade_id: StringName) -> void:
     game_manager.select_upgrade(player, upgrade_id)
 
 func _go_home() -> void:
+    game_manager.resume_game()
     scene_router.go_to_home()

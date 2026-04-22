@@ -26,7 +26,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.05, 0.06, 0.09, 1)
+color = Color(0.0823529, 0.0901961, 0.101961, 1)
 
 [node name="BackgroundArt" type="TextureRect" parent="."]
 modulate = Color(0.35, 0.38, 0.42, 0.18)
@@ -72,86 +72,203 @@ theme_override_constants/margin_bottom = 32
 layout_mode = 2
 theme_override_constants/separation = 24
 
-[node name="Header" type="VBoxContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root"]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="Title" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/Header"]
-layout_mode = 2
-text = "Zombie Survival"
-
-[node name="Subtitle" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/Header"]
-layout_mode = 2
-text = "Prepare your survivor, lock in gear, and push deeper into the outbreak."
-autowrap_mode = 3
-
-[node name="Spacer" type="Control" parent="ScreenRoot/MainMenuScreen/Layout/Root"]
-custom_minimum_size = Vector2(0, 12)
-layout_mode = 2
-
-[node name="Footer" type="GridContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root"]
-layout_mode = 2
-size_flags_vertical = 3
-columns = 2
-theme_override_constants/separation = 24
-
-[node name="PrimaryActions" type="VBoxContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/Footer"]
-custom_minimum_size = Vector2(260, 0)
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 16
-
-[node name="PlayButton" type="Button" parent="ScreenRoot/MainMenuScreen/Layout/Root/Footer/PrimaryActions"]
-custom_minimum_size = Vector2(0, 56)
-layout_mode = 2
-text = "Play"
-
-[node name="InventoryButton" type="Button" parent="ScreenRoot/MainMenuScreen/Layout/Root/Footer/PrimaryActions"]
-custom_minimum_size = Vector2(0, 56)
-layout_mode = 2
-text = "Inventory"
-
-[node name="SecondaryActions" type="VBoxContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/Footer/PrimaryActions"]
+[node name="Header" type="HBoxContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root"]
+custom_minimum_size = Vector2(0, 54)
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="SettingsButton" type="Button" parent="ScreenRoot/MainMenuScreen/Layout/Root/Footer/PrimaryActions/SecondaryActions"]
-custom_minimum_size = Vector2(0, 50)
+[node name="ProfileLabel" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/Header"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+text = "Profile: Survivor"
+vertical_alignment = 1
+
+[node name="Title" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "HUB SUMMARY"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TopSettingsButton" type="Button" parent="ScreenRoot/MainMenuScreen/Layout/Root/Header"]
+custom_minimum_size = Vector2(130, 44)
 layout_mode = 2
 text = "Settings"
 
-[node name="ExitButton" type="Button" parent="ScreenRoot/MainMenuScreen/Layout/Root/Footer/PrimaryActions/SecondaryActions"]
-custom_minimum_size = Vector2(0, 50)
-layout_mode = 2
-text = "Exit"
-
-[node name="FeaturePreview" type="PanelContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/Footer"]
+[node name="MainContent" type="HBoxContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root"]
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 18
 
-[node name="PreviewMargin" type="MarginContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/Footer/FeaturePreview"]
+[node name="LeftMenu" type="PanelContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent"]
+custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
-theme_override_constants/margin_left = 20
-theme_override_constants/margin_top = 20
-theme_override_constants/margin_right = 20
-theme_override_constants/margin_bottom = 20
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.23
 
-[node name="PreviewContent" type="VBoxContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/Footer/FeaturePreview/PreviewMargin"]
+[node name="Margin" type="MarginContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 14
+
+[node name="PrimaryActions" type="VBoxContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin"]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="PreviewTitle" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/Footer/FeaturePreview/PreviewMargin/PreviewContent"]
+[node name="HeroButton" type="Button" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin/PrimaryActions"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+text = "Hero"
+
+[node name="InventoryButton" type="Button" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin/PrimaryActions"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+text = "Inventory"
+
+[node name="PetButton" type="Button" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin/PrimaryActions"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+text = "Pet"
+
+[node name="MapButton" type="Button" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin/PrimaryActions"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+text = "Map"
+
+[node name="PlayButton" type="Button" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin/PrimaryActions"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+text = "Start"
+
+[node name="MenuSpacer" type="Control" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin/PrimaryActions"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ExitButton" type="Button" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin/PrimaryActions"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+text = "Exit"
+
+[node name="CenterHero" type="PanelContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.37
+
+[node name="Margin" type="MarginContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="VBox" type="VBoxContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="HeroDisplay" type="CenterContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="CharacterPlaceholder" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/VBox/HeroDisplay"]
+layout_mode = 2
+text = "SURVIVOR"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HeroNameLabel" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/VBox"]
+layout_mode = 2
+text = "Knight"
+horizontal_alignment = 1
+
+[node name="StatsPanel" type="PanelContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/VBox"]
+layout_mode = 2
+
+[node name="StatsMargin" type="MarginContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/VBox/StatsPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="StatsLabel" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/VBox/StatsPanel/StatsMargin"]
+layout_mode = 2
+text = "HP 10    ATK 1    DEF 0"
+horizontal_alignment = 1
+
+[node name="RightPanel" type="VBoxContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.4
+theme_override_constants/separation = 14
+
+[node name="QuickEquipmentPanel" type="PanelContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Margin" type="MarginContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="VBox" type="VBoxContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TitleLabel" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin/VBox"]
+layout_mode = 2
+text = "Quick Equipment"
+
+[node name="WeaponPreview" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin/VBox"]
+layout_mode = 2
+text = "Weapon: Basic Gun"
+
+[node name="ArmorPreview" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin/VBox"]
+layout_mode = 2
+text = "Armor: Empty"
+
+[node name="PetPreview" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin/VBox"]
+layout_mode = 2
+text = "Pet: Drone"
+
+[node name="FeaturePreview" type="PanelContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="PreviewMargin" type="MarginContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/FeaturePreview"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="PreviewContent" type="VBoxContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/FeaturePreview/PreviewMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="PreviewTitle" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/FeaturePreview/PreviewMargin/PreviewContent"]
 layout_mode = 2
 text = "Run Briefing"
 
-[node name="PreviewList" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/Footer/FeaturePreview/PreviewMargin/PreviewContent"]
+[node name="PreviewList" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/FeaturePreview/PreviewMargin/PreviewContent"]
 layout_mode = 2
 text = "Survival Mode\nKnight\nBasic Gun\nDrone\nInventory"
 
-[node name="PreviewNote" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/Footer/FeaturePreview/PreviewMargin/PreviewContent"]
+[node name="PreviewNote" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/FeaturePreview/PreviewMargin/PreviewContent"]
 layout_mode = 2
 autowrap_mode = 3
 text = "Choose a clean starter loadout before entering the survival run."
+
+[node name="SettingsButton" type="Button" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin/PrimaryActions"]
+visible = false
+layout_mode = 2
+text = "Settings"
 
 [node name="ModeSelectScreen" type="Control" parent="ScreenRoot"]
 visible = false
@@ -456,12 +573,12 @@ theme_override_constants/separation = 6
 
 [node name="Title" type="Label" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Header"]
 layout_mode = 2
-text = "Equipment Select"
+text = "Equipment"
 
 [node name="Subtitle" type="Label" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Header"]
 layout_mode = 2
 autowrap_mode = 3
-text = "Check weapon stats, equip simple gear, and continue to companion selection."
+text = "Select a slot, then equip matching gear from inventory."
 
 [node name="Content" type="VBoxContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root"]
 layout_mode = 2
@@ -474,12 +591,16 @@ theme_override_constants/h_separation = 16
 theme_override_constants/v_separation = 16
 theme_override_constants/separation = 16
 
-[node name="LeftColumn" type="VBoxContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns"]
+[node name="LeftColumn" type="GridContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns"]
 layout_mode = 2
 size_flags_horizontal = 3
+columns = 3
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 12
 theme_override_constants/separation = 12
 
 [node name="WeaponSlot" type="PanelContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn"]
+custom_minimum_size = Vector2(150, 118)
 layout_mode = 2
 
 [node name="Margin" type="MarginContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/WeaponSlot"]
@@ -506,7 +627,23 @@ custom_minimum_size = Vector2(0, 46)
 layout_mode = 2
 text = "Use Basic Gun"
 
+[node name="CharacterPanel" type="PanelContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn"]
+custom_minimum_size = Vector2(180, 180)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Center" type="CenterContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/CharacterPanel"]
+layout_mode = 2
+
+[node name="CharacterPlaceholder" type="Label" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/CharacterPanel/Center"]
+layout_mode = 2
+text = "CHARACTER"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="ArmorSlot" type="PanelContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn"]
+custom_minimum_size = Vector2(150, 118)
 layout_mode = 2
 
 [node name="Margin" type="MarginContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/ArmorSlot"]
@@ -534,6 +671,7 @@ layout_mode = 2
 text = "Coming Soon"
 
 [node name="AccessorySlot" type="PanelContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn"]
+custom_minimum_size = Vector2(150, 118)
 layout_mode = 2
 
 [node name="Margin" type="MarginContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/AccessorySlot"]
@@ -549,7 +687,7 @@ theme_override_constants/separation = 8
 
 [node name="TitleLabel" type="Label" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/AccessorySlot/Margin/VBox"]
 layout_mode = 2
-text = "Accessory Slot"
+text = "Pet Slot"
 
 [node name="DescriptionLabel" type="Label" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/AccessorySlot/Margin/VBox"]
 layout_mode = 2
@@ -558,7 +696,7 @@ text = "Empty"
 [node name="SlotButton" type="Button" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/AccessorySlot/Margin/VBox"]
 custom_minimum_size = Vector2(0, 46)
 layout_mode = 2
-text = "Coming Soon"
+text = "Equip Pet Gear"
 
 [node name="RightColumn" type="VBoxContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns"]
 layout_mode = 2
@@ -584,6 +722,12 @@ text = "Selected loadout"
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 text = "Open Inventory"
+
+[node name="UnequipButton" type="Button" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+text = "Unequip"
+disabled = true
 
 [node name="Footer" type="HBoxContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root"]
 layout_mode = 2
@@ -825,7 +969,66 @@ theme_override_constants/h_separation = 16
 theme_override_constants/v_separation = 16
 theme_override_constants/separation = 16
 
+[node name="GridPanel" type="PanelContainer" parent="ScreenRoot/InventoryScreen/Layout/Root/Content"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Margin" type="MarginContainer" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="ItemGrid" type="GridContainer" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin"]
+layout_mode = 2
+columns = 4
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 10
+
+[node name="SlotA" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/ItemGrid"]
+custom_minimum_size = Vector2(112, 76)
+layout_mode = 2
+text = "Slot"
+
+[node name="SlotB" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/ItemGrid"]
+custom_minimum_size = Vector2(112, 76)
+layout_mode = 2
+text = "Slot"
+
+[node name="SlotC" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/ItemGrid"]
+custom_minimum_size = Vector2(112, 76)
+layout_mode = 2
+text = "Slot"
+
+[node name="SlotD" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/ItemGrid"]
+custom_minimum_size = Vector2(112, 76)
+layout_mode = 2
+text = "Slot"
+
+[node name="SlotE" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/ItemGrid"]
+custom_minimum_size = Vector2(112, 76)
+layout_mode = 2
+text = "Slot"
+
+[node name="SlotF" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/ItemGrid"]
+custom_minimum_size = Vector2(112, 76)
+layout_mode = 2
+text = "Slot"
+
+[node name="SlotG" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/ItemGrid"]
+custom_minimum_size = Vector2(112, 76)
+layout_mode = 2
+text = "Slot"
+
+[node name="SlotH" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/ItemGrid"]
+custom_minimum_size = Vector2(112, 76)
+layout_mode = 2
+text = "Slot"
+
 [node name="TabContainer" type="TabContainer" parent="ScreenRoot/InventoryScreen/Layout/Root/Content"]
+visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -967,10 +1170,38 @@ theme_override_constants/separation = 10
 layout_mode = 2
 text = "Item Details"
 
+[node name="NameLabel" type="Label" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin/VBox"]
+layout_mode = 2
+text = "No Item Selected"
+
+[node name="TypeLabel" type="Label" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin/VBox"]
+layout_mode = 2
+text = "Type: -"
+
+[node name="StatsLabel" type="Label" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin/VBox"]
+layout_mode = 2
+text = "Stats: -"
+
 [node name="DescriptionLabel" type="Label" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin/VBox"]
 layout_mode = 2
 autowrap_mode = 3
 text = "Choose an equipment slot first, then equip a matching item from the list."
+
+[node name="ActionRow" type="HBoxContainer" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="EquipButton" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin/VBox/ActionRow"]
+custom_minimum_size = Vector2(120, 48)
+layout_mode = 2
+text = "Equip"
+disabled = true
+
+[node name="DropButton" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin/VBox/ActionRow"]
+custom_minimum_size = Vector2(120, 48)
+layout_mode = 2
+text = "Drop"
+disabled = true
 
 [node name="Footer" type="HBoxContainer" parent="ScreenRoot/InventoryScreen/Layout/Root"]
 layout_mode = 2
@@ -982,5 +1213,7 @@ layout_mode = 2
 text = "Back"
 
 [node name="SettingsScreen" parent="." instance=ExtResource("7_settings")]
+z_index = 20
 
 [node name="PlaceholderPopup" parent="." instance=ExtResource("8_popup")]
+z_index = 30

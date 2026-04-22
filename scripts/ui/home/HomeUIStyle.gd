@@ -1,16 +1,16 @@
 extends RefCounted
 class_name HomeUIStyle
 
-const COLOR_TEXT := Color(0.94, 0.95, 0.9, 1.0)
-const COLOR_MUTED := Color(0.68, 0.73, 0.68, 1.0)
-const COLOR_PANEL := Color(0.08, 0.095, 0.085, 0.88)
-const COLOR_PANEL_ALT := Color(0.12, 0.14, 0.12, 0.92)
-const COLOR_BORDER := Color(0.36, 0.42, 0.32, 0.9)
-const COLOR_SELECTED := Color(0.93, 0.76, 0.34, 1.0)
-const COLOR_SELECTED_DARK := Color(0.22, 0.17, 0.08, 1.0)
-const COLOR_GREEN := Color(0.48, 0.72, 0.36, 1.0)
-const COLOR_LOCKED := Color(0.27, 0.29, 0.28, 1.0)
-const COLOR_LOCKED_BORDER := Color(0.43, 0.45, 0.43, 0.8)
+const COLOR_TEXT := Color(0.902, 0.902, 0.902, 1.0)
+const COLOR_MUTED := Color(0.655, 0.678, 0.71, 1.0)
+const COLOR_PANEL := Color(0.137, 0.149, 0.169, 0.96)
+const COLOR_PANEL_ALT := Color(0.169, 0.184, 0.208, 0.98)
+const COLOR_BORDER := Color(0.29, 0.31, 0.341, 0.95)
+const COLOR_SELECTED := Color(0.651, 0.239, 0.251, 1.0)
+const COLOR_SELECTED_DARK := Color(0.08, 0.065, 0.065, 1.0)
+const COLOR_TEAL := Color(0.435, 0.639, 0.659, 1.0)
+const COLOR_LOCKED := Color(0.18, 0.18, 0.18, 1.0)
+const COLOR_LOCKED_BORDER := Color(0.39, 0.4, 0.37, 0.9)
 
 static func apply_tree(root: Node) -> void:
 	if root == null:
@@ -34,17 +34,17 @@ static func apply_panel(panel: PanelContainer, variant: String = "default") -> v
 static func apply_button_state(button: Button, state: String = "default") -> void:
 	if button == null:
 		return
-	var normal_fill := Color(0.34, 0.55, 0.28, 1.0)
-	var hover_fill := Color(0.43, 0.66, 0.34, 1.0)
-	var pressed_fill := Color(0.27, 0.43, 0.22, 1.0)
-	var border := Color(0.62, 0.79, 0.48, 1.0)
-	var font := Color(0.05, 0.08, 0.04, 1.0)
+	var normal_fill := Color(0.17, 0.185, 0.208, 1.0)
+	var hover_fill := Color(0.22, 0.239, 0.267, 1.0)
+	var pressed_fill := Color(0.12, 0.13, 0.15, 1.0)
+	var border := COLOR_BORDER
+	var font := COLOR_TEXT
 	if state == "selected":
 		normal_fill = COLOR_SELECTED
-		hover_fill = Color(1.0, 0.84, 0.42, 1.0)
-		pressed_fill = Color(0.78, 0.58, 0.2, 1.0)
-		border = Color(1.0, 0.9, 0.52, 1.0)
-		font = COLOR_SELECTED_DARK
+		hover_fill = Color(0.76, 0.31, 0.32, 1.0)
+		pressed_fill = Color(0.48, 0.17, 0.18, 1.0)
+		border = Color(0.82, 0.42, 0.43, 1.0)
+		font = COLOR_TEXT
 	elif state == "locked":
 		normal_fill = COLOR_LOCKED
 		hover_fill = Color(0.35, 0.37, 0.36, 1.0)
@@ -52,10 +52,10 @@ static func apply_button_state(button: Button, state: String = "default") -> voi
 		border = COLOR_LOCKED_BORDER
 		font = Color(0.76, 0.79, 0.76, 1.0)
 	elif state == "secondary":
-		normal_fill = Color(0.22, 0.27, 0.22, 1.0)
-		hover_fill = Color(0.29, 0.36, 0.29, 1.0)
-		pressed_fill = Color(0.18, 0.23, 0.18, 1.0)
-		border = Color(0.48, 0.58, 0.42, 1.0)
+		normal_fill = Color(0.145, 0.157, 0.18, 1.0)
+		hover_fill = Color(0.19, 0.208, 0.235, 1.0)
+		pressed_fill = Color(0.11, 0.12, 0.14, 1.0)
+		border = Color(0.31, 0.33, 0.36, 1.0)
 		font = COLOR_TEXT
 
 	button.add_theme_stylebox_override("normal", _make_button_style(normal_fill, border))
@@ -85,14 +85,14 @@ static func _style_label(label: Label) -> void:
 	var name := label.name
 	label.add_theme_color_override("font_color", COLOR_TEXT)
 	if name == "Title":
-		label.add_theme_font_size_override("font_size", 30)
-		label.add_theme_color_override("font_color", Color(0.98, 0.88, 0.54, 1.0))
+		label.add_theme_font_size_override("font_size", 28)
+		label.add_theme_color_override("font_color", COLOR_TEXT)
 	elif name == "Subtitle":
 		label.add_theme_font_size_override("font_size", 14)
 		label.add_theme_color_override("font_color", COLOR_MUTED)
 	elif name == "PreviewTitle" or name == "TitleLabel" or name == "NameLabel":
 		label.add_theme_font_size_override("font_size", 18)
-		label.add_theme_color_override("font_color", Color(0.96, 0.84, 0.48, 1.0))
+		label.add_theme_color_override("font_color", COLOR_TEAL)
 	elif name == "DescriptionLabel" or name == "StatusLabel" or name == "PreviewNote":
 		label.add_theme_font_size_override("font_size", 14)
 		label.add_theme_color_override("font_color", COLOR_MUTED)
