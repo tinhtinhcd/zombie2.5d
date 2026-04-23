@@ -3,14 +3,23 @@ class_name HomeUIStyle
 
 const COLOR_TEXT := Color(0.902, 0.902, 0.902, 1.0)
 const COLOR_MUTED := Color(0.655, 0.678, 0.71, 1.0)
-const COLOR_PANEL := Color(0.137, 0.149, 0.169, 0.96)
-const COLOR_PANEL_ALT := Color(0.169, 0.184, 0.208, 0.98)
-const COLOR_BORDER := Color(0.29, 0.31, 0.341, 0.95)
-const COLOR_SELECTED := Color(0.651, 0.239, 0.251, 1.0)
-const COLOR_SELECTED_DARK := Color(0.08, 0.065, 0.065, 1.0)
-const COLOR_TEAL := Color(0.435, 0.639, 0.659, 1.0)
-const COLOR_LOCKED := Color(0.18, 0.18, 0.18, 1.0)
-const COLOR_LOCKED_BORDER := Color(0.39, 0.4, 0.37, 0.9)
+const COLOR_PANEL := Color(0.035, 0.07, 0.08, 0.93)
+const COLOR_PANEL_ALT := Color(0.055, 0.105, 0.12, 0.96)
+const COLOR_BORDER := Color(0.18, 0.42, 0.46, 0.95)
+const COLOR_SELECTED := Color(0.22, 0.72, 0.76, 1.0)
+const COLOR_SELECTED_DARK := Color(0.025, 0.09, 0.105, 1.0)
+const COLOR_TEAL := Color(0.42, 0.9, 0.95, 1.0)
+const COLOR_LOCKED := Color(0.075, 0.09, 0.095, 0.95)
+const COLOR_LOCKED_BORDER := Color(0.18, 0.26, 0.28, 0.9)
+
+const WENREXA_BACKGROUND_PATH := "res://assets/wenrexa_ui_sci_fi_01/common/Background.jpg"
+const WENREXA_BTN_DEFAULT_PATH := "res://assets/wenrexa_ui_sci_fi_01/common/BtnDefault.png"
+const WENREXA_BTN_BACK_PATH := "res://assets/wenrexa_ui_sci_fi_01/common/BtnBack.png"
+const WENREXA_BTN_NEXT_PATH := "res://assets/wenrexa_ui_sci_fi_01/common/BtnNext.png"
+const WENREXA_ITEM_ENABLE_PATH := "res://assets/wenrexa_ui_sci_fi_01/common/ItemEnable.png"
+const WENREXA_ITEM_DISABLE_PATH := "res://assets/wenrexa_ui_sci_fi_01/common/ItemDisable.png"
+
+static var _texture_cache: Dictionary = {}
 
 static func apply_tree(root: Node) -> void:
 	if root == null:
@@ -24,51 +33,68 @@ static func apply_tree(root: Node) -> void:
 			apply_button_state(child as Button, "default")
 		apply_tree(child)
 
+static func get_background_texture() -> Texture2D:
+	return _get_texture(WENREXA_BACKGROUND_PATH)
+
 static func apply_panel(panel: PanelContainer, variant: String = "default") -> void:
 	if panel == null:
 		return
-	var fill := COLOR_PANEL_ALT if variant == "selected" else COLOR_PANEL
-	var border := COLOR_SELECTED if variant == "selected" else COLOR_BORDER
+	var fill: Color = COLOR_PANEL_ALT if variant == "selected" else COLOR_PANEL
+	var border: Color = COLOR_SELECTED if variant == "selected" else COLOR_BORDER
 	panel.add_theme_stylebox_override("panel", _make_panel_style(fill, border, 2 if variant == "selected" else 1))
 
 static func apply_button_state(button: Button, state: String = "default") -> void:
 	if button == null:
 		return
-	var normal_fill := Color(0.17, 0.185, 0.208, 1.0)
-	var hover_fill := Color(0.22, 0.239, 0.267, 1.0)
-	var pressed_fill := Color(0.12, 0.13, 0.15, 1.0)
-	var border := COLOR_BORDER
+	var texture: Texture2D = _get_texture(WENREXA_BTN_DEFAULT_PATH)
+	var normal_modulate := Color(0.75, 0.95, 1.0, 0.96)
+	var hover_modulate := Color(0.95, 1.0, 1.0, 1.0)
+	var pressed_modulate := Color(0.42, 0.78, 0.86, 1.0)
+	var disabled_modulate := Color(0.36, 0.44, 0.46, 0.72)
 	var font := COLOR_TEXT
 	if state == "selected":
-		normal_fill = COLOR_SELECTED
-		hover_fill = Color(0.76, 0.31, 0.32, 1.0)
-		pressed_fill = Color(0.48, 0.17, 0.18, 1.0)
-		border = Color(0.82, 0.42, 0.43, 1.0)
+		texture = _get_texture(WENREXA_BTN_NEXT_PATH)
+		normal_modulate = Color(0.7, 1.0, 1.0, 1.0)
+		hover_modulate = Color(1.0, 1.0, 1.0, 1.0)
+		pressed_modulate = Color(0.48, 0.86, 0.92, 1.0)
 		font = COLOR_TEXT
 	elif state == "locked":
-		normal_fill = COLOR_LOCKED
-		hover_fill = Color(0.35, 0.37, 0.36, 1.0)
-		pressed_fill = Color(0.22, 0.24, 0.23, 1.0)
-		border = COLOR_LOCKED_BORDER
-		font = Color(0.76, 0.79, 0.76, 1.0)
+		texture = _get_texture(WENREXA_BTN_DEFAULT_PATH)
+		normal_modulate = disabled_modulate
+		hover_modulate = Color(0.42, 0.5, 0.52, 0.8)
+		pressed_modulate = Color(0.3, 0.36, 0.38, 0.72)
+		font = Color(0.62, 0.72, 0.74, 1.0)
 	elif state == "secondary":
-		normal_fill = Color(0.145, 0.157, 0.18, 1.0)
-		hover_fill = Color(0.19, 0.208, 0.235, 1.0)
-		pressed_fill = Color(0.11, 0.12, 0.14, 1.0)
-		border = Color(0.31, 0.33, 0.36, 1.0)
+		texture = _get_texture(WENREXA_BTN_BACK_PATH)
+		normal_modulate = Color(0.68, 0.88, 0.94, 0.94)
+		hover_modulate = Color(0.86, 1.0, 1.0, 1.0)
+		pressed_modulate = Color(0.4, 0.68, 0.74, 1.0)
 		font = COLOR_TEXT
 
-	button.add_theme_stylebox_override("normal", _make_button_style(normal_fill, border))
-	button.add_theme_stylebox_override("hover", _make_button_style(hover_fill, border))
-	button.add_theme_stylebox_override("focus", _make_button_style(hover_fill, COLOR_SELECTED))
-	button.add_theme_stylebox_override("pressed", _make_button_style(pressed_fill, border))
+	button.add_theme_stylebox_override("normal", _make_button_texture_style(texture, normal_modulate))
+	button.add_theme_stylebox_override("hover", _make_button_texture_style(texture, hover_modulate))
+	button.add_theme_stylebox_override("focus", _make_button_texture_style(texture, hover_modulate))
+	button.add_theme_stylebox_override("pressed", _make_button_texture_style(texture, pressed_modulate))
+	button.add_theme_stylebox_override("disabled", _make_button_texture_style(texture, disabled_modulate))
 	button.add_theme_color_override("font_color", font)
 	button.add_theme_color_override("font_hover_color", font)
 	button.add_theme_color_override("font_pressed_color", font)
+	button.add_theme_color_override("font_disabled_color", Color(0.45, 0.56, 0.58, 1.0))
 	button.add_theme_font_size_override("font_size", 15)
 
 static func apply_item_button(button: Button, is_equipped: bool = false) -> void:
-	apply_button_state(button, "selected" if is_equipped else "secondary")
+	var texture: Texture2D = _get_texture(WENREXA_ITEM_ENABLE_PATH if is_equipped else WENREXA_ITEM_DISABLE_PATH)
+	var normal_modulate := Color(0.75, 1.0, 1.0, 1.0) if is_equipped else Color(0.65, 0.82, 0.88, 0.92)
+	var hover_modulate := Color(0.95, 1.0, 1.0, 1.0)
+	button.add_theme_stylebox_override("normal", _make_item_texture_style(texture, normal_modulate))
+	button.add_theme_stylebox_override("hover", _make_item_texture_style(texture, hover_modulate))
+	button.add_theme_stylebox_override("focus", _make_item_texture_style(_get_texture(WENREXA_ITEM_ENABLE_PATH), hover_modulate))
+	button.add_theme_stylebox_override("pressed", _make_item_texture_style(_get_texture(WENREXA_ITEM_ENABLE_PATH), Color(0.5, 0.85, 0.9, 1.0)))
+	button.add_theme_stylebox_override("disabled", _make_item_texture_style(_get_texture(WENREXA_ITEM_DISABLE_PATH), Color(0.35, 0.42, 0.44, 0.75)))
+	button.add_theme_color_override("font_color", COLOR_TEXT)
+	button.add_theme_color_override("font_hover_color", COLOR_TEXT)
+	button.add_theme_color_override("font_pressed_color", COLOR_TEXT)
+	button.add_theme_font_size_override("font_size", 14)
 	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 
 static func apply_related_card_from_button(button: Button, is_selected: bool) -> void:
@@ -113,6 +139,49 @@ static func _make_panel_style(fill: Color, border: Color, border_width: int) -> 
 	style.content_margin_top = 2.0
 	style.content_margin_right = 2.0
 	style.content_margin_bottom = 2.0
+	return style
+
+static func _get_texture(path: String) -> Texture2D:
+	if _texture_cache.has(path):
+		return _texture_cache[path] as Texture2D
+	var image := Image.load_from_file(path)
+	if image == null or image.is_empty():
+		push_warning("HomeUIStyle warning: failed to load UI texture %s" % path)
+		return null
+	var texture := ImageTexture.create_from_image(image)
+	_texture_cache[path] = texture
+	return texture
+
+static func _make_button_texture_style(texture: Texture2D, modulate: Color) -> StyleBox:
+	if texture == null:
+		return _make_button_style(Color(0.08, 0.14, 0.16, 1.0), COLOR_BORDER)
+	var style := StyleBoxTexture.new()
+	style.texture = texture
+	style.texture_margin_left = 28.0
+	style.texture_margin_top = 14.0
+	style.texture_margin_right = 28.0
+	style.texture_margin_bottom = 14.0
+	style.modulate_color = modulate
+	style.content_margin_left = 16.0
+	style.content_margin_top = 10.0
+	style.content_margin_right = 16.0
+	style.content_margin_bottom = 10.0
+	return style
+
+static func _make_item_texture_style(texture: Texture2D, modulate: Color) -> StyleBox:
+	if texture == null:
+		return _make_button_style(Color(0.08, 0.14, 0.16, 1.0), COLOR_BORDER)
+	var style := StyleBoxTexture.new()
+	style.texture = texture
+	style.texture_margin_left = 20.0
+	style.texture_margin_top = 16.0
+	style.texture_margin_right = 20.0
+	style.texture_margin_bottom = 16.0
+	style.modulate_color = modulate
+	style.content_margin_left = 10.0
+	style.content_margin_top = 8.0
+	style.content_margin_right = 10.0
+	style.content_margin_bottom = 8.0
 	return style
 
 static func _make_button_style(fill: Color, border: Color) -> StyleBoxFlat:

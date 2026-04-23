@@ -6,14 +6,17 @@ const SCREEN_HERO_SELECT = "HeroSelectScreen"
 const SCREEN_EQUIPMENT_SELECT = "EquipmentSelectScreen"
 const SCREEN_PET_SELECT = "PetSelectScreen"
 const SCREEN_INVENTORY = "InventoryScreen"
-const MOBILE_WIDTH_THRESHOLD = 700.0
-const COMPACT_HEIGHT_THRESHOLD = 620.0
+const LAYOUT_MOBILE = "mobile"
+const LAYOUT_TABLET = "tablet"
+const LAYOUT_DESKTOP = "desktop"
+const MOBILE_MAX_WIDTH = 900.0
+const MOBILE_MAX_HEIGHT = 620.0
+const TABLET_MAX_WIDTH = 1180.0
 const MOBILE_MARGIN = 10
+const TABLET_MARGIN = 18
 const DESKTOP_MARGIN = 32
 const INVENTORY_MAX_CONTENT_WIDTH = 980.0
 const INVENTORY_WIDE_SCREEN_RATIO = 0.82
-const INVENTORY_TWO_PANE_MIN_WIDTH = 1180.0
-const INVENTORY_TWO_COLUMN_GRID_MAX_WIDTH = 900.0
 const HUB_SUMMARY_PANEL_SCRIPT := preload("res://scripts/ui/home/HubSummaryPanel.gd")
 const HERO_SELECT_PANEL_SCRIPT := preload("res://scripts/ui/home/HeroSelectPanel.gd")
 const EQUIPMENT_PANEL_SCRIPT := preload("res://scripts/ui/home/EquipmentPanel.gd")
@@ -24,6 +27,7 @@ const HOME_STATE_SCRIPT := preload("res://scripts/ui/home/HomeState.gd")
 const HOME_UI_STYLE := preload("res://scripts/ui/home/HomeUIStyle.gd")
 
 @onready var screen_root: Control = $ScreenRoot
+@onready var background_art: TextureRect = $BackgroundArt
 @onready var main_menu_screen: Control = $ScreenRoot/MainMenuScreen
 @onready var mode_select_screen: Control = $ScreenRoot/ModeSelectScreen
 @onready var hero_select_screen: Control = $ScreenRoot/HeroSelectScreen
@@ -196,6 +200,9 @@ func _ready() -> void:
 	_show_screen(SCREEN_MAIN_MENU, false)
 
 func _apply_home_visual_style() -> void:
+	var wenrexa_background := HOME_UI_STYLE.get_background_texture()
+	if wenrexa_background != null:
+		background_art.texture = wenrexa_background
 	HOME_UI_STYLE.apply_tree(screen_root)
 	HOME_UI_STYLE.apply_button_state(play_button, "selected")
 	HOME_UI_STYLE.apply_button_state(inventory_button, "secondary")
@@ -379,21 +386,23 @@ func _on_home_state_equipment_slot_changed(_slot_id: String) -> void:
 
 func _apply_responsive_layout() -> void:
 	var viewport_size := get_viewport_rect().size
-	var is_narrow := viewport_size.x <= MOBILE_WIDTH_THRESHOLD
-	var is_compact := is_narrow or viewport_size.y <= COMPACT_HEIGHT_THRESHOLD
-	var margin := MOBILE_MARGIN if is_compact else DESKTOP_MARGIN
-	var root_separation := 10 if is_compact else 20
-	var content_separation := 8 if is_compact else 16
-	var grid_separation := 8 if is_compact else 16
-	var inner_margin := 10 if is_compact else 16
-	var preview_margin := 12 if is_compact else 20
-	var inventory_single_column := is_compact or viewport_size.x < INVENTORY_TWO_PANE_MIN_WIDTH
-	var inventory_item_columns := 4
-	if inventory_single_column:
-		inventory_item_columns = 2 if viewport_size.x < INVENTORY_TWO_COLUMN_GRID_MAX_WIDTH else 3
+	var responsive_mode: String = _resolve_responsive_mode(viewport_size)
+	var is_mobile: bool = responsive_mode == LAYOUT_MOBILE
+	var is_tablet: bool = responsive_mode == LAYOUT_TABLET
+	var margin := _get_layout_margin(responsive_mode)
+	var root_separation := 10 if is_mobile else (14 if is_tablet else 20)
+	var content_separation := 8 if is_mobile else (12 if is_tablet else 16)
+	var grid_separation := 8 if is_mobile else (12 if is_tablet else 16)
+	var inner_margin := 10 if is_mobile else (12 if is_tablet else 16)
+	var mobile_or_tablet := is_mobile or is_tablet
+	var hero_pet_columns := 1 if is_mobile else (2 if is_tablet else 3)
+	var equipment_columns := 1 if mobile_or_tablet else 2
+	var equipment_slot_columns := 1 if is_mobile else (2 if is_tablet else 3)
+	var inventory_content_columns := 1 if mobile_or_tablet else 2
+	var inventory_item_columns := 2 if is_mobile else (3 if is_tablet else 4)
 
 	for screen_name in _scroll_containers.keys():
-		_set_scroll_container_enabled(str(screen_name), is_compact)
+		_set_scroll_container_enabled(str(screen_name), mobile_or_tablet)
 
 	for layout_path in [
 		"ScreenRoot/MainMenuScreen/Layout",
@@ -403,7 +412,7 @@ func _apply_responsive_layout() -> void:
 		"ScreenRoot/PetSelectScreen/Layout",
 	]:
 		_set_margin(layout_path, margin)
-	_set_inventory_layout_margin(margin, viewport_size.x)
+	_set_inventory_layout_margin(margin, viewport_size.x, responsive_mode)
 
 	for root_path in [
 		"ScreenRoot/MainMenuScreen/Layout/Root",
@@ -428,19 +437,26 @@ func _apply_responsive_layout() -> void:
 	]:
 		_set_box_separation(content_path, content_separation)
 
-	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/Header", 4 if is_compact else 8)
-	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent", grid_separation)
-	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin/PrimaryActions", 8 if is_compact else 10)
-	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/VBox", 8 if is_compact else 12)
-	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel", 8 if is_compact else 14)
-	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin/VBox", 6 if is_compact else 10)
-	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/FeaturePreview/PreviewMargin/PreviewContent", 6 if is_compact else 8)
+	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/Header", 4 if is_mobile else 8)
+	_set_grid_columns("ScreenRoot/MainMenuScreen/Layout/Root/MainContent", 1 if mobile_or_tablet else 3)
+	_set_grid_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent", grid_separation, grid_separation)
+	_apply_hub_layout_order(responsive_mode)
+	_set_control_visible("ScreenRoot/MainMenuScreen/Layout/Root/Header/ProfileLabel", not is_mobile)
+	_set_control_visible("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin/PrimaryActions/MenuSpacer", not mobile_or_tablet)
+	_set_control_size_flags("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu", Control.SIZE_EXPAND_FILL, Control.SIZE_FILL)
+	_set_control_size_flags("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero", Control.SIZE_EXPAND_FILL, Control.SIZE_FILL if mobile_or_tablet else Control.SIZE_EXPAND_FILL)
+	_set_control_size_flags("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel", Control.SIZE_EXPAND_FILL, Control.SIZE_FILL if mobile_or_tablet else Control.SIZE_EXPAND_FILL)
+	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin/PrimaryActions", 8 if is_mobile else 10)
+	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/VBox", 8 if is_mobile else 12)
+	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel", 8 if is_mobile else 14)
+	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin/VBox", 6 if is_mobile else 10)
+	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/FeaturePreview/PreviewMargin/PreviewContent", 6 if is_mobile else 8)
 
-	_set_grid_columns("ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards", 1 if is_narrow else 3)
-	_set_grid_columns("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns", 1 if is_narrow else 2)
-	_set_grid_columns("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn", 1 if is_narrow else 3)
-	_set_grid_columns("ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards", 1 if is_narrow else 3)
-	_set_grid_columns("ScreenRoot/InventoryScreen/Layout/Root/Content", 1 if inventory_single_column else 2)
+	_set_grid_columns("ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards", hero_pet_columns)
+	_set_grid_columns("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns", equipment_columns)
+	_set_grid_columns("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn", equipment_slot_columns)
+	_set_grid_columns("ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards", hero_pet_columns)
+	_set_grid_columns("ScreenRoot/InventoryScreen/Layout/Root/Content", inventory_content_columns)
 	_set_grid_separation("ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards", grid_separation, grid_separation)
 	_set_grid_separation("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns", grid_separation, grid_separation)
 	_set_grid_separation("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn", grid_separation, grid_separation)
@@ -451,7 +467,7 @@ func _apply_responsive_layout() -> void:
 		"ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/ItemGrid",
 	]:
 		_set_grid_columns(grid_path, inventory_item_columns)
-		_set_grid_separation(grid_path, 6 if is_compact else 10, 6 if is_compact else 10)
+		_set_grid_separation(grid_path, 6 if is_mobile else 10, 6 if is_mobile else 10)
 
 	for inner_margin_path in [
 		"ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/KnightCard/Margin",
@@ -476,7 +492,7 @@ func _apply_responsive_layout() -> void:
 	]:
 		_set_margin(inner_margin_path, inner_margin)
 
-	var portrait_height := 72.0 if is_compact else 180.0
+	var portrait_height := 96.0 if is_mobile else (132.0 if is_tablet else 180.0)
 	for portrait_path in [
 		"ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/KnightCard/Margin/VBox/Portrait",
 		"ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/RogueCard/Margin/VBox/Portrait",
@@ -485,7 +501,11 @@ func _apply_responsive_layout() -> void:
 		_set_minimum_size(portrait_path, Vector2(0.0, portrait_height))
 
 	_set_minimum_size("ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel", Vector2.ZERO)
-	_update_touch_targets(screen_root, is_compact)
+	_set_minimum_size("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/WeaponSlot", Vector2(0.0, 0.0))
+	_set_minimum_size("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/ArmorSlot", Vector2(0.0, 0.0))
+	_set_minimum_size("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/AccessorySlot", Vector2(0.0, 0.0))
+	_set_minimum_size("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/CharacterPanel", Vector2(0.0, 120.0 if is_mobile else (150.0 if is_tablet else 180.0)))
+	_update_touch_targets(screen_root, responsive_mode)
 
 func _install_scroll_containers() -> void:
 	for screen_name in [
@@ -546,6 +566,49 @@ func _get_ui_node(path: String) -> Node:
 		return null
 	return get_node_or_null(path.replace("/Layout/Root", "/Layout/RootScroll/Root"))
 
+func _resolve_responsive_mode(viewport_size: Vector2) -> String:
+	if viewport_size.x <= MOBILE_MAX_WIDTH or viewport_size.y <= MOBILE_MAX_HEIGHT:
+		return LAYOUT_MOBILE
+	if viewport_size.x <= TABLET_MAX_WIDTH:
+		return LAYOUT_TABLET
+	return LAYOUT_DESKTOP
+
+func _get_layout_margin(responsive_mode: String) -> int:
+	if responsive_mode == LAYOUT_MOBILE:
+		return MOBILE_MARGIN
+	if responsive_mode == LAYOUT_TABLET:
+		return TABLET_MARGIN
+	return DESKTOP_MARGIN
+
+func _apply_hub_layout_order(responsive_mode: String) -> void:
+	var main_content := _get_ui_node("ScreenRoot/MainMenuScreen/Layout/Root/MainContent") as GridContainer
+	var left_menu := _get_ui_node("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu") as Control
+	var center_hero := _get_ui_node("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero") as Control
+	var right_panel := _get_ui_node("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel") as Control
+	if main_content == null or left_menu == null or center_hero == null or right_panel == null:
+		return
+	if responsive_mode == LAYOUT_DESKTOP:
+		main_content.move_child(left_menu, 0)
+		main_content.move_child(center_hero, 1)
+		main_content.move_child(right_panel, 2)
+	else:
+		main_content.move_child(center_hero, 0)
+		main_content.move_child(left_menu, 1)
+		main_content.move_child(right_panel, 2)
+
+func _set_control_visible(path: String, is_visible: bool) -> void:
+	var control := _get_ui_node(path) as Control
+	if control == null:
+		return
+	control.visible = is_visible
+
+func _set_control_size_flags(path: String, horizontal: int, vertical: int) -> void:
+	var control := _get_ui_node(path) as Control
+	if control == null:
+		return
+	control.size_flags_horizontal = horizontal
+	control.size_flags_vertical = vertical
+
 func _set_grid_columns(path: String, columns: int) -> void:
 	var grid := _get_ui_node(path) as GridContainer
 	if grid == null:
@@ -584,7 +647,10 @@ func _set_margin_edges(path: String, left: int, top: int, right: int, bottom: in
 	margin_container.add_theme_constant_override("margin_right", right)
 	margin_container.add_theme_constant_override("margin_bottom", bottom)
 
-func _set_inventory_layout_margin(base_margin: int, viewport_width: float) -> void:
+func _set_inventory_layout_margin(base_margin: int, viewport_width: float, responsive_mode: String) -> void:
+	if responsive_mode != LAYOUT_DESKTOP:
+		_set_margin_edges("ScreenRoot/InventoryScreen/Layout", base_margin, base_margin, base_margin, base_margin)
+		return
 	var target_content_width: float = min(INVENTORY_MAX_CONTENT_WIDTH, viewport_width * INVENTORY_WIDE_SCREEN_RATIO)
 	var side_margin: int = max(base_margin, int((viewport_width - target_content_width) * 0.5))
 	_set_margin_edges("ScreenRoot/InventoryScreen/Layout", side_margin, base_margin, side_margin, base_margin)
@@ -601,16 +667,22 @@ func _get_original_minimum_size(control: Control) -> Vector2:
 		_original_minimum_sizes[id] = control.custom_minimum_size
 	return _original_minimum_sizes[id]
 
-func _update_touch_targets(root: Node, is_compact: bool) -> void:
+func _update_touch_targets(root: Node, responsive_mode: String) -> void:
+	var uses_touch_targets := responsive_mode != LAYOUT_DESKTOP
+	var touch_height := 54.0 if responsive_mode == LAYOUT_MOBILE else 50.0
 	for child in root.get_children():
 		if child is Button:
 			var button := child as Button
 			var original_size := _get_original_minimum_size(button)
-			var compact_height: float = min(max(original_size.y, 44.0), 46.0)
-			button.custom_minimum_size = Vector2(0.0 if is_compact else original_size.x, compact_height if is_compact else original_size.y)
+			var target_height: float = max(original_size.y, touch_height)
+			button.custom_minimum_size = Vector2(0.0 if uses_touch_targets else original_size.x, target_height if uses_touch_targets else original_size.y)
+			if uses_touch_targets:
+				button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		elif child is CheckButton:
 			var check_button := child as CheckButton
 			var original_size := _get_original_minimum_size(check_button)
-			var compact_height: float = min(max(original_size.y, 44.0), 46.0)
-			check_button.custom_minimum_size = Vector2(0.0 if is_compact else original_size.x, compact_height if is_compact else original_size.y)
-		_update_touch_targets(child, is_compact)
+			var target_height: float = max(original_size.y, touch_height)
+			check_button.custom_minimum_size = Vector2(0.0 if uses_touch_targets else original_size.x, target_height if uses_touch_targets else original_size.y)
+			if uses_touch_targets:
+				check_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		_update_touch_targets(child, responsive_mode)
