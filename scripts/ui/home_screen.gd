@@ -10,6 +10,8 @@ const MOBILE_WIDTH_THRESHOLD = 700.0
 const COMPACT_HEIGHT_THRESHOLD = 620.0
 const MOBILE_MARGIN = 10
 const DESKTOP_MARGIN = 32
+const INVENTORY_MAX_CONTENT_WIDTH = 980.0
+const INVENTORY_WIDE_SCREEN_RATIO = 0.82
 const HUB_SUMMARY_PANEL_SCRIPT := preload("res://scripts/ui/home/HubSummaryPanel.gd")
 const HERO_SELECT_PANEL_SCRIPT := preload("res://scripts/ui/home/HeroSelectPanel.gd")
 const EQUIPMENT_PANEL_SCRIPT := preload("res://scripts/ui/home/EquipmentPanel.gd")
@@ -393,9 +395,9 @@ func _apply_responsive_layout() -> void:
 		"ScreenRoot/HeroSelectScreen/Layout",
 		"ScreenRoot/EquipmentSelectScreen/Layout",
 		"ScreenRoot/PetSelectScreen/Layout",
-		"ScreenRoot/InventoryScreen/Layout",
 	]:
 		_set_margin(layout_path, margin)
+	_set_inventory_layout_margin(margin, viewport_size.x)
 
 	for root_path in [
 		"ScreenRoot/MainMenuScreen/Layout/Root",
@@ -441,10 +443,6 @@ func _apply_responsive_layout() -> void:
 
 	for grid_path in [
 		"ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/ItemGrid",
-		"ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Weapons/Grid",
-		"ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Items/Grid",
-		"ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Pets/Grid",
-		"ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Materials/Grid",
 	]:
 		_set_grid_columns(grid_path, 2 if is_narrow else 4)
 		_set_grid_separation(grid_path, 6 if is_compact else 10, 6 if is_compact else 10)
@@ -480,8 +478,7 @@ func _apply_responsive_layout() -> void:
 	]:
 		_set_minimum_size(portrait_path, Vector2(0.0, portrait_height))
 
-	var details_width := 0.0 if is_narrow else (220.0 if is_compact else 280.0)
-	_set_minimum_size("ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel", Vector2(details_width, 0.0))
+	_set_minimum_size("ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel", Vector2.ZERO)
 	_update_touch_targets(screen_root, is_compact)
 
 func _install_scroll_containers() -> void:
@@ -571,6 +568,20 @@ func _set_margin(path: String, margin: int) -> void:
 	margin_container.add_theme_constant_override("margin_top", margin)
 	margin_container.add_theme_constant_override("margin_right", margin)
 	margin_container.add_theme_constant_override("margin_bottom", margin)
+
+func _set_margin_edges(path: String, left: int, top: int, right: int, bottom: int) -> void:
+	var margin_container := _get_ui_node(path) as MarginContainer
+	if margin_container == null:
+		return
+	margin_container.add_theme_constant_override("margin_left", left)
+	margin_container.add_theme_constant_override("margin_top", top)
+	margin_container.add_theme_constant_override("margin_right", right)
+	margin_container.add_theme_constant_override("margin_bottom", bottom)
+
+func _set_inventory_layout_margin(base_margin: int, viewport_width: float) -> void:
+	var target_content_width: float = min(INVENTORY_MAX_CONTENT_WIDTH, viewport_width * INVENTORY_WIDE_SCREEN_RATIO)
+	var side_margin: int = max(base_margin, int((viewport_width - target_content_width) * 0.5))
+	_set_margin_edges("ScreenRoot/InventoryScreen/Layout", side_margin, base_margin, side_margin, base_margin)
 
 func _set_minimum_size(path: String, minimum_size: Vector2) -> void:
 	var control := _get_ui_node(path) as Control

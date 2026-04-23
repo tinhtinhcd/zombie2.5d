@@ -23,7 +23,9 @@ func open_panel(panel_id: String, add_to_history: bool = true) -> void:
 	for current_panel_id in _panels.keys():
 		var panel := _panels[current_panel_id] as Control
 		if panel != null:
-			panel.visible = current_panel_id == panel_id
+			var is_active: bool = str(current_panel_id) == panel_id
+			panel.visible = is_active
+			panel.mouse_filter = Control.MOUSE_FILTER_STOP if is_active else Control.MOUSE_FILTER_IGNORE
 
 	_active_panel_id = panel_id
 	panel_changed.emit(_active_panel_id)

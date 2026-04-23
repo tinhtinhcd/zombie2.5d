@@ -931,6 +931,17 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
+
+[node name="InventoryBackground" type="ColorRect" parent="ScreenRoot/InventoryScreen"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.0823529, 0.0901961, 0.101961, 1)
 
 [node name="Layout" type="MarginContainer" parent="ScreenRoot/InventoryScreen"]
 layout_mode = 1
@@ -988,171 +999,57 @@ theme_override_constants/h_separation = 10
 theme_override_constants/v_separation = 10
 
 [node name="SlotA" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/ItemGrid"]
-custom_minimum_size = Vector2(112, 76)
+custom_minimum_size = Vector2(0, 76)
 layout_mode = 2
+size_flags_horizontal = 3
 text = "Slot"
 
 [node name="SlotB" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/ItemGrid"]
-custom_minimum_size = Vector2(112, 76)
+custom_minimum_size = Vector2(0, 76)
 layout_mode = 2
+size_flags_horizontal = 3
 text = "Slot"
 
 [node name="SlotC" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/ItemGrid"]
-custom_minimum_size = Vector2(112, 76)
+custom_minimum_size = Vector2(0, 76)
 layout_mode = 2
+size_flags_horizontal = 3
 text = "Slot"
 
 [node name="SlotD" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/ItemGrid"]
-custom_minimum_size = Vector2(112, 76)
+custom_minimum_size = Vector2(0, 76)
 layout_mode = 2
+size_flags_horizontal = 3
 text = "Slot"
 
 [node name="SlotE" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/ItemGrid"]
-custom_minimum_size = Vector2(112, 76)
+custom_minimum_size = Vector2(0, 76)
 layout_mode = 2
+size_flags_horizontal = 3
 text = "Slot"
 
 [node name="SlotF" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/ItemGrid"]
-custom_minimum_size = Vector2(112, 76)
+custom_minimum_size = Vector2(0, 76)
 layout_mode = 2
+size_flags_horizontal = 3
 text = "Slot"
 
 [node name="SlotG" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/ItemGrid"]
-custom_minimum_size = Vector2(112, 76)
+custom_minimum_size = Vector2(0, 76)
 layout_mode = 2
+size_flags_horizontal = 3
 text = "Slot"
 
 [node name="SlotH" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/ItemGrid"]
-custom_minimum_size = Vector2(112, 76)
-layout_mode = 2
-text = "Slot"
-
-[node name="TabContainer" type="TabContainer" parent="ScreenRoot/InventoryScreen/Layout/Root/Content"]
-visible = false
+custom_minimum_size = Vector2(0, 76)
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_vertical = 3
-
-[node name="Weapons" type="MarginContainer" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer"]
-layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 12
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 12
-
-[node name="Grid" type="GridContainer" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Weapons"]
-layout_mode = 2
-columns = 2
-theme_override_constants/h_separation = 10
-theme_override_constants/v_separation = 10
-
-[node name="WeaponA" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Weapons/Grid"]
-custom_minimum_size = Vector2(0, 54)
-layout_mode = 2
-text = "Basic Gun"
-
-[node name="WeaponB" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Weapons/Grid"]
-custom_minimum_size = Vector2(0, 54)
-layout_mode = 2
-text = "Spread Shot"
-disabled = true
-
-[node name="WeaponC" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Weapons/Grid"]
-custom_minimum_size = Vector2(0, 54)
-layout_mode = 2
-text = "Rapid Gun"
-disabled = true
-
-[node name="WeaponD" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Weapons/Grid"]
-custom_minimum_size = Vector2(0, 54)
-layout_mode = 2
-text = "Heavy Weapon"
-disabled = true
-
-[node name="Items" type="MarginContainer" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer"]
-layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 12
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 12
-
-[node name="Grid" type="GridContainer" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Items"]
-layout_mode = 2
-columns = 2
-theme_override_constants/h_separation = 10
-theme_override_constants/v_separation = 10
-
-[node name="ItemA" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Items/Grid"]
-custom_minimum_size = Vector2(0, 54)
-layout_mode = 2
-text = "Small Medkit"
-disabled = true
-
-[node name="ItemB" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Items/Grid"]
-custom_minimum_size = Vector2(0, 54)
-layout_mode = 2
-text = "Adrenaline Shot"
-disabled = true
-
-[node name="ItemC" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Items/Grid"]
-custom_minimum_size = Vector2(0, 54)
-layout_mode = 2
-text = "Ammo Cache"
-disabled = true
-
-[node name="Pets" type="MarginContainer" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer"]
-layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 12
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 12
-
-[node name="Grid" type="GridContainer" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Pets"]
-layout_mode = 2
-columns = 2
-theme_override_constants/h_separation = 10
-theme_override_constants/v_separation = 10
-
-[node name="PetA" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Pets/Grid"]
-custom_minimum_size = Vector2(0, 54)
-layout_mode = 2
-text = "Drone Core"
-disabled = true
-
-[node name="PetB" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Pets/Grid"]
-custom_minimum_size = Vector2(0, 54)
-layout_mode = 2
-text = "Sprite Lantern"
-disabled = true
-
-[node name="Materials" type="MarginContainer" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer"]
-layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 12
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 12
-
-[node name="Grid" type="GridContainer" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Materials"]
-layout_mode = 2
-columns = 2
-theme_override_constants/h_separation = 10
-theme_override_constants/v_separation = 10
-
-[node name="MaterialA" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Materials/Grid"]
-custom_minimum_size = Vector2(0, 54)
-layout_mode = 2
-text = "Bone Shard"
-disabled = true
-
-[node name="MaterialB" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/TabContainer/Materials/Grid"]
-custom_minimum_size = Vector2(0, 54)
-layout_mode = 2
-text = "Forest Resin"
-disabled = true
+text = "Slot"
 
 [node name="DetailsPanel" type="PanelContainer" parent="ScreenRoot/InventoryScreen/Layout/Root/Content"]
-custom_minimum_size = Vector2(280, 0)
+custom_minimum_size = Vector2(0, 0)
 layout_mode = 2
+size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="Margin" type="MarginContainer" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel"]
@@ -1192,14 +1089,16 @@ layout_mode = 2
 theme_override_constants/separation = 10
 
 [node name="EquipButton" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin/VBox/ActionRow"]
-custom_minimum_size = Vector2(120, 48)
+custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
+size_flags_horizontal = 3
 text = "Equip"
 disabled = true
 
 [node name="DropButton" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin/VBox/ActionRow"]
-custom_minimum_size = Vector2(120, 48)
+custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
+size_flags_horizontal = 3
 text = "Drop"
 disabled = true
 
@@ -1208,7 +1107,7 @@ layout_mode = 2
 alignment = 2
 
 [node name="BackButton" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Footer"]
-custom_minimum_size = Vector2(160, 50)
+custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 text = "Back"
 
