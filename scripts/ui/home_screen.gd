@@ -39,15 +39,16 @@ const HOME_UI_STYLE := preload("res://scripts/ui/home/HomeUIStyle.gd")
 @onready var scene_router: SceneRouter = get_node("/root/SceneRouter") as SceneRouter
 @onready var game_manager: GameManager = get_node("/root/GameManager") as GameManager
 
-@onready var play_button: Button = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin/PrimaryActions/PlayButton
-@onready var equipment_button: Button = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin/PrimaryActions/EquipmentButton
-@onready var inventory_button: Button = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin/PrimaryActions/InventoryButton
-@onready var settings_button: Button = $ScreenRoot/MainMenuScreen/Layout/Root/Header/TopSettingsButton
-@onready var exit_button: Button = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin/PrimaryActions/ExitButton
-@onready var hub_currency_label: Label = $ScreenRoot/MainMenuScreen/Layout/Root/Header/CurrencyLabel
-@onready var hub_character_label: Label = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/VBox/HeroDisplay/CharacterPlaceholder
-@onready var hub_hero_name_label: Label = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/VBox/HeroNameLabel
-@onready var hub_power_label: Label = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/VBox/StatsPanel/StatsMargin/StatsLabel
+@onready var play_button: Button = $ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions/PlayButton
+@onready var equipment_button: Button = $ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions/EquipmentButton
+@onready var inventory_button: Button = $ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions/InventoryButton
+@onready var settings_button: Button = $ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar/TopSettingsButton
+@onready var exit_button: Button = $ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions/ExitButton
+@onready var hub_currency_label: Label = $ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar/CurrencyLabel
+@onready var hub_character_label: Label = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/HeroStage/CharacterPlaceholder
+@onready var hub_hero_name_label: Label = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/HeroStage/HeroNameLabel
+@onready var hub_power_label: Label = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/HeroStage/StatsPanel/StatsMargin/StatsLabel
+@onready var hub_power_value_label: Label = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/PowerCard/Margin/VBox/PowerValue
 
 @onready var survival_button: Button = $ScreenRoot/ModeSelectScreen/Layout/Root/Content/ModeList/SurvivalButton
 @onready var endless_button: Button = $ScreenRoot/ModeSelectScreen/Layout/Root/Content/ModeList/EndlessButton
@@ -78,8 +79,8 @@ const HOME_UI_STYLE := preload("res://scripts/ui/home/HomeUIStyle.gd")
 @onready var pet_wisp_button: Button = $ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards/WispCard/Margin/VBox/SelectButton
 
 @onready var inventory_back_button: Button = $ScreenRoot/InventoryScreen/Layout/Root/Header/BackButton
-@onready var hub_preview_list: Label = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/FeaturePreview/PreviewMargin/PreviewContent/PreviewList
-@onready var hub_preview_note: Label = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/FeaturePreview/PreviewMargin/PreviewContent/PreviewNote
+@onready var hub_preview_list: Label = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/MissionCard/PreviewMargin/PreviewContent/PreviewList
+@onready var hub_preview_note: Label = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/MissionCard/PreviewMargin/PreviewContent/PreviewNote
 @onready var hub_weapon_preview: Label = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin/VBox/SummaryGrid/WeaponPreview
 @onready var hub_armor_preview: Label = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin/VBox/SummaryGrid/ArmorPreview
 @onready var hub_defense_preview: Label = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin/VBox/SummaryGrid/DefensePreview
@@ -158,13 +159,13 @@ func _ready() -> void:
 	inventory_button.pressed.connect(_on_inventory_pressed)
 	settings_button.pressed.connect(_on_settings_pressed)
 	exit_button.pressed.connect(_on_exit_pressed)
-	var hero_nav_button := get_node_or_null("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin/PrimaryActions/HeroButton") as Button
+	var hero_nav_button := get_node_or_null("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions/HeroButton") as Button
 	if hero_nav_button != null:
 		hero_nav_button.pressed.connect(_on_hub_hero_pressed)
-	var pet_nav_button := get_node_or_null("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin/PrimaryActions/PetButton") as Button
+	var pet_nav_button := get_node_or_null("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions/PetButton") as Button
 	if pet_nav_button != null:
 		pet_nav_button.pressed.connect(_on_hub_pet_pressed)
-	var map_nav_button := get_node_or_null("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin/PrimaryActions/MapButton") as Button
+	var map_nav_button := get_node_or_null("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions/MapButton") as Button
 	if map_nav_button != null:
 		map_nav_button.pressed.connect(_on_map_pressed)
 
@@ -333,10 +334,11 @@ func _refresh_hub_focus(currency: int = 0) -> void:
 		defense = _extract_first_stat_number(str(armor_stats.get("def", "0")))
 	var power: int = max(hp + attack + defense, 1)
 
-	hub_currency_label.text = "Scrap %d" % currency
-	hub_character_label.text = "SURVIVOR"
-	hub_hero_name_label.text = "%s\nLevel %d  Power %d" % [hero_name, game_manager.highest_unlocked_level, power]
-	hub_power_label.text = "HP %d  ATK %d  DEF %d  Pet %s" % [hp, attack, defense, pet_name]
+	hub_currency_label.text = "Gold %d" % currency
+	hub_character_label.text = "SURVIVOR READY"
+	hub_hero_name_label.text = "%s\nLv.%d  Power %d" % [hero_name, game_manager.highest_unlocked_level, power]
+	hub_power_label.text = "HP %d\nATK %d\nDEF %d\nPet %s" % [hp, attack, defense, pet_name]
+	hub_power_value_label.text = "%d" % power
 
 func _extract_first_stat_number(value: String) -> int:
 	var expression := RegEx.new()
@@ -450,13 +452,13 @@ func _apply_responsive_layout() -> void:
 	var is_mobile: bool = responsive_mode == LAYOUT_MOBILE
 	var is_tablet: bool = responsive_mode == LAYOUT_TABLET
 	var margin := _get_layout_margin(responsive_mode)
-	var root_separation := 10 if is_mobile else (14 if is_tablet else 20)
-	var content_separation := 8 if is_mobile else (12 if is_tablet else 16)
-	var grid_separation := 8 if is_mobile else (12 if is_tablet else 16)
-	var inner_margin := 10 if is_mobile else (12 if is_tablet else 16)
+	var root_separation := 6 if is_mobile else (12 if is_tablet else 20)
+	var content_separation := 6 if is_mobile else (10 if is_tablet else 16)
+	var grid_separation := 6 if is_mobile else (10 if is_tablet else 16)
+	var inner_margin := 8 if is_mobile else (12 if is_tablet else 16)
 	var mobile_or_tablet := is_mobile or is_tablet
 	var hero_pet_columns := 1 if is_mobile else (2 if is_tablet else 3)
-	var equipment_columns := 3 if viewport_size.x >= 820.0 else 1
+	var equipment_columns := 3 if responsive_mode == LAYOUT_DESKTOP and viewport_size.x >= 1400.0 else 1
 	var equipment_slot_columns := 1
 	var inventory_content_columns := 1
 	var inventory_item_columns := 2 if is_mobile else 3
@@ -485,6 +487,8 @@ func _apply_responsive_layout() -> void:
 		_set_box_separation(root_path, root_separation)
 
 	for content_path in [
+		"ScreenRoot/MainMenuScreen/Layout/Root/MainContent",
+		"ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu",
 		"ScreenRoot/ModeSelectScreen/Layout/Root/Content",
 		"ScreenRoot/ModeSelectScreen/Layout/Root/Content/ModeList",
 		"ScreenRoot/HeroSelectScreen/Layout/Root/Content",
@@ -497,23 +501,23 @@ func _apply_responsive_layout() -> void:
 	]:
 		_set_box_separation(content_path, content_separation)
 
-	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/Header", 4 if is_mobile else 8)
-	_set_grid_columns("ScreenRoot/MainMenuScreen/Layout/Root/MainContent", 1)
-	_set_grid_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent", grid_separation, grid_separation)
+	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/Header", 6 if is_mobile else 10)
+	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar", 6 if is_mobile else 8)
 	_apply_hub_layout_order(responsive_mode)
-	_set_control_visible("ScreenRoot/MainMenuScreen/Layout/Root/Header/ProfileLabel", true)
-	_set_control_visible("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin/PrimaryActions/MenuSpacer", false)
-	_set_control_visible("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin/PrimaryActions/ExitButton", false)
+	_set_control_visible("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions/MenuSpacer", false)
+	_set_control_visible("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions/ExitButton", false)
+	_set_control_visible("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions/SettingsButton", false)
+	_set_control_visible("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/MissionCard/PreviewMargin/PreviewContent/PreviewNote", not is_mobile)
 	_set_control_size_flags("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu", Control.SIZE_EXPAND_FILL, Control.SIZE_FILL)
 	_set_control_size_flags("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero", Control.SIZE_EXPAND_FILL, Control.SIZE_FILL if mobile_or_tablet else Control.SIZE_EXPAND_FILL)
 	_set_control_size_flags("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel", Control.SIZE_EXPAND_FILL, Control.SIZE_FILL if mobile_or_tablet else Control.SIZE_EXPAND_FILL)
-	_set_grid_columns("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin/PrimaryActions", 2)
-	_set_grid_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin/PrimaryActions", 8 if is_mobile else 10, 8 if is_mobile else 10)
-	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/VBox", 8 if is_mobile else 12)
+	_set_grid_columns("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions", 6)
+	_set_grid_separation("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions", 6 if is_mobile else 10, 6 if is_mobile else 10)
+	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/BottomNavBar/Margin/NavButtons", 4 if is_mobile else 8)
 	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel", 8 if is_mobile else 14)
 	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin/VBox", 6 if is_mobile else 10)
-	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/FeaturePreview/PreviewMargin/PreviewContent", 6 if is_mobile else 8)
-	_set_grid_columns("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin/VBox/SummaryGrid", 2 if is_mobile else 4)
+	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/FeaturePreview/PreviewMargin/PreviewContent", 4 if is_mobile else 6)
+	_set_grid_columns("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin/VBox/SummaryGrid", 2)
 	_set_grid_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin/VBox/SummaryGrid", 8 if is_mobile else 10, 8 if is_mobile else 10)
 
 	_set_grid_columns("ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards", hero_pet_columns)
@@ -543,11 +547,17 @@ func _apply_responsive_layout() -> void:
 		"ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards/SpriteCard/Margin",
 		"ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards/WispCard/Margin",
 		"ScreenRoot/PetSelectScreen/Layout/Root/Content/SelectionSummary/SummaryMargin",
-		"ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin",
+		"ScreenRoot/MainMenuScreen/Layout/Root/Header/ProfileBlock/ProfileMargin",
+		"ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/PowerCard/Margin",
+		"ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/MissionCard/PreviewMargin",
+		"ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/PackCard/PackMargin",
 		"ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin",
-		"ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/VBox/StatsPanel/StatsMargin",
+		"ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/HeroStage/StatsPanel/StatsMargin",
 		"ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin",
 		"ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/FeaturePreview/PreviewMargin",
+		"ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/PetPanel/PetMargin",
+		"ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin",
+		"ScreenRoot/MainMenuScreen/Layout/Root/BottomNavBar/Margin",
 		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/WeaponSlot/Margin",
 		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/ArmorSlot/Margin",
 		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/PetSlot/Margin",
@@ -566,17 +576,27 @@ func _apply_responsive_layout() -> void:
 	]:
 		_set_minimum_size(portrait_path, Vector2(0.0, portrait_height))
 
+	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/Header", Vector2(0.0, 44.0 if is_mobile else 58.0))
+	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/Header/ProfileBlock", Vector2(190.0 if is_mobile else 250.0, 0.0))
+	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu", Vector2(165.0 if is_mobile else 190.0, 0.0))
+	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel", Vector2(200.0 if is_mobile else 220.0, 0.0))
+	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/HeroStage", Vector2(0.0, 180.0 if is_mobile else 245.0))
+	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions/HeroButton", Vector2(0.0, 50.0 if is_mobile else 62.0))
+	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions/EquipmentButton", Vector2(0.0, 50.0 if is_mobile else 62.0))
+	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions/InventoryButton", Vector2(0.0, 50.0 if is_mobile else 62.0))
+	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions/PetButton", Vector2(0.0, 50.0 if is_mobile else 62.0))
+	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions/MapButton", Vector2(0.0, 50.0 if is_mobile else 62.0))
+	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions/PlayButton", Vector2(0.0, 50.0 if is_mobile else 62.0))
 	_set_minimum_size("ScreenRoot/InventoryScreen/Layout/Root/DetailsPanel", Vector2(0.0, 128.0 if is_mobile else 132.0))
 	_set_minimum_size("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/WeaponSlot", Vector2(0.0, 0.0))
 	_set_minimum_size("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/ArmorSlot", Vector2(0.0, 0.0))
 	_set_minimum_size("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/PetSlot", Vector2(0.0, 0.0))
 	_set_minimum_size("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/AccessorySlot", Vector2(0.0, 0.0))
-	_set_minimum_size("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/CharacterPanel", Vector2(0.0, 280.0 if viewport_size.x >= 820.0 else 150.0))
+	_set_minimum_size("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/CharacterPanel", Vector2(0.0, 150.0 if is_mobile else (280.0 if responsive_mode == LAYOUT_DESKTOP and viewport_size.x >= 1400.0 else 190.0)))
 	_update_touch_targets(screen_root, responsive_mode)
 
 func _install_scroll_containers() -> void:
 	for screen_name in [
-		SCREEN_MAIN_MENU,
 		SCREEN_MODE_SELECT,
 		SCREEN_HERO_SELECT,
 		SCREEN_PET_SELECT,
@@ -646,21 +666,34 @@ func _get_layout_margin(responsive_mode: String) -> int:
 	return DESKTOP_MARGIN
 
 func _apply_hub_layout_order(_responsive_mode: String) -> void:
-	var main_content := _get_ui_node("ScreenRoot/MainMenuScreen/Layout/Root/MainContent") as GridContainer
+	var main_content := _get_ui_node("ScreenRoot/MainMenuScreen/Layout/Root/MainContent") as HBoxContainer
 	var left_menu := _get_ui_node("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu") as Control
 	var center_hero := _get_ui_node("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero") as Control
 	var right_panel := _get_ui_node("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel") as Control
 	if main_content == null or left_menu == null or center_hero == null or right_panel == null:
 		return
-	main_content.move_child(center_hero, 0)
-	main_content.move_child(right_panel, 1)
-	main_content.move_child(left_menu, 2)
+	main_content.move_child(left_menu, 0)
+	main_content.move_child(center_hero, 1)
+	main_content.move_child(right_panel, 2)
 
 func _apply_equipment_layout_order() -> void:
+	var columns := _get_ui_node("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns") as GridContainer
 	var left_column := _get_ui_node("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn") as GridContainer
+	var character_panel := _get_ui_node("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/CharacterPanel") as Control
 	var right_column := _get_ui_node("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn") as VBoxContainer
-	if left_column == null or right_column == null:
+	if columns == null or left_column == null or character_panel == null or right_column == null:
 		return
+
+	var viewport_size := get_viewport_rect().size
+	var use_split_layout := _resolve_responsive_mode(viewport_size) == LAYOUT_DESKTOP and viewport_size.x >= 1400.0
+	if not use_split_layout:
+		columns.move_child(character_panel, 0)
+		columns.move_child(left_column, 1)
+		columns.move_child(right_column, 2)
+	else:
+		columns.move_child(left_column, 0)
+		columns.move_child(character_panel, 1)
+		columns.move_child(right_column, 2)
 
 	var weapon_slot := _get_ui_node("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/WeaponSlot") as Control
 	var armor_slot := _get_ui_node("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/ArmorSlot") as Control
@@ -762,7 +795,16 @@ func _update_touch_targets(root: Node, responsive_mode: String) -> void:
 		if child is Button:
 			var button := child as Button
 			var original_size := _get_original_minimum_size(button)
-			var target_height: float = max(original_size.y, touch_height)
+			var local_touch_height := touch_height
+			var button_path := str(button.get_path())
+			if button_path.find("MainMenuScreen") != -1:
+				if button_path.find("BottomNavBar") != -1:
+					local_touch_height = 30.0
+				elif button_path.find("Header") != -1:
+					local_touch_height = 38.0
+				elif button_path.find("PrimaryActionBar") != -1:
+					local_touch_height = 50.0
+			var target_height: float = max(original_size.y, local_touch_height)
 			button.custom_minimum_size = Vector2(0.0 if uses_touch_targets else original_size.x, target_height if uses_touch_targets else original_size.y)
 			if uses_touch_targets:
 				button.size_flags_horizontal = Control.SIZE_EXPAND_FILL

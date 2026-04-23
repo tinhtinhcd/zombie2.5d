@@ -1,0 +1,64 @@
+Godot Engine v4.5.1.stable.official.f62fdbde1 - https://godotengine.org
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2548)
+WARNING: Loaded resource as image file, this will not work on export: 'res://assets/wenrexa_ui_sci_fi_01/common/Background.jpg'. Instead, import the image file as an Image resource and load it normally as a resource.
+   at: load_from_file (core/io/image.cpp:2541)
+   GDScript backtrace (most recent call first):
+       [0] _get_texture (res://scripts/ui/home/HomeUIStyle.gd:169)
+       [1] get_background_texture (res://scripts/ui/home/HomeUIStyle.gd:37)
+       [2] _apply_home_visual_style (res://scripts/ui/home_screen.gd:214)
+       [3] _ready (res://scripts/ui/home_screen.gd:203)
+       [4] _run (res://scripts/test/smoke_test.gd:17)
+WARNING: Loaded resource as image file, this will not work on export: 'res://assets/wenrexa_ui_sci_fi_01/common/BtnDefault.png'. Instead, import the image file as an Image resource and load it normally as a resource.
+   at: load_from_file (core/io/image.cpp:2541)
+   GDScript backtrace (most recent call first):
+       [0] _get_texture (res://scripts/ui/home/HomeUIStyle.gd:169)
+       [1] apply_button_state (res://scripts/ui/home/HomeUIStyle.gd:62)
+       [2] apply_tree (res://scripts/ui/home/HomeUIStyle.gd:33)
+       [3] apply_tree (res://scripts/ui/home/HomeUIStyle.gd:34)
+       [4] apply_tree (res://scripts/ui/home/HomeUIStyle.gd:34)
+       [5] apply_tree (res://scripts/ui/home/HomeUIStyle.gd:34)
+       [6] apply_tree (res://scripts/ui/home/HomeUIStyle.gd:34)
+       [7] apply_tree (res://scripts/ui/home/HomeUIStyle.gd:34)
+       [8] apply_tree (res://scripts/ui/home/HomeUIStyle.gd:34)
+       [9] _apply_home_visual_style (res://scripts/ui/home_screen.gd:217)
+       [10] _ready (res://scripts/ui/home_screen.gd:203)
+       [11] _run (res://scripts/test/smoke_test.gd:17)
+WARNING: Loaded resource as image file, this will not work on export: 'res://assets/wenrexa_ui_sci_fi_01/common/BtnNext.png'. Instead, import the image file as an Image resource and load it normally as a resource.
+   at: load_from_file (core/io/image.cpp:2541)
+   GDScript backtrace (most recent call first):
+       [0] _get_texture (res://scripts/ui/home/HomeUIStyle.gd:169)
+       [1] apply_button_state (res://scripts/ui/home/HomeUIStyle.gd:69)
+       [2] _apply_home_visual_style (res://scripts/ui/home_screen.gd:218)
+       [3] _ready (res://scripts/ui/home_screen.gd:203)
+       [4] _run (res://scripts/test/smoke_test.gd:17)
+WARNING: Loaded resource as image file, this will not work on export: 'res://assets/wenrexa_ui_sci_fi_01/common/BtnBack.png'. Instead, import the image file as an Image resource and load it normally as a resource.
+   at: load_from_file (core/io/image.cpp:2541)
+   GDScript backtrace (most recent call first):
+       [0] _get_texture (res://scripts/ui/home/HomeUIStyle.gd:169)
+       [1] apply_button_state (res://scripts/ui/home/HomeUIStyle.gd:81)
+       [2] _apply_home_visual_style (res://scripts/ui/home_screen.gd:219)
+       [3] _ready (res://scripts/ui/home_screen.gd:203)
+       [4] _run (res://scripts/test/smoke_test.gd:17)
+WARNING: Loaded resource as image file, this will not work on export: 'res://assets/wenrexa_ui_sci_fi_01/common/ItemDisable.png'. Instead, import the image file as an Image resource and load it normally as a resource.
+   at: load_from_file (core/io/image.cpp:2541)
+   GDScript backtrace (most recent call first):
+       [0] _get_texture (res://scripts/ui/home/HomeUIStyle.gd:169)
+       [1] apply_item_button (res://scripts/ui/home/HomeUIStyle.gd:99)
+       [2] _refresh_item_buttons (res://scripts/ui/home/InventoryPanel.gd:143)
+       [3] refresh (res://scripts/ui/home/InventoryPanel.gd:53)
+       [4] _refresh_inventory_summary (res://scripts/ui/home_screen.gd:353)
+       [5] _ready (res://scripts/ui/home_screen.gd:210)
+       [6] _run (res://scripts/test/smoke_test.gd:17)
+WARNING: Loaded resource as image file, this will not work on export: 'res://assets/wenrexa_ui_sci_fi_01/common/ItemEnable.png'. Instead, import the image file as an Image resource and load it normally as a resource.
+   at: load_from_file (core/io/image.cpp:2541)
+   GDScript backtrace (most recent call first):
+       [0] _get_texture (res://scripts/ui/home/HomeUIStyle.gd:169)
+       [1] apply_item_button (res://scripts/ui/home/HomeUIStyle.gd:104)
+       [2] _refresh_item_buttons (res://scripts/ui/home/InventoryPanel.gd:143)
+       [3] refresh (res://scripts/ui/home/InventoryPanel.gd:53)
+       [4] _refresh_inventory_summary (res://scripts/ui/home_screen.gd:353)
+       [5] _ready (res://scripts/ui/home_screen.gd:210)
+       [6] _run (res://scripts/test/smoke_test.gd:17)
+Smoke test passed: home, gameplay, wave, upgrade, and game-over flow.

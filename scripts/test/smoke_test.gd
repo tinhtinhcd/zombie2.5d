@@ -35,7 +35,7 @@ func _run() -> void:
 		push_error("Smoke test failed: selecting a hero did not update home state.")
 		quit(1)
 		return
-	var hub_summary := home.call("_get_ui_node", "ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/FeaturePreview/PreviewMargin/PreviewContent/PreviewList") as Label
+	var hub_summary := home.call("_get_ui_node", "ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/MissionCard/PreviewMargin/PreviewContent/PreviewList") as Label
 	if hub_summary == null or not hub_summary.text.contains("Hero: Knight"):
 		push_error("Smoke test failed: hub summary did not react to hero selection.")
 		quit(1)

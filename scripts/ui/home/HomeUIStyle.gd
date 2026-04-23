@@ -46,6 +46,19 @@ static func apply_panel(panel: PanelContainer, variant: String = "default") -> v
 static func apply_button_state(button: Button, state: String = "default") -> void:
 	if button == null:
 		return
+	var button_path := str(button.get_path())
+	if button_path.find("MainMenuScreen") != -1 and (button_path.find("Header") != -1 or button_path.find("BottomNavBar") != -1):
+		var compact_fill := Color(0.045, 0.085, 0.095, 0.88)
+		var compact_border := COLOR_SELECTED if state == "selected" else COLOR_BORDER
+		button.add_theme_stylebox_override("normal", _make_button_style(compact_fill, compact_border))
+		button.add_theme_stylebox_override("hover", _make_button_style(Color(0.065, 0.12, 0.13, 0.95), compact_border))
+		button.add_theme_stylebox_override("focus", _make_button_style(Color(0.065, 0.12, 0.13, 0.95), compact_border))
+		button.add_theme_stylebox_override("pressed", _make_button_style(Color(0.09, 0.16, 0.17, 1.0), COLOR_SELECTED))
+		button.add_theme_color_override("font_color", COLOR_TEXT)
+		button.add_theme_color_override("font_hover_color", COLOR_TEXT)
+		button.add_theme_color_override("font_pressed_color", COLOR_TEXT)
+		button.add_theme_font_size_override("font_size", 13)
+		return
 	var texture: Texture2D = _get_texture(WENREXA_BTN_DEFAULT_PATH)
 	var normal_modulate := Color(0.75, 0.95, 1.0, 0.96)
 	var hover_modulate := Color(0.95, 1.0, 1.0, 1.0)
@@ -108,7 +121,7 @@ static func apply_related_card_from_button(button: Button, is_selected: bool) ->
 		node = node.get_parent()
 
 static func _style_label(label: Label) -> void:
-	var name := label.name
+	var name := str(label.name)
 	label.add_theme_color_override("font_color", COLOR_TEXT)
 	if name == "Title":
 		label.add_theme_font_size_override("font_size", 28)
@@ -122,6 +135,15 @@ static func _style_label(label: Label) -> void:
 	elif name == "DescriptionLabel" or name == "StatusLabel" or name == "PreviewNote":
 		label.add_theme_font_size_override("font_size", 14)
 		label.add_theme_color_override("font_color", COLOR_MUTED)
+	elif name == "EnergyLabel" or name == "CurrencyLabel" or name == "GemsLabel":
+		label.add_theme_font_size_override("font_size", 14)
+		label.add_theme_stylebox_override("normal", _make_panel_style(Color(0.055, 0.105, 0.12, 0.88), COLOR_BORDER, 1))
+	elif name.begins_with("Slot"):
+		label.add_theme_font_size_override("font_size", 13)
+		label.add_theme_stylebox_override("normal", _make_panel_style(Color(0.035, 0.07, 0.08, 0.9), COLOR_LOCKED_BORDER, 1))
+	elif name == "PowerValue":
+		label.add_theme_font_size_override("font_size", 20)
+		label.add_theme_color_override("font_color", COLOR_TEAL)
 
 static func _make_panel_style(fill: Color, border: Color, border_width: int) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()

@@ -47,16 +47,11 @@ func refresh(_currency: int = 0) -> void:
 		if not armor_item.is_empty():
 			var armor_stats: Dictionary = armor_item.get("stats", {})
 			defense = _extract_first_stat_number(str(armor_stats.get("def", "0")))
-	_preview_list.text = "Current Run\nHero: %s\nWeapon: %s  %.1fm\nPet: %s\n\nProgress\nCoins: %d\nHighest Level: %d\n\n%s" % [
+	_preview_list.text = "C3 Broken City\nStage 3-10 7/10\nHero: %s | %s" % [
 		hero_name,
-		weapon_name,
-		float(weapon_definition.get("range", 20.0)),
-		pet_name,
-		_game_manager.soft_currency,
-		_game_manager.highest_unlocked_level,
-		gear_summary,
+		gear_summary.replace("Gear\n", ""),
 	]
-	_preview_note.text = "Mission: survive the next run and bring back scrap."
+	_preview_note.text = "%s | %s" % [weapon_name, pet_name]
 	if _weapon_preview != null:
 		_weapon_preview.text = "HP %d" % hp
 	if _armor_preview != null:
