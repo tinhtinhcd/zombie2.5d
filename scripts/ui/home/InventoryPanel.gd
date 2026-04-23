@@ -127,7 +127,11 @@ func _refresh_item_buttons() -> void:
 		button.disabled = false
 		var is_equipped := _is_equipped(item)
 		var is_selected := str(item.get("id", "")) == _selected_item_id
-		button.text = "%s%s\n%s" % [str(item.get("name", "Item")), "  Equipped" if is_equipped else "", _format_stats(item)]
+		button.text = "%s%s\n%s" % [
+			_shorten_text(str(item.get("name", "Item")), 16),
+			" *" if is_equipped else "",
+			_format_card_stats(item),
+		]
 		HOME_UI_STYLE.apply_item_button(button, is_equipped or is_selected)
 
 func _on_item_button_pressed(index: int) -> void:
@@ -155,3 +159,19 @@ func _format_stats(item: Dictionary) -> String:
 	for key in stats.keys():
 		parts.append("%s %s" % [str(key).capitalize(), str(stats[key])])
 	return ", ".join(parts)
+
+func _format_card_stats(item: Dictionary) -> String:
+	var stats_value: Variant = item.get("stats", {})
+	if typeof(stats_value) != TYPE_DICTIONARY:
+		return str(item.get("slot", "")).capitalize()
+	var stats: Dictionary = stats_value
+	if stats.is_empty():
+		return str(item.get("slot", "")).capitalize()
+	var first_key := str(stats.keys()[0])
+	var value := str(stats[first_key]).replace(" placeholder", "")
+	return "%s %s" % [first_key.to_upper(), value]
+
+func _shorten_text(value: String, max_length: int) -> String:
+	if value.length() <= max_length:
+		return value
+	return "%s..." % value.substr(0, max(max_length - 3, 1))

@@ -12,6 +12,8 @@ const MOBILE_MARGIN = 10
 const DESKTOP_MARGIN = 32
 const INVENTORY_MAX_CONTENT_WIDTH = 980.0
 const INVENTORY_WIDE_SCREEN_RATIO = 0.82
+const INVENTORY_TWO_PANE_MIN_WIDTH = 1180.0
+const INVENTORY_TWO_COLUMN_GRID_MAX_WIDTH = 900.0
 const HUB_SUMMARY_PANEL_SCRIPT := preload("res://scripts/ui/home/HubSummaryPanel.gd")
 const HERO_SELECT_PANEL_SCRIPT := preload("res://scripts/ui/home/HeroSelectPanel.gd")
 const EQUIPMENT_PANEL_SCRIPT := preload("res://scripts/ui/home/EquipmentPanel.gd")
@@ -385,6 +387,10 @@ func _apply_responsive_layout() -> void:
 	var grid_separation := 8 if is_compact else 16
 	var inner_margin := 10 if is_compact else 16
 	var preview_margin := 12 if is_compact else 20
+	var inventory_single_column := is_compact or viewport_size.x < INVENTORY_TWO_PANE_MIN_WIDTH
+	var inventory_item_columns := 4
+	if inventory_single_column:
+		inventory_item_columns = 2 if viewport_size.x < INVENTORY_TWO_COLUMN_GRID_MAX_WIDTH else 3
 
 	for screen_name in _scroll_containers.keys():
 		_set_scroll_container_enabled(str(screen_name), is_compact)
@@ -434,7 +440,7 @@ func _apply_responsive_layout() -> void:
 	_set_grid_columns("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns", 1 if is_narrow else 2)
 	_set_grid_columns("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn", 1 if is_narrow else 3)
 	_set_grid_columns("ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards", 1 if is_narrow else 3)
-	_set_grid_columns("ScreenRoot/InventoryScreen/Layout/Root/Content", 1 if is_narrow else 2)
+	_set_grid_columns("ScreenRoot/InventoryScreen/Layout/Root/Content", 1 if inventory_single_column else 2)
 	_set_grid_separation("ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards", grid_separation, grid_separation)
 	_set_grid_separation("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns", grid_separation, grid_separation)
 	_set_grid_separation("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn", grid_separation, grid_separation)
@@ -444,7 +450,7 @@ func _apply_responsive_layout() -> void:
 	for grid_path in [
 		"ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/ItemGrid",
 	]:
-		_set_grid_columns(grid_path, 2 if is_narrow else 4)
+		_set_grid_columns(grid_path, inventory_item_columns)
 		_set_grid_separation(grid_path, 6 if is_compact else 10, 6 if is_compact else 10)
 
 	for inner_margin_path in [
