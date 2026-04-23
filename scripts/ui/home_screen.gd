@@ -40,9 +40,14 @@ const HOME_UI_STYLE := preload("res://scripts/ui/home/HomeUIStyle.gd")
 @onready var game_manager: GameManager = get_node("/root/GameManager") as GameManager
 
 @onready var play_button: Button = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin/PrimaryActions/PlayButton
+@onready var equipment_button: Button = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin/PrimaryActions/EquipmentButton
 @onready var inventory_button: Button = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin/PrimaryActions/InventoryButton
 @onready var settings_button: Button = $ScreenRoot/MainMenuScreen/Layout/Root/Header/TopSettingsButton
 @onready var exit_button: Button = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin/PrimaryActions/ExitButton
+@onready var hub_currency_label: Label = $ScreenRoot/MainMenuScreen/Layout/Root/Header/CurrencyLabel
+@onready var hub_character_label: Label = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/VBox/HeroDisplay/CharacterPlaceholder
+@onready var hub_hero_name_label: Label = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/VBox/HeroNameLabel
+@onready var hub_power_label: Label = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/VBox/StatsPanel/StatsMargin/StatsLabel
 
 @onready var survival_button: Button = $ScreenRoot/ModeSelectScreen/Layout/Root/Content/ModeList/SurvivalButton
 @onready var endless_button: Button = $ScreenRoot/ModeSelectScreen/Layout/Root/Content/ModeList/EndlessButton
@@ -59,10 +64,11 @@ const HOME_UI_STYLE := preload("res://scripts/ui/home/HomeUIStyle.gd")
 @onready var equipment_summary_label: Label = $ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/LoadoutCard/Margin/LoadoutSummary
 @onready var equipment_inventory_button: Button = $ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/InventoryButton
 @onready var equipment_continue_button: Button = $ScreenRoot/EquipmentSelectScreen/Layout/Root/Footer/ContinueButton
-@onready var equipment_back_button: Button = $ScreenRoot/EquipmentSelectScreen/Layout/Root/Footer/BackButton
+@onready var equipment_back_button: Button = $ScreenRoot/EquipmentSelectScreen/Layout/Root/Header/BackButton
 @onready var weapon_slot_button: Button = $ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/WeaponSlot/Margin/VBox/SlotButton
 @onready var armor_slot_button: Button = $ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/ArmorSlot/Margin/VBox/SlotButton
-@onready var accessory_slot_button: Button = $ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/AccessorySlot/Margin/VBox/SlotButton
+@onready var pet_equipment_slot_button: Button = $ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/PetSlot/Margin/VBox/SlotButton
+@onready var accessory_slot_button: Button = $ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/AccessorySlot/Margin/VBox/SlotButton
 
 @onready var pet_status_label: Label = $ScreenRoot/PetSelectScreen/Layout/Root/Content/SelectionSummary/SummaryMargin/StatusLabel
 @onready var pet_start_button: Button = $ScreenRoot/PetSelectScreen/Layout/Root/Footer/StartGameButton
@@ -71,18 +77,20 @@ const HOME_UI_STYLE := preload("res://scripts/ui/home/HomeUIStyle.gd")
 @onready var pet_sprite_button: Button = $ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards/SpriteCard/Margin/VBox/SelectButton
 @onready var pet_wisp_button: Button = $ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards/WispCard/Margin/VBox/SelectButton
 
-@onready var inventory_back_button: Button = $ScreenRoot/InventoryScreen/Layout/Root/Footer/BackButton
+@onready var inventory_back_button: Button = $ScreenRoot/InventoryScreen/Layout/Root/Header/BackButton
 @onready var hub_preview_list: Label = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/FeaturePreview/PreviewMargin/PreviewContent/PreviewList
 @onready var hub_preview_note: Label = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/FeaturePreview/PreviewMargin/PreviewContent/PreviewNote
-@onready var hub_weapon_preview: Label = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin/VBox/WeaponPreview
-@onready var hub_armor_preview: Label = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin/VBox/ArmorPreview
-@onready var hub_pet_preview: Label = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin/VBox/PetPreview
-@onready var inventory_name_label: Label = $ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin/VBox/NameLabel
-@onready var inventory_type_label: Label = $ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin/VBox/TypeLabel
-@onready var inventory_stats_label: Label = $ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin/VBox/StatsLabel
-@onready var inventory_description_label: Label = $ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin/VBox/DescriptionLabel
-@onready var inventory_equip_button: Button = $ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin/VBox/ActionRow/EquipButton
-@onready var inventory_drop_button: Button = $ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin/VBox/ActionRow/DropButton
+@onready var hub_weapon_preview: Label = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin/VBox/SummaryGrid/WeaponPreview
+@onready var hub_armor_preview: Label = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin/VBox/SummaryGrid/ArmorPreview
+@onready var hub_defense_preview: Label = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin/VBox/SummaryGrid/DefensePreview
+@onready var hub_pet_preview: Label = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin/VBox/SummaryGrid/PetPreview
+@onready var inventory_slot_target_label: Label = $ScreenRoot/InventoryScreen/Layout/Root/Header/SlotTargetLabel
+@onready var inventory_name_label: Label = $ScreenRoot/InventoryScreen/Layout/Root/DetailsPanel/Margin/VBox/NameLabel
+@onready var inventory_type_label: Label = $ScreenRoot/InventoryScreen/Layout/Root/DetailsPanel/Margin/VBox/TypeLabel
+@onready var inventory_stats_label: Label = $ScreenRoot/InventoryScreen/Layout/Root/DetailsPanel/Margin/VBox/StatsLabel
+@onready var inventory_description_label: Label = $ScreenRoot/InventoryScreen/Layout/Root/DetailsPanel/Margin/VBox/DescriptionLabel
+@onready var inventory_equip_button: Button = $ScreenRoot/InventoryScreen/Layout/Root/DetailsPanel/Margin/VBox/ActionRow/EquipButton
+@onready var inventory_drop_button: Button = $ScreenRoot/InventoryScreen/Layout/Root/DetailsPanel/Margin/VBox/ActionRow/DropButton
 @onready var inventory_item_buttons: Array[Button] = [
 	$ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/ItemGrid/SlotA,
 	$ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/ItemGrid/SlotB,
@@ -137,15 +145,16 @@ func _ready() -> void:
 	_pet_select_panel = PET_SELECT_PANEL_SCRIPT.new()
 	_inventory_panel = INVENTORY_PANEL_SCRIPT.new()
 
-	_hub_summary_panel.setup(hub_preview_list, hub_preview_note, game_manager, _home_state, hub_weapon_preview, hub_armor_preview, hub_pet_preview)
+	_hub_summary_panel.setup(hub_preview_list, hub_preview_note, game_manager, _home_state, hub_weapon_preview, hub_armor_preview, hub_pet_preview, hub_defense_preview)
 	_hero_select_panel.setup(hero_status_label, hero_continue_button, hero_knight_button, hero_rogue_button, hero_mage_button, game_manager, _home_state)
 	_equipment_panel.setup(equipment_summary_label, weapon_slot_button, armor_slot_button, accessory_slot_button, game_manager, _home_state)
 	_pet_select_panel.setup(pet_status_label, pet_drone_button, pet_sprite_button, pet_wisp_button, game_manager, _home_state)
-	_inventory_panel.setup(inventory_description_label, inventory_item_buttons, game_manager, _home_state, inventory_name_label, inventory_type_label, inventory_stats_label, inventory_equip_button, inventory_drop_button)
+	_inventory_panel.setup(inventory_description_label, inventory_item_buttons, game_manager, _home_state, inventory_name_label, inventory_type_label, inventory_stats_label, inventory_equip_button, inventory_drop_button, inventory_slot_target_label)
 	_equipment_panel.equip_slot_requested.connect(_on_equipment_slot_requested)
 	_inventory_panel.equip_requested.connect(_on_inventory_item_selected)
 
 	play_button.pressed.connect(_on_play_pressed)
+	equipment_button.pressed.connect(_on_hub_equipment_pressed)
 	inventory_button.pressed.connect(_on_inventory_pressed)
 	settings_button.pressed.connect(_on_settings_pressed)
 	exit_button.pressed.connect(_on_exit_pressed)
@@ -173,6 +182,7 @@ func _ready() -> void:
 	equipment_inventory_button.pressed.connect(_on_inventory_pressed)
 	equipment_continue_button.pressed.connect(_on_equipment_continue_pressed)
 	equipment_back_button.pressed.connect(_go_back)
+	pet_equipment_slot_button.pressed.connect(_on_hub_pet_pressed)
 
 	pet_drone_button.pressed.connect(_on_drone_pressed)
 	pet_sprite_button.pressed.connect(_on_sprite_pressed)
@@ -205,12 +215,14 @@ func _apply_home_visual_style() -> void:
 		background_art.texture = wenrexa_background
 	HOME_UI_STYLE.apply_tree(screen_root)
 	HOME_UI_STYLE.apply_button_state(play_button, "selected")
+	HOME_UI_STYLE.apply_button_state(equipment_button, "secondary")
 	HOME_UI_STYLE.apply_button_state(inventory_button, "secondary")
 	HOME_UI_STYLE.apply_button_state(settings_button, "secondary")
 	HOME_UI_STYLE.apply_button_state(exit_button, "locked")
 	HOME_UI_STYLE.apply_button_state(mode_back_button, "secondary")
 	HOME_UI_STYLE.apply_button_state(hero_back_button, "secondary")
 	HOME_UI_STYLE.apply_button_state(equipment_back_button, "secondary")
+	HOME_UI_STYLE.apply_button_state(pet_equipment_slot_button, "secondary")
 	HOME_UI_STYLE.apply_button_state(pet_back_button, "secondary")
 	HOME_UI_STYLE.apply_button_state(inventory_back_button, "secondary")
 	HOME_UI_STYLE.apply_button_state(equipment_continue_button, "selected")
@@ -289,6 +301,51 @@ func _load_selection_from_manager() -> void:
 
 func _refresh_hub_summary(_currency: int = 0) -> void:
 	_hub_summary_panel.refresh(_currency)
+	_refresh_hub_focus(_currency)
+
+func _refresh_hub_focus(currency: int = 0) -> void:
+	if game_manager == null:
+		return
+
+	var hero_id := _selected_hero_id
+	var weapon_id := _selected_weapon_id
+	var pet_id := _selected_pet_id
+	if _home_state != null:
+		hero_id = _home_state.selected_hero_id
+		weapon_id = _home_state.selected_weapon_id
+		pet_id = _home_state.selected_pet_id
+
+	var hero_definition := game_manager.get_hero_definition(hero_id)
+	var weapon_definition := game_manager.get_weapon_definition(weapon_id)
+	var pet_definition := game_manager.get_pet_definition(pet_id)
+	var hero_name := game_manager.get_display_name(hero_definition, "Hero")
+	var pet_name := game_manager.get_display_name(pet_definition, "Pet")
+	var hp: int = 10 + int(hero_definition.get("max_hp_bonus", 0))
+	var attack: int = int(weapon_definition.get("damage", 1)) + int(hero_definition.get("projectile_damage_bonus", 0))
+	var defense: int = 0
+	if _home_state != null:
+		var armor_item: Dictionary = _home_state.get_equipped_item("armor")
+		var armor_stats: Dictionary = {}
+		if not armor_item.is_empty():
+			var armor_stats_value: Variant = armor_item.get("stats", {})
+			if typeof(armor_stats_value) == TYPE_DICTIONARY:
+				armor_stats = armor_stats_value
+		defense = _extract_first_stat_number(str(armor_stats.get("def", "0")))
+	var power: int = max(hp + attack + defense, 1)
+
+	hub_currency_label.text = "Scrap %d" % currency
+	hub_character_label.text = "SURVIVOR"
+	hub_hero_name_label.text = "%s\nLevel %d  Power %d" % [hero_name, game_manager.highest_unlocked_level, power]
+	hub_power_label.text = "HP %d  ATK %d  DEF %d  Pet %s" % [hp, attack, defense, pet_name]
+
+func _extract_first_stat_number(value: String) -> int:
+	var expression := RegEx.new()
+	if expression.compile("-?\\d+") != OK:
+		return 0
+	var result := expression.search(value)
+	if result == null:
+		return 0
+	return int(result.get_string())
 
 func _refresh_inventory_summary(_inventory: Dictionary = {}) -> void:
 	_inventory_panel.refresh(_inventory)
@@ -304,6 +361,9 @@ func _on_hub_hero_pressed() -> void:
 
 func _on_hub_pet_pressed() -> void:
 	_show_screen(SCREEN_PET_SELECT)
+
+func _on_hub_equipment_pressed() -> void:
+	_show_screen(SCREEN_EQUIPMENT_SELECT)
 
 func _on_map_pressed() -> void:
 	_show_placeholder("Map", "Map selection is planned for a later content step.")
@@ -396,10 +456,10 @@ func _apply_responsive_layout() -> void:
 	var inner_margin := 10 if is_mobile else (12 if is_tablet else 16)
 	var mobile_or_tablet := is_mobile or is_tablet
 	var hero_pet_columns := 1 if is_mobile else (2 if is_tablet else 3)
-	var equipment_columns := 1 if mobile_or_tablet else 2
-	var equipment_slot_columns := 1 if is_mobile else (2 if is_tablet else 3)
-	var inventory_content_columns := 1 if mobile_or_tablet else 2
-	var inventory_item_columns := 2 if is_mobile else (3 if is_tablet else 4)
+	var equipment_columns := 3 if viewport_size.x >= 820.0 else 1
+	var equipment_slot_columns := 1
+	var inventory_content_columns := 1
+	var inventory_item_columns := 2 if is_mobile else 3
 
 	for screen_name in _scroll_containers.keys():
 		_set_scroll_container_enabled(str(screen_name), mobile_or_tablet)
@@ -432,29 +492,34 @@ func _apply_responsive_layout() -> void:
 		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content",
 		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn",
 		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn",
-		"ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin/VBox",
+		"ScreenRoot/InventoryScreen/Layout/Root/DetailsPanel/Margin/VBox",
 		"ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/ItemGrid",
 	]:
 		_set_box_separation(content_path, content_separation)
 
 	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/Header", 4 if is_mobile else 8)
-	_set_grid_columns("ScreenRoot/MainMenuScreen/Layout/Root/MainContent", 1 if mobile_or_tablet else 3)
+	_set_grid_columns("ScreenRoot/MainMenuScreen/Layout/Root/MainContent", 1)
 	_set_grid_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent", grid_separation, grid_separation)
 	_apply_hub_layout_order(responsive_mode)
-	_set_control_visible("ScreenRoot/MainMenuScreen/Layout/Root/Header/ProfileLabel", not is_mobile)
-	_set_control_visible("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin/PrimaryActions/MenuSpacer", not mobile_or_tablet)
+	_set_control_visible("ScreenRoot/MainMenuScreen/Layout/Root/Header/ProfileLabel", true)
+	_set_control_visible("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin/PrimaryActions/MenuSpacer", false)
+	_set_control_visible("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin/PrimaryActions/ExitButton", false)
 	_set_control_size_flags("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu", Control.SIZE_EXPAND_FILL, Control.SIZE_FILL)
 	_set_control_size_flags("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero", Control.SIZE_EXPAND_FILL, Control.SIZE_FILL if mobile_or_tablet else Control.SIZE_EXPAND_FILL)
 	_set_control_size_flags("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel", Control.SIZE_EXPAND_FILL, Control.SIZE_FILL if mobile_or_tablet else Control.SIZE_EXPAND_FILL)
-	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin/PrimaryActions", 8 if is_mobile else 10)
+	_set_grid_columns("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin/PrimaryActions", 2)
+	_set_grid_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/Margin/PrimaryActions", 8 if is_mobile else 10, 8 if is_mobile else 10)
 	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/VBox", 8 if is_mobile else 12)
 	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel", 8 if is_mobile else 14)
 	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin/VBox", 6 if is_mobile else 10)
 	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/FeaturePreview/PreviewMargin/PreviewContent", 6 if is_mobile else 8)
+	_set_grid_columns("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin/VBox/SummaryGrid", 2 if is_mobile else 4)
+	_set_grid_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin/VBox/SummaryGrid", 8 if is_mobile else 10, 8 if is_mobile else 10)
 
 	_set_grid_columns("ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards", hero_pet_columns)
 	_set_grid_columns("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns", equipment_columns)
 	_set_grid_columns("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn", equipment_slot_columns)
+	_apply_equipment_layout_order()
 	_set_grid_columns("ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards", hero_pet_columns)
 	_set_grid_columns("ScreenRoot/InventoryScreen/Layout/Root/Content", inventory_content_columns)
 	_set_grid_separation("ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards", grid_separation, grid_separation)
@@ -485,10 +550,11 @@ func _apply_responsive_layout() -> void:
 		"ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/FeaturePreview/PreviewMargin",
 		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/WeaponSlot/Margin",
 		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/ArmorSlot/Margin",
-		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/AccessorySlot/Margin",
+		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/PetSlot/Margin",
+		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/AccessorySlot/Margin",
 		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/LoadoutCard/Margin",
 		"ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin",
-		"ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin",
+		"ScreenRoot/InventoryScreen/Layout/Root/DetailsPanel/Margin",
 	]:
 		_set_margin(inner_margin_path, inner_margin)
 
@@ -500,11 +566,12 @@ func _apply_responsive_layout() -> void:
 	]:
 		_set_minimum_size(portrait_path, Vector2(0.0, portrait_height))
 
-	_set_minimum_size("ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel", Vector2.ZERO)
+	_set_minimum_size("ScreenRoot/InventoryScreen/Layout/Root/DetailsPanel", Vector2(0.0, 128.0 if is_mobile else 132.0))
 	_set_minimum_size("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/WeaponSlot", Vector2(0.0, 0.0))
 	_set_minimum_size("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/ArmorSlot", Vector2(0.0, 0.0))
-	_set_minimum_size("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/AccessorySlot", Vector2(0.0, 0.0))
-	_set_minimum_size("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/CharacterPanel", Vector2(0.0, 120.0 if is_mobile else (150.0 if is_tablet else 180.0)))
+	_set_minimum_size("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/PetSlot", Vector2(0.0, 0.0))
+	_set_minimum_size("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/AccessorySlot", Vector2(0.0, 0.0))
+	_set_minimum_size("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/CharacterPanel", Vector2(0.0, 280.0 if viewport_size.x >= 820.0 else 150.0))
 	_update_touch_targets(screen_root, responsive_mode)
 
 func _install_scroll_containers() -> void:
@@ -512,9 +579,7 @@ func _install_scroll_containers() -> void:
 		SCREEN_MAIN_MENU,
 		SCREEN_MODE_SELECT,
 		SCREEN_HERO_SELECT,
-		SCREEN_EQUIPMENT_SELECT,
 		SCREEN_PET_SELECT,
-		SCREEN_INVENTORY,
 	]:
 		_install_screen_scroll_container(screen_name)
 
@@ -580,21 +645,44 @@ func _get_layout_margin(responsive_mode: String) -> int:
 		return TABLET_MARGIN
 	return DESKTOP_MARGIN
 
-func _apply_hub_layout_order(responsive_mode: String) -> void:
+func _apply_hub_layout_order(_responsive_mode: String) -> void:
 	var main_content := _get_ui_node("ScreenRoot/MainMenuScreen/Layout/Root/MainContent") as GridContainer
 	var left_menu := _get_ui_node("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu") as Control
 	var center_hero := _get_ui_node("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero") as Control
 	var right_panel := _get_ui_node("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel") as Control
 	if main_content == null or left_menu == null or center_hero == null or right_panel == null:
 		return
-	if responsive_mode == LAYOUT_DESKTOP:
-		main_content.move_child(left_menu, 0)
-		main_content.move_child(center_hero, 1)
-		main_content.move_child(right_panel, 2)
-	else:
-		main_content.move_child(center_hero, 0)
-		main_content.move_child(left_menu, 1)
-		main_content.move_child(right_panel, 2)
+	main_content.move_child(center_hero, 0)
+	main_content.move_child(right_panel, 1)
+	main_content.move_child(left_menu, 2)
+
+func _apply_equipment_layout_order() -> void:
+	var left_column := _get_ui_node("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn") as GridContainer
+	var right_column := _get_ui_node("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn") as VBoxContainer
+	if left_column == null or right_column == null:
+		return
+
+	var weapon_slot := _get_ui_node("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/WeaponSlot") as Control
+	var armor_slot := _get_ui_node("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/ArmorSlot") as Control
+	var pet_slot := _get_ui_node("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/PetSlot") as Control
+	var accessory_slot := _get_ui_node("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/AccessorySlot") as Control
+	var loadout_card := _get_ui_node("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/LoadoutCard") as Control
+	var inventory_button := _get_ui_node("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/InventoryButton") as Control
+	var unequip_button := _get_ui_node("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/UnequipButton") as Control
+	if weapon_slot != null:
+		left_column.move_child(weapon_slot, 0)
+	if armor_slot != null:
+		left_column.move_child(armor_slot, 1)
+	if pet_slot != null:
+		right_column.move_child(pet_slot, 0)
+	if accessory_slot != null:
+		right_column.move_child(accessory_slot, 1)
+	if loadout_card != null:
+		right_column.move_child(loadout_card, 2)
+	if inventory_button != null:
+		right_column.move_child(inventory_button, 3)
+	if unequip_button != null:
+		right_column.move_child(unequip_button, 4)
 
 func _set_control_visible(path: String, is_visible: bool) -> void:
 	var control := _get_ui_node(path) as Control

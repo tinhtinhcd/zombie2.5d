@@ -10,6 +10,7 @@ var _description_label: Label
 var _name_label: Label
 var _type_label: Label
 var _stats_label: Label
+var _target_label: Label
 var _equip_button: Button
 var _drop_button: Button
 var _item_buttons: Array[Button] = []
@@ -18,7 +19,7 @@ var _selected_item_id: String = ""
 var _game_manager: GameManager
 var _home_state
 
-func setup(description_label: Label, item_buttons: Array[Button], game_manager: GameManager, home_state = null, name_label: Label = null, type_label: Label = null, stats_label: Label = null, equip_button: Button = null, drop_button: Button = null) -> void:
+func setup(description_label: Label, item_buttons: Array[Button], game_manager: GameManager, home_state = null, name_label: Label = null, type_label: Label = null, stats_label: Label = null, equip_button: Button = null, drop_button: Button = null, target_label: Label = null) -> void:
 	_description_label = description_label
 	_item_buttons = item_buttons
 	_game_manager = game_manager
@@ -28,6 +29,7 @@ func setup(description_label: Label, item_buttons: Array[Button], game_manager: 
 	_stats_label = stats_label
 	_equip_button = equip_button
 	_drop_button = drop_button
+	_target_label = target_label
 	for index in range(_item_buttons.size()):
 		var button := _item_buttons[index]
 		if button == null:
@@ -47,6 +49,7 @@ func refresh(_inventory: Dictionary = {}) -> void:
 		_visible_items = _home_state.get_inventory_items_for_selected_slot()
 	if not _has_visible_item(_selected_item_id):
 		_selected_item_id = ""
+	_refresh_target_label()
 	_refresh_item_buttons()
 	_refresh_detail_panel()
 
@@ -55,7 +58,7 @@ func refresh(_inventory: Dictionary = {}) -> void:
 	if _home_state != null:
 		summary = _home_state.inventory_summary
 	if _selected_item_id.is_empty():
-		_description_label.text = "Inventory\nCoins: %d\nScrap: %d\n\n%s" % [
+		_description_label.text = "Coins %d  Scrap %d\n%s" % [
 			_game_manager.soft_currency,
 			scrap_count,
 			summary,
@@ -69,12 +72,9 @@ func _refresh_detail_panel() -> void:
 	if _type_label != null:
 		_type_label.text = "Type: %s" % str(selected_item.get("slot", "-")).capitalize() if has_selection else "Type: -"
 	if _stats_label != null:
-		_stats_label.text = "Stats: %s" % _format_stats(selected_item) if has_selection else "Stats: -"
+		_stats_label.text = _format_stats(selected_item) if has_selection else "Select an item to preview stats."
 	if has_selection and _description_label != null:
-		_description_label.text = "%s\n\n%s" % [
-			str(selected_item.get("description", "Field gear from the survivor cache.")),
-			"Select Equip to place this item in the active slot.",
-		]
+		_description_label.text = str(selected_item.get("description", "Field gear from the survivor cache."))
 	if _equip_button != null:
 		_equip_button.disabled = not has_selection
 		HOME_UI_STYLE.apply_button_state(_equip_button, "selected" if has_selection else "locked")
@@ -107,11 +107,19 @@ func _on_equip_pressed() -> void:
 func _set_inventory_summary_text(summary: String, scrap_count: int) -> void:
 	if _description_label == null:
 		return
-	_description_label.text = "Inventory\nCoins: %d\nScrap: %d\n\n%s" % [
+	_description_label.text = "Coins %d  Scrap %d\n%s" % [
 		_game_manager.soft_currency,
 		scrap_count,
 		summary,
 	]
+
+func _refresh_target_label() -> void:
+	if _target_label == null:
+		return
+	var target := "All"
+	if _home_state != null and not _home_state.selected_equipment_slot.is_empty():
+		target = _home_state.selected_equipment_slot.capitalize()
+	_target_label.text = "Target: %s" % target
 
 func _refresh_item_buttons() -> void:
 	for index in range(_item_buttons.size()):
@@ -128,7 +136,7 @@ func _refresh_item_buttons() -> void:
 		var is_equipped := _is_equipped(item)
 		var is_selected := str(item.get("id", "")) == _selected_item_id
 		button.text = "%s%s\n%s" % [
-			_shorten_text(str(item.get("name", "Item")), 16),
+			_shorten_text(str(item.get("name", "Item")), 13),
 			" *" if is_equipped else "",
 			_format_card_stats(item),
 		]

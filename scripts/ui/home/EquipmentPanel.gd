@@ -59,17 +59,16 @@ func refresh(selected_weapon_id: String) -> void:
 
 	var weapon_definition := _game_manager.get_weapon_definition(selected_weapon_id)
 	var weapon_name := _game_manager.get_display_name(weapon_definition, "Basic Gun")
-	var equipment_summary := "Armor: Placeholder\nAccessory: Placeholder"
+	var selected_slot := "none"
+	var slot_info := "Select a slot to equip gear."
 	if _home_state != null:
-		equipment_summary = _home_state.equipped_items_summary
-	_summary_label.text = "Loadout\nWeapon: %s\nDamage: %d\nFire Rate: %.2fs\nProjectiles: %d\nRange: %.1fm\n\n%s\n\n%s" % [
+		selected_slot = _home_state.selected_equipment_slot
+		slot_info = _format_selected_slot_info(selected_slot, weapon_name)
+	_summary_label.text = "Selected: %s\n%s  ATK %d  %.1fm" % [
+		slot_info,
 		weapon_name,
 		int(weapon_definition.get("damage", weapon_definition.get("projectile_damage", 1))),
-		float(weapon_definition.get("fire_rate", weapon_definition.get("fire_interval", 0.6))),
-		int(weapon_definition.get("projectile_count", 1)),
 		float(weapon_definition.get("range", 20.0)),
-		_format_weapon_unlocks(),
-		equipment_summary,
 	]
 	if _weapon_slot_button != null:
 		_weapon_slot_button.text = "Equip Weapon"
@@ -103,6 +102,18 @@ func _format_weapon_unlocks() -> String:
 		var status := "Unlocked" if _game_manager.is_weapon_unlocked(str(weapon_id)) else "Locked"
 		lines.append("%s: %s" % [_game_manager.get_display_name(weapon_definition, str(weapon_id)), status])
 	return "\n".join(lines)
+
+func _format_selected_slot_info(slot_id: String, weapon_name: String) -> String:
+	if slot_id.is_empty():
+		return "None selected"
+	if slot_id == "weapon":
+		return "Weapon: %s" % weapon_name
+	if _home_state == null:
+		return "%s: Empty" % slot_id.capitalize()
+	var equipped_item: Dictionary = _home_state.get_equipped_item(slot_id)
+	if equipped_item.is_empty():
+		return "%s: Empty" % slot_id.capitalize()
+	return "%s: %s" % [slot_id.capitalize(), str(equipped_item.get("name", "Equipped"))]
 
 func _has_equipped_item(slot_id: String) -> bool:
 	if _home_state == null:
