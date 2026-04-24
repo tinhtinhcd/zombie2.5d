@@ -16,6 +16,10 @@ func _run() -> void:
 	var home := home_scene.instantiate()
 	root.add_child(home)
 	await process_frame
+	await process_frame
+	if not _assert_home_hub_layout(home):
+		quit(1)
+		return
 	home.call("_on_play_pressed")
 	await process_frame
 	if not bool(home.get_node("ScreenRoot/ModeSelectScreen").visible):
@@ -303,3 +307,55 @@ func _run() -> void:
 
 	print("Smoke test passed: home, gameplay, wave, upgrade, and game-over flow.")
 	quit(0)
+
+func _assert_home_hub_layout(home: Node) -> bool:
+	var viewport_size := home.get_viewport().get_visible_rect().size
+	var required_paths := [
+		"ScreenRoot/MainMenuScreen/Layout/Root/Header",
+		"ScreenRoot/MainMenuScreen/Layout/Root/Header/ProfileBlock",
+		"ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar/EnergyLabel",
+		"ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar/CurrencyLabel",
+		"ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar/GemsLabel",
+		"ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar/TopSettingsButton",
+		"ScreenRoot/MainMenuScreen/Layout/Root/MainContent",
+		"ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar",
+		"ScreenRoot/MainMenuScreen/Layout/Root/BottomNavBar",
+		"ScreenRoot/MainMenuScreen/Layout/Root/BottomNavBar/Margin/NavButtons/MailButton",
+		"ScreenRoot/MainMenuScreen/Layout/Root/BottomNavBar/Margin/NavButtons/EventsButton",
+		"ScreenRoot/MainMenuScreen/Layout/Root/BottomNavBar/Margin/NavButtons/QuestsButton",
+		"ScreenRoot/MainMenuScreen/Layout/Root/BottomNavBar/Margin/NavButtons/ShopButton",
+		"ScreenRoot/MainMenuScreen/Layout/Root/BottomNavBar/Margin/NavButtons/RankingButton",
+		"ScreenRoot/MainMenuScreen/Layout/Root/BottomNavBar/Margin/NavButtons/BottomSettingsButton",
+	]
+	for path in required_paths:
+		var control := home.get_node_or_null(path) as Control
+		if control == null:
+			push_error("Smoke test failed: required home UI node is missing: %s" % path)
+			return false
+		if not control.is_visible_in_tree():
+			push_error("Smoke test failed: required home UI node is hidden at runtime: %s" % path)
+			return false
+		var rect := control.get_global_rect()
+		if rect.size.x <= 0.0 or rect.size.y <= 0.0:
+			push_error("Smoke test failed: required home UI node has no runtime layout size: %s" % path)
+			return false
+		if rect.position.y < -0.5 or rect.end.y > viewport_size.y + 0.5:
+			push_error("Smoke test failed: required home UI node is clipped vertically at runtime: %s" % path)
+			return false
+		if rect.position.x < -0.5 or rect.end.x > viewport_size.x + 0.5:
+			push_error("Smoke test failed: required home UI node is clipped horizontally at runtime: %s" % path)
+			return false
+	var header := home.get_node("ScreenRoot/MainMenuScreen/Layout/Root/Header") as Control
+	var main_content := home.get_node("ScreenRoot/MainMenuScreen/Layout/Root/MainContent") as Control
+	var primary_actions := home.get_node("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar") as Control
+	var bottom_nav := home.get_node("ScreenRoot/MainMenuScreen/Layout/Root/BottomNavBar") as Control
+	if header.get_global_rect().end.y > main_content.get_global_rect().position.y + 0.5:
+		push_error("Smoke test failed: home header overlaps main content at runtime.")
+		return false
+	if main_content.get_global_rect().end.y > primary_actions.get_global_rect().position.y + 0.5:
+		push_error("Smoke test failed: home main content overlaps primary actions at runtime.")
+		return false
+	if primary_actions.get_global_rect().end.y > bottom_nav.get_global_rect().position.y + 0.5:
+		push_error("Smoke test failed: home primary actions overlap secondary bottom nav at runtime.")
+		return false
+	return true

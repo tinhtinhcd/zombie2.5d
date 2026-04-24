@@ -44,7 +44,12 @@ const HOME_UI_STYLE := preload("res://scripts/ui/home/HomeUIStyle.gd")
 @onready var inventory_button: Button = $ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions/InventoryButton
 @onready var settings_button: Button = $ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar/TopSettingsButton
 @onready var exit_button: Button = $ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions/ExitButton
+@onready var hub_profile_label: Label = $ScreenRoot/MainMenuScreen/Layout/Root/Header/ProfileBlock/ProfileMargin/ProfileRow/ProfileText/ProfileLabel
+@onready var hub_level_label: Label = $ScreenRoot/MainMenuScreen/Layout/Root/Header/ProfileBlock/ProfileMargin/ProfileRow/ProfileText/LevelLabel
+@onready var hub_profile_progress: ProgressBar = $ScreenRoot/MainMenuScreen/Layout/Root/Header/ProfileBlock/ProfileMargin/ProfileRow/ProfileText/ProgressBar
+@onready var hub_energy_label: Label = $ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar/EnergyLabel
 @onready var hub_currency_label: Label = $ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar/CurrencyLabel
+@onready var hub_gems_label: Label = $ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar/GemsLabel
 @onready var hub_character_label: Label = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/HeroStage/CharacterPlaceholder
 @onready var hub_hero_name_label: Label = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/HeroStage/HeroNameLabel
 @onready var hub_power_label: Label = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/HeroStage/StatsPanel/StatsMargin/StatsLabel
@@ -302,7 +307,20 @@ func _load_selection_from_manager() -> void:
 
 func _refresh_hub_summary(_currency: int = 0) -> void:
 	_hub_summary_panel.refresh(_currency)
+	_refresh_top_bar(_currency)
 	_refresh_hub_focus(_currency)
+
+func _refresh_top_bar(currency: int = 0) -> void:
+	var unlocked_level := 1
+	if game_manager != null:
+		unlocked_level = game_manager.highest_unlocked_level
+
+	hub_profile_label.text = "Alex Mercer"
+	hub_level_label.text = "Lv.%d" % unlocked_level
+	hub_profile_progress.value = clampf(float(unlocked_level % 10) * 10.0, 10.0, 100.0)
+	hub_energy_label.text = "EN 48/60"
+	hub_currency_label.text = "Gold %d" % currency
+	hub_gems_label.text = "Gems 12"
 
 func _refresh_hub_focus(currency: int = 0) -> void:
 	if game_manager == null:
@@ -334,7 +352,6 @@ func _refresh_hub_focus(currency: int = 0) -> void:
 		defense = _extract_first_stat_number(str(armor_stats.get("def", "0")))
 	var power: int = max(hp + attack + defense, 1)
 
-	hub_currency_label.text = "Gold %d" % currency
 	hub_character_label.text = "SURVIVOR READY"
 	hub_hero_name_label.text = "%s\nLv.%d  Power %d" % [hero_name, game_manager.highest_unlocked_level, power]
 	hub_power_label.text = "HP %d\nATK %d\nDEF %d\nPet %s" % [hp, attack, defense, pet_name]
@@ -451,12 +468,12 @@ func _apply_responsive_layout() -> void:
 	var responsive_mode: String = _resolve_responsive_mode(viewport_size)
 	var is_mobile: bool = responsive_mode == LAYOUT_MOBILE
 	var is_tablet: bool = responsive_mode == LAYOUT_TABLET
-	var is_compact_height := viewport_size.y <= MOBILE_MAX_HEIGHT
+	var is_short_landscape := is_mobile and viewport_size.y <= MOBILE_MAX_HEIGHT
 	var margin := _get_layout_margin(responsive_mode)
-	var root_separation := 4 if is_compact_height else (12 if is_tablet else 20)
-	var content_separation := 6 if is_mobile else (10 if is_tablet else 16)
-	var grid_separation := 6 if is_mobile else (10 if is_tablet else 16)
-	var inner_margin := 8 if is_mobile else (12 if is_tablet else 16)
+	var root_separation := 4 if is_mobile else (12 if is_tablet else 20)
+	var content_separation := 4 if is_short_landscape else (6 if is_mobile else (10 if is_tablet else 16))
+	var grid_separation := 5 if is_short_landscape else (6 if is_mobile else (10 if is_tablet else 16))
+	var inner_margin := 6 if is_short_landscape else (8 if is_mobile else (12 if is_tablet else 16))
 	var mobile_or_tablet := is_mobile or is_tablet
 	var hero_pet_columns := 1 if is_mobile else (2 if is_tablet else 3)
 	var equipment_columns := 3 if responsive_mode == LAYOUT_DESKTOP and viewport_size.x >= 1400.0 else 1
@@ -505,21 +522,26 @@ func _apply_responsive_layout() -> void:
 	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/Header", 6 if is_mobile else 10)
 	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar", 6 if is_mobile else 8)
 	_apply_hub_layout_order(responsive_mode)
-	_set_control_visible("ScreenRoot/MainMenuScreen/Layout/Root/Header/ProfileBlock", not is_compact_height)
-	_set_control_visible("ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar/EnergyLabel", not is_compact_height)
-	_set_control_visible("ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar/GemsLabel", not is_compact_height)
+	_set_control_visible("ScreenRoot/MainMenuScreen/Layout/Root/Header/ProfileBlock", true)
+	_set_control_visible("ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar/EnergyLabel", true)
+	_set_control_visible("ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar/CurrencyLabel", true)
+	_set_control_visible("ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar/GemsLabel", true)
+	_set_control_visible("ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar/TopSettingsButton", true)
 	_set_control_visible("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions/MenuSpacer", false)
 	_set_control_visible("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions/ExitButton", false)
 	_set_control_visible("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions/SettingsButton", false)
-	_set_control_visible("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/PackCard", not is_compact_height)
-	_set_control_visible("ScreenRoot/MainMenuScreen/Layout/Root/BottomNavBar", not is_compact_height)
-	_set_control_visible("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/MissionCard/PreviewMargin/PreviewContent/PreviewNote", not is_mobile)
+	_set_control_visible("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/PowerCard", true)
+	_set_control_visible("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/MissionCard", true)
+	_set_control_visible("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/PackCard", true)
+	_set_control_visible("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar", true)
+	_set_control_visible("ScreenRoot/MainMenuScreen/Layout/Root/BottomNavBar", true)
+	_set_control_visible("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/MissionCard/PreviewMargin/PreviewContent/PreviewNote", true)
 	_set_control_size_flags("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu", Control.SIZE_EXPAND_FILL, Control.SIZE_FILL)
 	_set_control_size_flags("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero", Control.SIZE_EXPAND_FILL, Control.SIZE_FILL if mobile_or_tablet else Control.SIZE_EXPAND_FILL)
 	_set_control_size_flags("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel", Control.SIZE_EXPAND_FILL, Control.SIZE_FILL if mobile_or_tablet else Control.SIZE_EXPAND_FILL)
 	_set_grid_columns("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions", 6)
-	_set_grid_separation("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions", 6 if is_mobile else 10, 6 if is_mobile else 10)
-	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/BottomNavBar/Margin/NavButtons", 4 if is_mobile else 8)
+	_set_grid_separation("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions", 5 if is_short_landscape else (6 if is_mobile else 10), 5 if is_short_landscape else (6 if is_mobile else 10))
+	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/BottomNavBar/Margin/NavButtons", 3 if is_short_landscape else (4 if is_mobile else 8))
 	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel", 8 if is_mobile else 14)
 	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin/VBox", 6 if is_mobile else 10)
 	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/FeaturePreview/PreviewMargin/PreviewContent", 4 if is_mobile else 6)
@@ -582,18 +604,23 @@ func _apply_responsive_layout() -> void:
 	]:
 		_set_minimum_size(portrait_path, Vector2(0.0, portrait_height))
 
-	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/Header", Vector2(0.0, 38.0 if is_compact_height else (44.0 if is_mobile else 58.0)))
-	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/Header/ProfileBlock", Vector2(190.0 if is_mobile else 250.0, 0.0))
-	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu", Vector2(165.0 if is_mobile else 190.0, 0.0))
-	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel", Vector2(200.0 if is_mobile else 220.0, 0.0))
-	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/HeroStage", Vector2(0.0, 150.0 if is_compact_height else (180.0 if is_mobile else 245.0)))
-	var hub_action_height := 42.0 if is_compact_height else (50.0 if is_mobile else 62.0)
+	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/Header", Vector2(0.0, 44.0 if is_mobile else 58.0))
+	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/Header/ProfileBlock", Vector2(178.0 if is_short_landscape else (190.0 if is_mobile else 250.0), 0.0))
+	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar/EnergyLabel", Vector2(76.0 if is_short_landscape else 88.0, 34.0 if is_short_landscape else 42.0))
+	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar/CurrencyLabel", Vector2(86.0 if is_short_landscape else 98.0, 34.0 if is_short_landscape else 42.0))
+	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar/GemsLabel", Vector2(74.0 if is_short_landscape else 82.0, 34.0 if is_short_landscape else 42.0))
+	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar/TopSettingsButton", Vector2(80.0 if is_short_landscape else 92.0, 34.0 if is_short_landscape else 42.0))
+	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu", Vector2(160.0 if is_short_landscape else (165.0 if is_mobile else 190.0), 0.0))
+	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel", Vector2(190.0 if is_short_landscape else (200.0 if is_mobile else 220.0), 0.0))
+	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/HeroStage", Vector2(0.0, 142.0 if is_short_landscape else (180.0 if is_mobile else 245.0)))
+	var hub_action_height := 44.0 if is_short_landscape else (50.0 if is_mobile else 62.0)
 	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions/HeroButton", Vector2(0.0, hub_action_height))
 	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions/EquipmentButton", Vector2(0.0, hub_action_height))
 	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions/InventoryButton", Vector2(0.0, hub_action_height))
 	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions/PetButton", Vector2(0.0, hub_action_height))
 	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions/MapButton", Vector2(0.0, hub_action_height))
 	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions/PlayButton", Vector2(0.0, hub_action_height))
+	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/BottomNavBar", Vector2(0.0, 38.0 if is_short_landscape else 42.0))
 	_set_minimum_size("ScreenRoot/InventoryScreen/Layout/Root/DetailsPanel", Vector2(0.0, 128.0 if is_mobile else 132.0))
 	_set_minimum_size("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/WeaponSlot", Vector2(0.0, 0.0))
 	_set_minimum_size("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/ArmorSlot", Vector2(0.0, 0.0))
@@ -798,6 +825,8 @@ func _get_original_minimum_size(control: Control) -> Vector2:
 func _update_touch_targets(root: Node, responsive_mode: String) -> void:
 	var uses_touch_targets := responsive_mode != LAYOUT_DESKTOP
 	var touch_height := 54.0 if responsive_mode == LAYOUT_MOBILE else 50.0
+	var viewport_size := get_viewport_rect().size
+	var is_short_landscape := responsive_mode == LAYOUT_MOBILE and viewport_size.y <= MOBILE_MAX_HEIGHT
 	for child in root.get_children():
 		if child is Button:
 			var button := child as Button
@@ -806,11 +835,11 @@ func _update_touch_targets(root: Node, responsive_mode: String) -> void:
 			var button_path := str(button.get_path())
 			if button_path.find("MainMenuScreen") != -1:
 				if button_path.find("BottomNavBar") != -1:
-					local_touch_height = 30.0
+					local_touch_height = 34.0
 				elif button_path.find("Header") != -1:
 					local_touch_height = 38.0
 				elif button_path.find("PrimaryActionBar") != -1:
-					local_touch_height = 50.0
+					local_touch_height = 44.0 if is_short_landscape else 50.0
 			var target_height: float = max(original_size.y, local_touch_height)
 			button.custom_minimum_size = Vector2(0.0 if uses_touch_targets else original_size.x, target_height if uses_touch_targets else original_size.y)
 			if uses_touch_targets:
