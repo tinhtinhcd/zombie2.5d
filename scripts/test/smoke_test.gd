@@ -7,6 +7,7 @@ func _initialize() -> void:
 	call_deferred("_run")
 
 func _run() -> void:
+	root.size = Vector2i(960, 540)
 	var home_scene := load(HOME_SCENE) as PackedScene
 	if home_scene == null:
 		push_error("Smoke test failed: home scene did not load.")

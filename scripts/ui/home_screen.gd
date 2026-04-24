@@ -469,11 +469,11 @@ func _apply_responsive_layout() -> void:
 	var is_mobile: bool = responsive_mode == LAYOUT_MOBILE
 	var is_tablet: bool = responsive_mode == LAYOUT_TABLET
 	var is_short_landscape := is_mobile and viewport_size.y <= MOBILE_MAX_HEIGHT
-	var margin := _get_layout_margin(responsive_mode)
-	var root_separation := 4 if is_mobile else (12 if is_tablet else 20)
-	var content_separation := 4 if is_short_landscape else (6 if is_mobile else (10 if is_tablet else 16))
+	var margin := 6 if is_short_landscape else _get_layout_margin(responsive_mode)
+	var root_separation := 2 if is_short_landscape else (4 if is_mobile else (12 if is_tablet else 20))
+	var content_separation := 3 if is_short_landscape else (6 if is_mobile else (10 if is_tablet else 16))
 	var grid_separation := 5 if is_short_landscape else (6 if is_mobile else (10 if is_tablet else 16))
-	var inner_margin := 6 if is_short_landscape else (8 if is_mobile else (12 if is_tablet else 16))
+	var inner_margin := 4 if is_short_landscape else (8 if is_mobile else (12 if is_tablet else 16))
 	var mobile_or_tablet := is_mobile or is_tablet
 	var hero_pet_columns := 1 if is_mobile else (2 if is_tablet else 3)
 	var equipment_columns := 3 if responsive_mode == LAYOUT_DESKTOP and viewport_size.x >= 1400.0 else 1
@@ -519,8 +519,8 @@ func _apply_responsive_layout() -> void:
 	]:
 		_set_box_separation(content_path, content_separation)
 
-	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/Header", 6 if is_mobile else 10)
-	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar", 6 if is_mobile else 8)
+	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/Header", 4 if is_short_landscape else (6 if is_mobile else 10))
+	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar", 4 if is_short_landscape else (6 if is_mobile else 8))
 	_apply_hub_layout_order(responsive_mode)
 	_set_control_visible("ScreenRoot/MainMenuScreen/Layout/Root/Header/ProfileBlock", true)
 	_set_control_visible("ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar/EnergyLabel", true)
@@ -536,17 +536,21 @@ func _apply_responsive_layout() -> void:
 	_set_control_visible("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar", true)
 	_set_control_visible("ScreenRoot/MainMenuScreen/Layout/Root/BottomNavBar", true)
 	_set_control_visible("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/MissionCard/PreviewMargin/PreviewContent/PreviewNote", true)
+	_set_control_size_flags("ScreenRoot/MainMenuScreen/Layout/Root/Header", Control.SIZE_EXPAND_FILL, Control.SIZE_FILL)
+	_set_control_size_flags("ScreenRoot/MainMenuScreen/Layout/Root/MainContent", Control.SIZE_EXPAND_FILL, Control.SIZE_EXPAND_FILL)
+	_set_control_size_flags("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar", Control.SIZE_EXPAND_FILL, Control.SIZE_FILL)
+	_set_control_size_flags("ScreenRoot/MainMenuScreen/Layout/Root/BottomNavBar", Control.SIZE_EXPAND_FILL, Control.SIZE_FILL)
 	_set_control_size_flags("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu", Control.SIZE_EXPAND_FILL, Control.SIZE_FILL)
 	_set_control_size_flags("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero", Control.SIZE_EXPAND_FILL, Control.SIZE_FILL if mobile_or_tablet else Control.SIZE_EXPAND_FILL)
 	_set_control_size_flags("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel", Control.SIZE_EXPAND_FILL, Control.SIZE_FILL if mobile_or_tablet else Control.SIZE_EXPAND_FILL)
 	_set_grid_columns("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions", 6)
 	_set_grid_separation("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions", 5 if is_short_landscape else (6 if is_mobile else 10), 5 if is_short_landscape else (6 if is_mobile else 10))
 	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/BottomNavBar/Margin/NavButtons", 3 if is_short_landscape else (4 if is_mobile else 8))
-	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel", 8 if is_mobile else 14)
-	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin/VBox", 6 if is_mobile else 10)
-	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/FeaturePreview/PreviewMargin/PreviewContent", 4 if is_mobile else 6)
+	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel", 4 if is_short_landscape else (8 if is_mobile else 14))
+	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin/VBox", 3 if is_short_landscape else (6 if is_mobile else 10))
+	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/FeaturePreview/PreviewMargin/PreviewContent", 3 if is_short_landscape else (4 if is_mobile else 6))
 	_set_grid_columns("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin/VBox/SummaryGrid", 2)
-	_set_grid_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin/VBox/SummaryGrid", 8 if is_mobile else 10, 8 if is_mobile else 10)
+	_set_grid_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin/VBox/SummaryGrid", 4 if is_short_landscape else (8 if is_mobile else 10), 4 if is_short_landscape else (8 if is_mobile else 10))
 
 	_set_grid_columns("ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards", hero_pet_columns)
 	_set_grid_columns("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns", equipment_columns)
@@ -596,6 +600,9 @@ func _apply_responsive_layout() -> void:
 	]:
 		_set_margin(inner_margin_path, inner_margin)
 
+	if is_short_landscape:
+		_apply_short_landscape_hub_budget()
+
 	var portrait_height := 96.0 if is_mobile else (132.0 if is_tablet else 180.0)
 	for portrait_path in [
 		"ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/KnightCard/Margin/VBox/Portrait",
@@ -604,23 +611,24 @@ func _apply_responsive_layout() -> void:
 	]:
 		_set_minimum_size(portrait_path, Vector2(0.0, portrait_height))
 
-	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/Header", Vector2(0.0, 44.0 if is_mobile else 58.0))
+	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/Header", Vector2(0.0, 48.0 if is_short_landscape else (44.0 if is_mobile else 58.0)))
 	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/Header/ProfileBlock", Vector2(178.0 if is_short_landscape else (190.0 if is_mobile else 250.0), 0.0))
-	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar/EnergyLabel", Vector2(76.0 if is_short_landscape else 88.0, 34.0 if is_short_landscape else 42.0))
-	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar/CurrencyLabel", Vector2(86.0 if is_short_landscape else 98.0, 34.0 if is_short_landscape else 42.0))
-	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar/GemsLabel", Vector2(74.0 if is_short_landscape else 82.0, 34.0 if is_short_landscape else 42.0))
-	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar/TopSettingsButton", Vector2(80.0 if is_short_landscape else 92.0, 34.0 if is_short_landscape else 42.0))
+	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar/EnergyLabel", Vector2(72.0 if is_short_landscape else 88.0, 30.0 if is_short_landscape else 42.0))
+	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar/CurrencyLabel", Vector2(82.0 if is_short_landscape else 98.0, 30.0 if is_short_landscape else 42.0))
+	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar/GemsLabel", Vector2(70.0 if is_short_landscape else 82.0, 30.0 if is_short_landscape else 42.0))
+	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar/TopSettingsButton", Vector2(76.0 if is_short_landscape else 92.0, 30.0 if is_short_landscape else 42.0))
 	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu", Vector2(160.0 if is_short_landscape else (165.0 if is_mobile else 190.0), 0.0))
 	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel", Vector2(190.0 if is_short_landscape else (200.0 if is_mobile else 220.0), 0.0))
 	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/HeroStage", Vector2(0.0, 142.0 if is_short_landscape else (180.0 if is_mobile else 245.0)))
-	var hub_action_height := 44.0 if is_short_landscape else (50.0 if is_mobile else 62.0)
+	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar", Vector2(0.0, 68.0 if is_short_landscape else 0.0))
+	var hub_action_height := 38.0 if is_short_landscape else (50.0 if is_mobile else 62.0)
 	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions/HeroButton", Vector2(0.0, hub_action_height))
 	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions/EquipmentButton", Vector2(0.0, hub_action_height))
 	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions/InventoryButton", Vector2(0.0, hub_action_height))
 	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions/PetButton", Vector2(0.0, hub_action_height))
 	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions/MapButton", Vector2(0.0, hub_action_height))
 	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions/PlayButton", Vector2(0.0, hub_action_height))
-	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/BottomNavBar", Vector2(0.0, 38.0 if is_short_landscape else 42.0))
+	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/BottomNavBar", Vector2(0.0, 36.0 if is_short_landscape else 42.0))
 	_set_minimum_size("ScreenRoot/InventoryScreen/Layout/Root/DetailsPanel", Vector2(0.0, 128.0 if is_mobile else 132.0))
 	_set_minimum_size("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/WeaponSlot", Vector2(0.0, 0.0))
 	_set_minimum_size("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/ArmorSlot", Vector2(0.0, 0.0))
@@ -698,6 +706,53 @@ func _get_layout_margin(responsive_mode: String) -> int:
 	if responsive_mode == LAYOUT_TABLET:
 		return TABLET_MARGIN
 	return DESKTOP_MARGIN
+
+func _apply_short_landscape_hub_budget() -> void:
+	_set_margin_edges("ScreenRoot/MainMenuScreen/Layout/Root/Header/ProfileBlock/ProfileMargin", 4, 2, 4, 2)
+	_set_margin_edges("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/PowerCard/Margin", 4, 3, 4, 3)
+	_set_margin_edges("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/MissionCard/PreviewMargin", 4, 3, 4, 3)
+	_set_margin_edges("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/PackCard/PackMargin", 4, 3, 4, 3)
+	_set_margin_edges("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin", 4, 4, 4, 4)
+	_set_margin_edges("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/HeroStage/StatsPanel/StatsMargin", 4, 3, 4, 3)
+	_set_margin_edges("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin", 4, 3, 4, 3)
+	_set_margin_edges("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/FeaturePreview/PreviewMargin", 4, 3, 4, 3)
+	_set_margin_edges("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/PetPanel/PetMargin", 4, 3, 4, 3)
+	_set_margin_edges("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin", 4, 2, 4, 2)
+	_set_margin_edges("ScreenRoot/MainMenuScreen/Layout/Root/BottomNavBar/Margin", 4, 2, 4, 2)
+	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/Header/ProfileBlock/ProfileMargin/ProfileRow", 5)
+	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/Header/ProfileBlock/ProfileMargin/ProfileRow/ProfileText", 0)
+	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/PowerCard/Margin/VBox", 1)
+	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/MissionCard/PreviewMargin/PreviewContent", 1)
+	_set_box_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/PackCard/PackMargin/PackContent", 1)
+	_set_grid_separation("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/FeaturePreview/PreviewMargin/PreviewContent/EquipmentSlots", 3, 3)
+	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/Header/ProfileBlock/ProfileMargin/ProfileRow/Avatar", Vector2(28.0, 28.0))
+	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/Header/ProfileBlock/ProfileMargin/ProfileRow/ProfileText/ProgressBar", Vector2(0.0, 3.0))
+	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/PetPanel/PetMargin/PetRow/PetPortrait", Vector2(34.0, 34.0))
+	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/FeaturePreview/PreviewMargin/PreviewContent/EquipmentSlots/SlotWeapon", Vector2(0.0, 34.0))
+	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/FeaturePreview/PreviewMargin/PreviewContent/EquipmentSlots/SlotArmor", Vector2(0.0, 34.0))
+	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/FeaturePreview/PreviewMargin/PreviewContent/EquipmentSlots/SlotBoots", Vector2(0.0, 34.0))
+	_set_minimum_size("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/FeaturePreview/PreviewMargin/PreviewContent/EquipmentSlots/SlotPet", Vector2(0.0, 34.0))
+	_set_control_font_size("ScreenRoot/MainMenuScreen/Layout/Root/Header/ProfileBlock/ProfileMargin/ProfileRow/ProfileText/ProfileLabel", 12)
+	_set_control_font_size("ScreenRoot/MainMenuScreen/Layout/Root/Header/ProfileBlock/ProfileMargin/ProfileRow/ProfileText/LevelLabel", 11)
+	_set_control_font_size("ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar/EnergyLabel", 12)
+	_set_control_font_size("ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar/CurrencyLabel", 12)
+	_set_control_font_size("ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar/GemsLabel", 12)
+	_set_control_font_size("ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar/TopSettingsButton", 12)
+	_set_control_font_size("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/PowerCard/Margin/VBox/TitleLabel", 13)
+	_set_control_font_size("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/PowerCard/Margin/VBox/PowerValue", 15)
+	_set_control_font_size("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/MissionCard/PreviewMargin/PreviewContent/PreviewTitle", 13)
+	_set_control_font_size("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/MissionCard/PreviewMargin/PreviewContent/PreviewList", 12)
+	_set_control_font_size("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/MissionCard/PreviewMargin/PreviewContent/PreviewNote", 11)
+	_set_control_font_size("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/PackCard/PackMargin/PackContent/TitleLabel", 13)
+	_set_control_font_size("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/PackCard/PackMargin/PackContent/PackText", 12)
+	_set_control_font_size("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions/HeroButton", 12)
+	_set_control_font_size("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions/EquipmentButton", 12)
+	_set_control_font_size("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions/InventoryButton", 12)
+	_set_control_font_size("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions/PetButton", 12)
+	_set_control_font_size("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions/MapButton", 12)
+	_set_control_font_size("ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions/PlayButton", 12)
+	_set_label_line_limit("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/MissionCard/PreviewMargin/PreviewContent/PreviewList", 3)
+	_set_label_line_limit("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/MissionCard/PreviewMargin/PreviewContent/PreviewNote", 1)
 
 func _apply_hub_layout_order(_responsive_mode: String) -> void:
 	var main_content := _get_ui_node("ScreenRoot/MainMenuScreen/Layout/Root/MainContent") as HBoxContainer
@@ -815,6 +870,19 @@ func _set_minimum_size(path: String, minimum_size: Vector2) -> void:
 	if control == null:
 		return
 	control.custom_minimum_size = minimum_size
+
+func _set_control_font_size(path: String, font_size: int) -> void:
+	var control := _get_ui_node(path) as Control
+	if control == null:
+		return
+	control.add_theme_font_size_override("font_size", font_size)
+
+func _set_label_line_limit(path: String, max_lines: int) -> void:
+	var label := _get_ui_node(path) as Label
+	if label == null:
+		return
+	label.max_lines_visible = max_lines
+	label.clip_text = max_lines > 0
 
 func _get_original_minimum_size(control: Control) -> Vector2:
 	var id := control.get_instance_id()
