@@ -166,11 +166,10 @@ static func _make_panel_style(fill: Color, border: Color, border_width: int) -> 
 static func _get_texture(path: String) -> Texture2D:
 	if _texture_cache.has(path):
 		return _texture_cache[path] as Texture2D
-	var image := Image.load_from_file(path)
-	if image == null or image.is_empty():
+	var texture := load(path) as Texture2D
+	if texture == null:
 		push_warning("HomeUIStyle warning: failed to load UI texture %s" % path)
 		return null
-	var texture := ImageTexture.create_from_image(image)
 	_texture_cache[path] = texture
 	return texture
 
