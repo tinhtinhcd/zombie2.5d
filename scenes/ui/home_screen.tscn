@@ -63,38 +63,38 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/margin_left = 32
-theme_override_constants/margin_top = 32
-theme_override_constants/margin_right = 32
-theme_override_constants/margin_bottom = 32
+theme_override_constants/margin_left = 6
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 6
+theme_override_constants/margin_bottom = 6
 
 [node name="Root" type="VBoxContainer" parent="ScreenRoot/MainMenuScreen/Layout"]
 layout_mode = 2
-theme_override_constants/separation = 24
+theme_override_constants/separation = 3
 
 [node name="Header" type="HBoxContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root"]
-custom_minimum_size = Vector2(0, 50)
+custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 4
 
 [node name="ProfileBlock" type="PanelContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/Header"]
-custom_minimum_size = Vector2(190, 0)
+custom_minimum_size = Vector2(164, 0)
 layout_mode = 2
 size_flags_vertical = 3
 
 [node name="ProfileMargin" type="MarginContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/Header/ProfileBlock"]
 layout_mode = 2
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 8
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 2
 
 [node name="ProfileRow" type="HBoxContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/Header/ProfileBlock/ProfileMargin"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 5
 
 [node name="Avatar" type="TextureRect" parent="ScreenRoot/MainMenuScreen/Layout/Root/Header/ProfileBlock/ProfileMargin/ProfileRow"]
-custom_minimum_size = Vector2(34, 34)
+custom_minimum_size = Vector2(28, 28)
 layout_mode = 2
 texture = ExtResource("4_knight")
 expand_mode = 1
@@ -115,7 +115,7 @@ layout_mode = 2
 text = "Lv.25"
 
 [node name="ProgressBar" type="ProgressBar" parent="ScreenRoot/MainMenuScreen/Layout/Root/Header/ProfileBlock/ProfileMargin/ProfileRow/ProfileText"]
-custom_minimum_size = Vector2(0, 6)
+custom_minimum_size = Vector2(0, 3)
 layout_mode = 2
 value = 62.0
 show_percentage = false
@@ -126,134 +126,133 @@ size_flags_horizontal = 3
 
 [node name="ResourceBar" type="HBoxContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/Header"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 4
 
 [node name="EnergyLabel" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar"]
-custom_minimum_size = Vector2(88, 42)
+custom_minimum_size = Vector2(68, 30)
 layout_mode = 2
 text = "EN 48/60"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="CurrencyLabel" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar"]
-custom_minimum_size = Vector2(98, 42)
+custom_minimum_size = Vector2(78, 30)
 layout_mode = 2
-text = "Gold 0"
+text = "G 0"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="GemsLabel" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar"]
-custom_minimum_size = Vector2(82, 42)
+custom_minimum_size = Vector2(62, 30)
 layout_mode = 2
-text = "Gems 12"
+text = "Gem 12"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="TopSettingsButton" type="Button" parent="ScreenRoot/MainMenuScreen/Layout/Root/Header/ResourceBar"]
-custom_minimum_size = Vector2(92, 42)
+custom_minimum_size = Vector2(52, 30)
 layout_mode = 2
-text = "Settings"
+text = "SET"
 
 [node name="MainContent" type="HBoxContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/separation = 12
+theme_override_constants/separation = 4
 
 [node name="LeftMenu" type="VBoxContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent"]
-custom_minimum_size = Vector2(190, 0)
+custom_minimum_size = Vector2(118, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-size_flags_stretch_ratio = 0.22
-theme_override_constants/separation = 8
+size_flags_stretch_ratio = 0.13
+theme_override_constants/separation = 4
 
 [node name="PowerCard" type="PanelContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu"]
 layout_mode = 2
 
 [node name="Margin" type="MarginContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/PowerCard"]
 layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 10
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 3
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 3
 
 [node name="VBox" type="VBoxContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/PowerCard/Margin"]
 layout_mode = 2
-theme_override_constants/separation = 4
+theme_override_constants/separation = 1
 
 [node name="TitleLabel" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/PowerCard/Margin/VBox"]
 layout_mode = 2
-text = "Power"
+text = "PWR"
 
 [node name="PowerValue" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/PowerCard/Margin/VBox"]
 layout_mode = 2
-text = "32,540"
+text = "32.5K"
 
 [node name="MissionCard" type="PanelContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu"]
 layout_mode = 2
-size_flags_vertical = 3
 
 [node name="PreviewMargin" type="MarginContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/MissionCard"]
 layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 10
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 3
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 3
 
 [node name="PreviewContent" type="VBoxContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/MissionCard/PreviewMargin"]
 layout_mode = 2
-theme_override_constants/separation = 4
+theme_override_constants/separation = 1
 
 [node name="PreviewTitle" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/MissionCard/PreviewMargin/PreviewContent"]
 layout_mode = 2
-text = "Mission"
+text = "MISSION"
 
 [node name="PreviewList" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/MissionCard/PreviewMargin/PreviewContent"]
 layout_mode = 2
-text = "C3 Broken City\nStage 3-10 7/10\nHero: Knight | Empty"
+text = "C3-10 7/10 >"
 
 [node name="PreviewNote" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/MissionCard/PreviewMargin/PreviewContent"]
 layout_mode = 2
-text = "Basic Gun | Rex"
+text = "Knight | Rex"
 
 [node name="PackCard" type="PanelContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu"]
 layout_mode = 2
 
 [node name="PackMargin" type="MarginContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/PackCard"]
 layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 10
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 3
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 3
 
 [node name="PackContent" type="VBoxContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/PackCard/PackMargin"]
 layout_mode = 2
-theme_override_constants/separation = 4
+theme_override_constants/separation = 1
 
 [node name="TitleLabel" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/PackCard/PackMargin/PackContent"]
 layout_mode = 2
-text = "Supply Drop"
+text = "DROP"
 
 [node name="PackText" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/PackCard/PackMargin/PackContent"]
 layout_mode = 2
-text = "Drop 2h 14m"
+text = "2h14"
 
 [node name="CenterHero" type="PanelContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-size_flags_stretch_ratio = 0.5
+size_flags_stretch_ratio = 0.7
 
 [node name="Margin" type="MarginContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero"]
 layout_mode = 2
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 10
+theme_override_constants/margin_left = 3
+theme_override_constants/margin_top = 3
+theme_override_constants/margin_right = 3
+theme_override_constants/margin_bottom = 3
 
 [node name="HeroStage" type="Control" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin"]
-custom_minimum_size = Vector2(0, 180)
+custom_minimum_size = Vector2(0, 230)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -282,10 +281,10 @@ color = Color(0.02, 0.025, 0.03, 0.5)
 [node name="HeroImage" type="TextureRect" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/HeroStage"]
 layout_mode = 1
 anchors_preset = -1
-anchor_left = 0.18
-anchor_top = 0.03
-anchor_right = 0.62
-anchor_bottom = 0.96
+anchor_left = 0.23
+anchor_top = 0.01
+anchor_right = 0.72
+anchor_bottom = 0.98
 offset_left = -48.0
 offset_top = -4.0
 offset_right = 48.0
@@ -298,10 +297,10 @@ stretch_mode = 5
 [node name="CharacterPlaceholder" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/HeroStage"]
 layout_mode = 1
 anchors_preset = -1
-anchor_left = 0.05
-anchor_top = 0.08
-anchor_right = 0.55
-anchor_bottom = 0.18
+anchor_left = 0.03
+anchor_top = 0.04
+anchor_right = 0.42
+anchor_bottom = 0.13
 grow_horizontal = 2
 grow_vertical = 2
 text = "SURVIVOR READY"
@@ -310,22 +309,22 @@ vertical_alignment = 1
 [node name="HeroNameLabel" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/HeroStage"]
 layout_mode = 1
 anchors_preset = -1
-anchor_left = 0.05
-anchor_top = 0.74
-anchor_right = 0.62
-anchor_bottom = 0.94
+anchor_left = 0.03
+anchor_top = 0.80
+anchor_right = 0.48
+anchor_bottom = 0.96
 grow_horizontal = 2
 grow_vertical = 2
-text = "Knight\nLv.25  Power 32,540"
+text = "Knight  Lv.25  PWR 32.5K"
 vertical_alignment = 1
 
 [node name="StatsPanel" type="PanelContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/HeroStage"]
 layout_mode = 1
 anchors_preset = -1
-anchor_left = 0.58
-anchor_top = 0.72
-anchor_right = 0.96
-anchor_bottom = 0.94
+anchor_left = 0.48
+anchor_top = 0.82
+anchor_right = 0.97
+anchor_bottom = 0.96
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -336,48 +335,48 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 8
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 3
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 3
 
 [node name="StatsLabel" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/HeroStage/StatsPanel/StatsMargin"]
 layout_mode = 2
 autowrap_mode = 3
-text = "HP 5,320\nATK 1,250\nDEF 820"
+text = "HP 5.3K  ATK 1.2K  DEF 820  PET Rex"
 
 [node name="RightPanel" type="VBoxContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent"]
-custom_minimum_size = Vector2(220, 0)
+custom_minimum_size = Vector2(152, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-size_flags_stretch_ratio = 0.28
-theme_override_constants/separation = 8
+size_flags_stretch_ratio = 0.17
+theme_override_constants/separation = 4
 
 [node name="QuickEquipmentPanel" type="PanelContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel"]
 layout_mode = 2
 
 [node name="Margin" type="MarginContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel"]
 layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 10
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 3
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 3
 
 [node name="VBox" type="VBoxContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin"]
 layout_mode = 2
-theme_override_constants/separation = 6
+theme_override_constants/separation = 2
 
 [node name="TitleLabel" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin/VBox"]
 layout_mode = 2
-text = "Hero Summary"
+text = "COMBAT"
 
 [node name="SummaryGrid" type="GridContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin/VBox"]
 layout_mode = 2
 columns = 2
-theme_override_constants/h_separation = 8
-theme_override_constants/v_separation = 6
-theme_override_constants/separation = 8
+theme_override_constants/h_separation = 4
+theme_override_constants/v_separation = 4
+theme_override_constants/separation = 4
 
 [node name="WeaponPreview" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/QuickEquipmentPanel/Margin/VBox/SummaryGrid"]
 layout_mode = 2
@@ -408,17 +407,17 @@ layout_mode = 2
 
 [node name="PetMargin" type="MarginContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/PetPanel"]
 layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 10
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 3
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 3
 
 [node name="PetRow" type="HBoxContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/PetPanel/PetMargin"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 4
 
 [node name="PetPortrait" type="TextureRect" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/PetPanel/PetMargin/PetRow"]
-custom_minimum_size = Vector2(44, 44)
+custom_minimum_size = Vector2(30, 30)
 layout_mode = 2
 texture = ExtResource("5_rogue")
 expand_mode = 1
@@ -431,7 +430,7 @@ theme_override_constants/separation = 2
 
 [node name="TitleLabel" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/PetPanel/PetMargin/PetRow/PetText"]
 layout_mode = 2
-text = "Current Pet"
+text = "PET"
 
 [node name="PetNameLabel" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/PetPanel/PetMargin/PetRow/PetText"]
 layout_mode = 2
@@ -439,32 +438,31 @@ text = "Rex  Lv.15"
 
 [node name="FeaturePreview" type="PanelContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel"]
 layout_mode = 2
-size_flags_vertical = 3
 
 [node name="PreviewMargin" type="MarginContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/FeaturePreview"]
 layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 10
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 3
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 3
 
 [node name="PreviewContent" type="VBoxContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/FeaturePreview/PreviewMargin"]
 layout_mode = 2
-theme_override_constants/separation = 6
+theme_override_constants/separation = 2
 
 [node name="PreviewTitle" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/FeaturePreview/PreviewMargin/PreviewContent"]
 layout_mode = 2
-text = "Equipment"
+text = "GEAR"
 
 [node name="EquipmentSlots" type="GridContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/FeaturePreview/PreviewMargin/PreviewContent"]
 layout_mode = 2
 columns = 4
-theme_override_constants/h_separation = 6
-theme_override_constants/v_separation = 6
-theme_override_constants/separation = 6
+theme_override_constants/h_separation = 3
+theme_override_constants/v_separation = 3
+theme_override_constants/separation = 3
 
 [node name="SlotWeapon" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/FeaturePreview/PreviewMargin/PreviewContent/EquipmentSlots"]
-custom_minimum_size = Vector2(0, 44)
+custom_minimum_size = Vector2(0, 34)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "W\n+8"
@@ -472,7 +470,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="SlotArmor" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/FeaturePreview/PreviewMargin/PreviewContent/EquipmentSlots"]
-custom_minimum_size = Vector2(0, 44)
+custom_minimum_size = Vector2(0, 34)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "A\n+5"
@@ -480,7 +478,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="SlotBoots" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/FeaturePreview/PreviewMargin/PreviewContent/EquipmentSlots"]
-custom_minimum_size = Vector2(0, 44)
+custom_minimum_size = Vector2(0, 34)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "B\n+3"
@@ -488,7 +486,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="SlotPet" type="Label" parent="ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/FeaturePreview/PreviewMargin/PreviewContent/EquipmentSlots"]
-custom_minimum_size = Vector2(0, 44)
+custom_minimum_size = Vector2(0, 34)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "P\n+2"
@@ -496,59 +494,60 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="PrimaryActionBar" type="PanelContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root"]
+custom_minimum_size = Vector2(0, 58)
 layout_mode = 2
 
 [node name="Margin" type="MarginContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar"]
 layout_mode = 2
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 8
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 2
 
 [node name="PrimaryActions" type="GridContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin"]
 layout_mode = 2
 columns = 6
-theme_override_constants/h_separation = 10
-theme_override_constants/v_separation = 8
-theme_override_constants/separation = 10
+theme_override_constants/h_separation = 5
+theme_override_constants/v_separation = 5
+theme_override_constants/separation = 5
 
 [node name="HeroButton" type="Button" parent="ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions"]
-custom_minimum_size = Vector2(0, 50)
+custom_minimum_size = Vector2(0, 46)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "H
 Hero"
 
 [node name="EquipmentButton" type="Button" parent="ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions"]
-custom_minimum_size = Vector2(0, 50)
+custom_minimum_size = Vector2(0, 46)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "G
 Gear"
 
 [node name="InventoryButton" type="Button" parent="ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions"]
-custom_minimum_size = Vector2(0, 50)
+custom_minimum_size = Vector2(0, 46)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "B
 Bag"
 
 [node name="PetButton" type="Button" parent="ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions"]
-custom_minimum_size = Vector2(0, 50)
+custom_minimum_size = Vector2(0, 46)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "P
 Pet"
 
 [node name="MapButton" type="Button" parent="ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions"]
-custom_minimum_size = Vector2(0, 50)
+custom_minimum_size = Vector2(0, 46)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "M
 Map"
 
 [node name="PlayButton" type="Button" parent="ScreenRoot/MainMenuScreen/Layout/Root/PrimaryActionBar/Margin/PrimaryActions"]
-custom_minimum_size = Vector2(0, 50)
+custom_minimum_size = Vector2(0, 46)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "!
@@ -571,19 +570,19 @@ layout_mode = 2
 text = "Settings"
 
 [node name="BottomNavBar" type="PanelContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root"]
-custom_minimum_size = Vector2(0, 42)
+custom_minimum_size = Vector2(0, 34)
 layout_mode = 2
 
 [node name="Margin" type="MarginContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/BottomNavBar"]
 layout_mode = 2
-theme_override_constants/margin_left = 8
-theme_override_constants/margin_top = 5
-theme_override_constants/margin_right = 8
-theme_override_constants/margin_bottom = 5
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 1
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 1
 
 [node name="NavButtons" type="HBoxContainer" parent="ScreenRoot/MainMenuScreen/Layout/Root/BottomNavBar/Margin"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 3
 
 [node name="MailButton" type="Button" parent="ScreenRoot/MainMenuScreen/Layout/Root/BottomNavBar/Margin/NavButtons"]
 layout_mode = 2
@@ -593,12 +592,12 @@ text = "Mail"
 [node name="EventsButton" type="Button" parent="ScreenRoot/MainMenuScreen/Layout/Root/BottomNavBar/Margin/NavButtons"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Events"
+text = "Evt"
 
 [node name="QuestsButton" type="Button" parent="ScreenRoot/MainMenuScreen/Layout/Root/BottomNavBar/Margin/NavButtons"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Quests"
+text = "Quest"
 
 [node name="ShopButton" type="Button" parent="ScreenRoot/MainMenuScreen/Layout/Root/BottomNavBar/Margin/NavButtons"]
 layout_mode = 2
@@ -608,12 +607,12 @@ text = "Shop"
 [node name="RankingButton" type="Button" parent="ScreenRoot/MainMenuScreen/Layout/Root/BottomNavBar/Margin/NavButtons"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Ranking"
+text = "Rank"
 
 [node name="BottomSettingsButton" type="Button" parent="ScreenRoot/MainMenuScreen/Layout/Root/BottomNavBar/Margin/NavButtons"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Settings"
+text = "Set"
 
 [node name="ModeSelectScreen" type="Control" parent="ScreenRoot"]
 visible = false
@@ -711,18 +710,29 @@ theme_override_constants/margin_bottom = 24
 layout_mode = 2
 theme_override_constants/separation = 20
 
-[node name="Header" type="VBoxContainer" parent="ScreenRoot/HeroSelectScreen/Layout/Root"]
+[node name="Header" type="HBoxContainer" parent="ScreenRoot/HeroSelectScreen/Layout/Root"]
+custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
-theme_override_constants/separation = 6
+theme_override_constants/separation = 8
+
+[node name="BackButton" type="Button" parent="ScreenRoot/HeroSelectScreen/Layout/Root/Header"]
+custom_minimum_size = Vector2(108, 42)
+layout_mode = 2
+text = "Back"
 
 [node name="Title" type="Label" parent="ScreenRoot/HeroSelectScreen/Layout/Root/Header"]
 layout_mode = 2
-text = "Hero Select"
+size_flags_horizontal = 3
+text = "HERO SELECT"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="Subtitle" type="Label" parent="ScreenRoot/HeroSelectScreen/Layout/Root/Header"]
+custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
-autowrap_mode = 3
-text = "Pick the survivor for this run. Locked heroes stay visible for progression."
+text = "Gold 0"
+horizontal_alignment = 2
+vertical_alignment = 1
 
 [node name="Content" type="VBoxContainer" parent="ScreenRoot/HeroSelectScreen/Layout/Root"]
 layout_mode = 2
@@ -876,15 +886,10 @@ layout_mode = 2
 alignment = 2
 theme_override_constants/separation = 12
 
-[node name="BackButton" type="Button" parent="ScreenRoot/HeroSelectScreen/Layout/Root/Footer"]
-custom_minimum_size = Vector2(160, 50)
-layout_mode = 2
-text = "Back"
-
 [node name="ContinueButton" type="Button" parent="ScreenRoot/HeroSelectScreen/Layout/Root/Footer"]
-custom_minimum_size = Vector2(180, 50)
+custom_minimum_size = Vector2(220, 54)
 layout_mode = 2
-text = "Continue"
+text = "Confirm"
 disabled = true
 
 [node name="EquipmentSelectScreen" type="Control" parent="ScreenRoot"]
@@ -1163,18 +1168,29 @@ theme_override_constants/margin_bottom = 24
 layout_mode = 2
 theme_override_constants/separation = 20
 
-[node name="Header" type="VBoxContainer" parent="ScreenRoot/PetSelectScreen/Layout/Root"]
+[node name="Header" type="HBoxContainer" parent="ScreenRoot/PetSelectScreen/Layout/Root"]
+custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
-theme_override_constants/separation = 6
+theme_override_constants/separation = 8
+
+[node name="BackButton" type="Button" parent="ScreenRoot/PetSelectScreen/Layout/Root/Header"]
+custom_minimum_size = Vector2(108, 42)
+layout_mode = 2
+text = "Back"
 
 [node name="Title" type="Label" parent="ScreenRoot/PetSelectScreen/Layout/Root/Header"]
 layout_mode = 2
-text = "Pet Select"
+size_flags_horizontal = 3
+text = "PET SELECT"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="Subtitle" type="Label" parent="ScreenRoot/PetSelectScreen/Layout/Root/Header"]
+custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
-autowrap_mode = 3
-text = "Choose a companion for light automatic support during the run."
+text = "Gold 0"
+horizontal_alignment = 2
+vertical_alignment = 1
 
 [node name="Content" type="VBoxContainer" parent="ScreenRoot/PetSelectScreen/Layout/Root"]
 layout_mode = 2
@@ -1202,6 +1218,13 @@ theme_override_constants/margin_bottom = 16
 [node name="VBox" type="VBoxContainer" parent="ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards/DroneCard/Margin"]
 layout_mode = 2
 theme_override_constants/separation = 10
+
+[node name="PortraitLabel" type="Label" parent="ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards/DroneCard/Margin/VBox"]
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+text = "REX"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="NameLabel" type="Label" parent="ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards/DroneCard/Margin/VBox"]
 layout_mode = 2
@@ -1236,6 +1259,13 @@ theme_override_constants/margin_bottom = 16
 layout_mode = 2
 theme_override_constants/separation = 10
 
+[node name="PortraitLabel" type="Label" parent="ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards/SpriteCard/Margin/VBox"]
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+text = "LUNA"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="NameLabel" type="Label" parent="ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards/SpriteCard/Margin/VBox"]
 layout_mode = 2
 text = "Sprite"
@@ -1268,6 +1298,13 @@ theme_override_constants/margin_bottom = 16
 [node name="VBox" type="VBoxContainer" parent="ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards/WispCard/Margin"]
 layout_mode = 2
 theme_override_constants/separation = 10
+
+[node name="PortraitLabel" type="Label" parent="ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards/WispCard/Margin/VBox"]
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+text = "BRUNO"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="NameLabel" type="Label" parent="ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards/WispCard/Margin/VBox"]
 layout_mode = 2
@@ -1307,15 +1344,10 @@ layout_mode = 2
 alignment = 2
 theme_override_constants/separation = 12
 
-[node name="BackButton" type="Button" parent="ScreenRoot/PetSelectScreen/Layout/Root/Footer"]
-custom_minimum_size = Vector2(160, 50)
-layout_mode = 2
-text = "Back"
-
 [node name="StartGameButton" type="Button" parent="ScreenRoot/PetSelectScreen/Layout/Root/Footer"]
-custom_minimum_size = Vector2(200, 50)
+custom_minimum_size = Vector2(220, 54)
 layout_mode = 2
-text = "Start Game"
+text = "Confirm"
 
 [node name="InventoryScreen" type="Control" parent="ScreenRoot"]
 visible = false
@@ -1344,29 +1376,30 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/margin_left = 24
-theme_override_constants/margin_top = 24
-theme_override_constants/margin_right = 24
-theme_override_constants/margin_bottom = 24
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
 
 [node name="Root" type="VBoxContainer" parent="ScreenRoot/InventoryScreen/Layout"]
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 6
 
 [node name="Header" type="HBoxContainer" parent="ScreenRoot/InventoryScreen/Layout/Root"]
-custom_minimum_size = Vector2(0, 54)
+custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 8
 
 [node name="BackButton" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Header"]
-custom_minimum_size = Vector2(0, 50)
+custom_minimum_size = Vector2(108, 42)
 layout_mode = 2
 text = "Back"
 
 [node name="Title" type="Label" parent="ScreenRoot/InventoryScreen/Layout/Root/Header"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Inventory"
+text = "INVENTORY"
+horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="SlotTargetLabel" type="Label" parent="ScreenRoot/InventoryScreen/Layout/Root/Header"]
@@ -1377,132 +1410,200 @@ text = "Target: All"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="Content" type="GridContainer" parent="ScreenRoot/InventoryScreen/Layout/Root"]
+[node name="Content" type="HBoxContainer" parent="ScreenRoot/InventoryScreen/Layout/Root"]
 layout_mode = 2
 size_flags_vertical = 3
-columns = 1
-theme_override_constants/h_separation = 16
-theme_override_constants/v_separation = 16
-theme_override_constants/separation = 16
+theme_override_constants/separation = 8
 
 [node name="GridPanel" type="PanelContainer" parent="ScreenRoot/InventoryScreen/Layout/Root/Content"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+size_flags_stretch_ratio = 0.68
 
 [node name="Margin" type="MarginContainer" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel"]
 layout_mode = 2
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 16
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
 
-[node name="ItemGrid" type="GridContainer" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin"]
+[node name="GridScroll" type="ScrollContainer" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin"]
 layout_mode = 2
-columns = 2
-theme_override_constants/h_separation = 10
-theme_override_constants/v_separation = 10
+size_flags_horizontal = 3
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 1
 
-[node name="SlotA" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/ItemGrid"]
-custom_minimum_size = Vector2(0, 76)
+[node name="ItemGrid" type="GridContainer" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/GridScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+columns = 6
+theme_override_constants/h_separation = 6
+theme_override_constants/v_separation = 6
+
+[node name="SlotA" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/GridScroll/ItemGrid"]
+custom_minimum_size = Vector2(58, 58)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Slot"
 
-[node name="SlotB" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/ItemGrid"]
-custom_minimum_size = Vector2(0, 76)
+[node name="SlotB" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/GridScroll/ItemGrid"]
+custom_minimum_size = Vector2(58, 58)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Slot"
 
-[node name="SlotC" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/ItemGrid"]
-custom_minimum_size = Vector2(0, 76)
+[node name="SlotC" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/GridScroll/ItemGrid"]
+custom_minimum_size = Vector2(58, 58)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Slot"
 
-[node name="SlotD" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/ItemGrid"]
-custom_minimum_size = Vector2(0, 76)
+[node name="SlotD" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/GridScroll/ItemGrid"]
+custom_minimum_size = Vector2(58, 58)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Slot"
 
-[node name="SlotE" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/ItemGrid"]
-custom_minimum_size = Vector2(0, 76)
+[node name="SlotE" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/GridScroll/ItemGrid"]
+custom_minimum_size = Vector2(58, 58)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Slot"
 
-[node name="SlotF" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/ItemGrid"]
-custom_minimum_size = Vector2(0, 76)
+[node name="SlotF" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/GridScroll/ItemGrid"]
+custom_minimum_size = Vector2(58, 58)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Slot"
 
-[node name="SlotG" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/ItemGrid"]
-custom_minimum_size = Vector2(0, 76)
+[node name="SlotG" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/GridScroll/ItemGrid"]
+custom_minimum_size = Vector2(58, 58)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Slot"
 
-[node name="SlotH" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/ItemGrid"]
-custom_minimum_size = Vector2(0, 76)
+[node name="SlotH" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/GridScroll/ItemGrid"]
+custom_minimum_size = Vector2(58, 58)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Slot"
 
-[node name="DetailsPanel" type="PanelContainer" parent="ScreenRoot/InventoryScreen/Layout/Root"]
-custom_minimum_size = Vector2(0, 132)
+[node name="SlotI" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/GridScroll/ItemGrid"]
+custom_minimum_size = Vector2(58, 58)
 layout_mode = 2
 size_flags_horizontal = 3
+text = "Slot"
 
-[node name="Margin" type="MarginContainer" parent="ScreenRoot/InventoryScreen/Layout/Root/DetailsPanel"]
+[node name="SlotJ" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/GridScroll/ItemGrid"]
+custom_minimum_size = Vector2(58, 58)
 layout_mode = 2
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 12
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 12
+size_flags_horizontal = 3
+text = "Slot"
 
-[node name="VBox" type="VBoxContainer" parent="ScreenRoot/InventoryScreen/Layout/Root/DetailsPanel/Margin"]
+[node name="SlotK" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/GridScroll/ItemGrid"]
+custom_minimum_size = Vector2(58, 58)
 layout_mode = 2
-theme_override_constants/separation = 8
+size_flags_horizontal = 3
+text = "Slot"
 
-[node name="TitleLabel" type="Label" parent="ScreenRoot/InventoryScreen/Layout/Root/DetailsPanel/Margin/VBox"]
+[node name="SlotL" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/GridScroll/ItemGrid"]
+custom_minimum_size = Vector2(58, 58)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Slot"
+
+[node name="SlotM" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/GridScroll/ItemGrid"]
+custom_minimum_size = Vector2(58, 58)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Slot"
+
+[node name="SlotN" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/GridScroll/ItemGrid"]
+custom_minimum_size = Vector2(58, 58)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Slot"
+
+[node name="SlotO" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/GridScroll/ItemGrid"]
+custom_minimum_size = Vector2(58, 58)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Slot"
+
+[node name="SlotP" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/GridScroll/ItemGrid"]
+custom_minimum_size = Vector2(58, 58)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Slot"
+
+[node name="DetailsPanel" type="PanelContainer" parent="ScreenRoot/InventoryScreen/Layout/Root/Content"]
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.32
+
+[node name="Margin" type="MarginContainer" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBox" type="VBoxContainer" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="IconPreview" type="Label" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin/VBox"]
+custom_minimum_size = Vector2(0, 84)
+layout_mode = 2
+text = "?"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TitleLabel" type="Label" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin/VBox"]
 layout_mode = 2
 text = "Selected Item"
 
-[node name="NameLabel" type="Label" parent="ScreenRoot/InventoryScreen/Layout/Root/DetailsPanel/Margin/VBox"]
+[node name="NameLabel" type="Label" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin/VBox"]
 layout_mode = 2
 text = "No Item Selected"
 
-[node name="TypeLabel" type="Label" parent="ScreenRoot/InventoryScreen/Layout/Root/DetailsPanel/Margin/VBox"]
-visible = false
+[node name="TypeLabel" type="Label" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin/VBox"]
 layout_mode = 2
 text = "Type: -"
 
-[node name="StatsLabel" type="Label" parent="ScreenRoot/InventoryScreen/Layout/Root/DetailsPanel/Margin/VBox"]
+[node name="StatsLabel" type="Label" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin/VBox"]
 layout_mode = 2
 text = "Stats: -"
 
-[node name="DescriptionLabel" type="Label" parent="ScreenRoot/InventoryScreen/Layout/Root/DetailsPanel/Margin/VBox"]
-visible = false
+[node name="DescriptionLabel" type="Label" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin/VBox"]
 layout_mode = 2
 autowrap_mode = 3
 text = "Choose an equipment slot first, then equip a matching item from the list."
 
-[node name="ActionRow" type="HBoxContainer" parent="ScreenRoot/InventoryScreen/Layout/Root/DetailsPanel/Margin/VBox"]
+[node name="ActionRow" type="HBoxContainer" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin/VBox"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 6
 
-[node name="EquipButton" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/DetailsPanel/Margin/VBox/ActionRow"]
-custom_minimum_size = Vector2(0, 48)
+[node name="EquipButton" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin/VBox/ActionRow"]
+custom_minimum_size = Vector2(0, 42)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Equip"
 disabled = true
 
-[node name="DropButton" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/DetailsPanel/Margin/VBox/ActionRow"]
-custom_minimum_size = Vector2(0, 48)
+[node name="UpgradeButton" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin/VBox/ActionRow"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Enhance"
+disabled = true
+
+[node name="DropButton" type="Button" parent="ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin/VBox/ActionRow"]
+custom_minimum_size = Vector2(0, 42)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Drop"

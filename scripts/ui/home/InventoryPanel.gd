@@ -11,7 +11,9 @@ var _name_label: Label
 var _type_label: Label
 var _stats_label: Label
 var _target_label: Label
+var _icon_label: Label
 var _equip_button: Button
+var _upgrade_button: Button
 var _drop_button: Button
 var _item_buttons: Array[Button] = []
 var _visible_items: Array = []
@@ -19,7 +21,7 @@ var _selected_item_id: String = ""
 var _game_manager: GameManager
 var _home_state
 
-func setup(description_label: Label, item_buttons: Array[Button], game_manager: GameManager, home_state = null, name_label: Label = null, type_label: Label = null, stats_label: Label = null, equip_button: Button = null, drop_button: Button = null, target_label: Label = null) -> void:
+func setup(description_label: Label, item_buttons: Array[Button], game_manager: GameManager, home_state = null, name_label: Label = null, type_label: Label = null, stats_label: Label = null, equip_button: Button = null, drop_button: Button = null, target_label: Label = null, upgrade_button: Button = null, icon_label: Label = null) -> void:
 	_description_label = description_label
 	_item_buttons = item_buttons
 	_game_manager = game_manager
@@ -28,8 +30,10 @@ func setup(description_label: Label, item_buttons: Array[Button], game_manager: 
 	_type_label = type_label
 	_stats_label = stats_label
 	_equip_button = equip_button
+	_upgrade_button = upgrade_button
 	_drop_button = drop_button
 	_target_label = target_label
+	_icon_label = icon_label
 	for index in range(_item_buttons.size()):
 		var button := _item_buttons[index]
 		if button == null:
@@ -39,6 +43,8 @@ func setup(description_label: Label, item_buttons: Array[Button], game_manager: 
 		_equip_button.pressed.connect(_on_equip_pressed)
 	if _drop_button != null:
 		_drop_button.disabled = true
+	if _upgrade_button != null:
+		_upgrade_button.disabled = true
 
 func refresh(_inventory: Dictionary = {}) -> void:
 	if _description_label == null or _game_manager == null:
@@ -68,11 +74,17 @@ func _refresh_detail_panel() -> void:
 	var selected_item := _get_selected_item()
 	var has_selection := not selected_item.is_empty()
 	if _name_label != null:
-		_name_label.text = str(selected_item.get("name", "No Item Selected")) if has_selection else "No Item Selected"
+		_name_label.text = str(selected_item.get("name", "Select an item")) if has_selection else "Select an item"
 	if _type_label != null:
-		_type_label.text = "Type: %s" % str(selected_item.get("slot", "-")).capitalize() if has_selection else "Type: -"
+		_type_label.text = "%s | %s | Lv.%d" % [
+			_get_rarity(selected_item).capitalize(),
+			str(selected_item.get("slot", "-")).capitalize(),
+			_get_level(selected_item),
+		] if has_selection else "No item selected"
 	if _stats_label != null:
 		_stats_label.text = _format_stats(selected_item) if has_selection else "Select an item to preview stats."
+	if _icon_label != null:
+		_icon_label.text = _get_item_icon(selected_item) if has_selection else "?"
 	if has_selection and _description_label != null:
 		_description_label.text = str(selected_item.get("description", "Field gear from the survivor cache."))
 	if _equip_button != null:
@@ -81,6 +93,9 @@ func _refresh_detail_panel() -> void:
 	if _drop_button != null:
 		_drop_button.disabled = true
 		HOME_UI_STYLE.apply_button_state(_drop_button, "locked")
+	if _upgrade_button != null:
+		_upgrade_button.disabled = true
+		HOME_UI_STYLE.apply_button_state(_upgrade_button, "locked")
 
 func _get_selected_item() -> Dictionary:
 	for item in _visible_items:
@@ -127,18 +142,20 @@ func _refresh_item_buttons() -> void:
 		if button == null:
 			continue
 		if index >= _visible_items.size():
-			button.visible = false
+			button.visible = true
 			button.disabled = true
+			button.text = "-"
+			HOME_UI_STYLE.apply_button_state(button, "locked")
 			continue
 		var item: Dictionary = _visible_items[index]
 		button.visible = true
 		button.disabled = false
 		var is_equipped := _is_equipped(item)
 		var is_selected := str(item.get("id", "")) == _selected_item_id
-		button.text = "%s%s\n%s" % [
-			_shorten_text(str(item.get("name", "Item")), 13),
-			" *" if is_equipped else "",
-			_format_card_stats(item),
+		button.text = "%s\n%s%s" % [
+			_get_item_icon(item),
+			_get_slot_abbrev(item),
+			"*" if is_equipped else "",
 		]
 		HOME_UI_STYLE.apply_item_button(button, is_equipped or is_selected)
 
@@ -165,8 +182,10 @@ func _format_stats(item: Dictionary) -> String:
 	var stats: Dictionary = stats_value
 	var parts := PackedStringArray()
 	for key in stats.keys():
+		if parts.size() >= 4:
+			break
 		parts.append("%s %s" % [str(key).capitalize(), str(stats[key])])
-	return ", ".join(parts)
+	return "\n".join(parts)
 
 func _format_card_stats(item: Dictionary) -> String:
 	var stats_value: Variant = item.get("stats", {})
@@ -183,3 +202,29 @@ func _shorten_text(value: String, max_length: int) -> String:
 	if value.length() <= max_length:
 		return value
 	return "%s..." % value.substr(0, max(max_length - 3, 1))
+
+func _get_item_icon(item: Dictionary) -> String:
+	var slot := str(item.get("slot", "")).to_lower()
+	if slot == "weapon":
+		return "W"
+	if slot == "armor":
+		return "A"
+	if slot == "accessory":
+		return "X"
+	return "?"
+
+func _get_slot_abbrev(item: Dictionary) -> String:
+	var slot := str(item.get("slot", "")).to_lower()
+	if slot == "weapon":
+		return "WPN"
+	if slot == "armor":
+		return "ARM"
+	if slot == "accessory":
+		return "ACC"
+	return "ITM"
+
+func _get_rarity(item: Dictionary) -> String:
+	return str(item.get("rarity", "common"))
+
+func _get_level(item: Dictionary) -> int:
+	return int(item.get("level", 1))

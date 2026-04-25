@@ -40,26 +40,28 @@ func refresh(_currency: int = 0) -> void:
 	var hp := 10 + int(hero_definition.get("max_hp_bonus", 0))
 	var attack := int(weapon_definition.get("damage", 1)) + int(hero_definition.get("projectile_damage_bonus", 0))
 	var defense := 0
-	var gear_summary := "Gear: Empty"
+	var gear_name := weapon_name
 	if _home_state != null:
-		gear_summary = "Gear\n%s" % _home_state.equipped_items_summary
 		var armor_item: Dictionary = _home_state.get_equipped_item("armor")
 		if not armor_item.is_empty():
+			gear_name = str(armor_item.get("name", gear_name))
 			var armor_stats: Dictionary = armor_item.get("stats", {})
 			defense = _extract_first_stat_number(str(armor_stats.get("def", "0")))
-	_preview_list.text = "C3 Broken City\nStage 3-10 7/10\nHero: %s | %s" % [
-		hero_name,
-		gear_summary.replace("Gear\n", ""),
-	]
-	_preview_note.text = "%s | %s" % [weapon_name, pet_name]
+	_preview_list.text = "C3-10 7/10 >"
+	_preview_note.text = "%s | %s | %s" % [hero_name, gear_name, pet_name]
 	if _weapon_preview != null:
-		_weapon_preview.text = "HP %d" % hp
+		_weapon_preview.text = "HP %s" % _format_short_number(hp)
 	if _armor_preview != null:
-		_armor_preview.text = "ATK %d" % attack
+		_armor_preview.text = "ATK %s" % _format_short_number(attack)
 	if _defense_preview != null:
-		_defense_preview.text = "DEF %d" % defense
+		_defense_preview.text = "DEF %s" % _format_short_number(defense)
 	if _pet_preview != null:
 		_pet_preview.text = "Pet %s" % pet_name
+
+func _format_short_number(value: int) -> String:
+	if abs(value) >= 1000:
+		return "%.1fK" % (float(value) / 1000.0)
+	return str(value)
 
 func _extract_first_stat_number(value: String) -> int:
 	var expression := RegEx.new()

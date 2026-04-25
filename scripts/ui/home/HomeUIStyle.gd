@@ -39,6 +39,13 @@ static func get_background_texture() -> Texture2D:
 static func apply_panel(panel: PanelContainer, variant: String = "default") -> void:
 	if panel == null:
 		return
+	var panel_path := str(panel.get_path())
+	if panel_path.find("MainMenuScreen") != -1:
+		if panel_path.find("CenterHero") != -1:
+			panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.015, 0.025, 0.03, 0.2), Color(0.12, 0.28, 0.32, 0.45), 1))
+			return
+		panel.add_theme_stylebox_override("panel", _make_panel_style(Color(0.025, 0.055, 0.06, 0.78), Color(0.16, 0.38, 0.42, 0.75), 1))
+		return
 	var fill: Color = COLOR_PANEL_ALT if variant == "selected" else COLOR_PANEL
 	var border: Color = COLOR_SELECTED if variant == "selected" else COLOR_BORDER
 	panel.add_theme_stylebox_override("panel", _make_panel_style(fill, border, 2 if variant == "selected" else 1))
