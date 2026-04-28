@@ -7,6 +7,7 @@ class_name PetCompanion
 @export var follow_speed: float = 8.0
 @export var attack_interval: float = 1.2
 @export var damage: int = 1
+@export var attack_range: float = 16.0
 
 var _target: Node3D
 var _attack_timer: float = 0.0
@@ -38,6 +39,7 @@ func _process(delta: float) -> void:
 func apply_pet_definition(definition: Dictionary) -> void:
 	damage = int(definition.get("damage", damage))
 	attack_interval = float(definition.get("attack_interval", attack_interval))
+	attack_range = float(definition.get("attack_range", attack_range))
 
 func _find_nearest_enemy() -> Enemy:
 	var enemy_container := get_node_or_null(enemy_container_path) as Node3D
@@ -46,11 +48,14 @@ func _find_nearest_enemy() -> Enemy:
 
 	var nearest_enemy: Enemy
 	var nearest_distance := INF
+	var range_squared := attack_range * attack_range
 	for child in enemy_container.get_children():
 		if child is not Enemy:
 			continue
 		var enemy := child as Enemy
 		var distance := global_position.distance_squared_to(enemy.global_position)
+		if attack_range > 0.0 and distance > range_squared:
+			continue
 		if distance < nearest_distance:
 			nearest_distance = distance
 			nearest_enemy = enemy

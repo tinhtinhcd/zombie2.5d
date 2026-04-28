@@ -109,6 +109,13 @@ func apply_enemy_type(type_key: StringName) -> void:
 	scale = stats.get("visual_scale", Vector3.ONE)
 	current_hp = max(max_hp, 1)
 
+func apply_health_multiplier(multiplier: float) -> void:
+	var resolved_multiplier := maxf(multiplier, 0.1)
+	max_hp = max(roundi(float(max_hp) * resolved_multiplier), 1)
+	current_hp = max_hp
+	if enemy_type == &"boss" and game_manager != null:
+		game_manager.update_boss_health(current_hp, max_hp, true)
+
 func take_damage(amount: int) -> void:
 	if _is_dead:
 		return

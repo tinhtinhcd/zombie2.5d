@@ -4,6 +4,7 @@ class_name GameManager
 # Central game state manager for session-level values.
 
 const GameDataScript := preload("res://scripts/data/GameData.gd")
+const PROGRESSION_SAVE_INTERVAL := 2.0
 
 signal score_changed(new_score: int)
 signal xp_changed(new_xp: int)
@@ -53,13 +54,28 @@ var unlocked_pets: Array = ["pet_drone"]
 var inventory: Dictionary = {}
 var mission_stats: Dictionary = {"kills": 0, "xp": 0, "wave": 0}
 var _progression_loaded: bool = false
+var _progression_save_dirty: bool = false
+var _progression_save_timer: float = 0.0
 var _game_data: RefCounted = GameDataScript.new()
 
 func _ready() -> void:
+    process_mode = Node.PROCESS_MODE_ALWAYS
     # Only load data here. reset_game() is called by game.gd when
     # the gameplay scene starts, so we avoid duplicate signal emissions.
     _ensure_levels_loaded()
     _ensure_progression_loaded()
+
+func _process(delta: float) -> void:
+    if not _progression_save_dirty:
+        return
+
+    _progression_save_timer = maxf(_progression_save_timer - delta, 0.0)
+    if _progression_save_timer <= 0.0:
+        flush_progression_save()
+
+func _notification(what: int) -> void:
+    if what == NOTIFICATION_WM_CLOSE_REQUEST or what == NOTIFICATION_APPLICATION_PAUSED:
+        flush_progression_save()
 
 func reset_game() -> void:
     # Restore default session state for a fresh run.
@@ -152,6 +168,7 @@ func trigger_game_over() -> void:
     is_game_over = true
     _update_gameplay_active()
     game_over_changed.emit(is_game_over)
+    flush_progression_save()
 
 func restart_game() -> void:
     # Intentional roguelike loop: restart always begins a fresh run from
@@ -413,20 +430,33 @@ func _ensure_progression_loaded() -> void:
     loadout_changed.emit()
 
 func _save_progression() -> void:
+    if not _progression_save_dirty:
+        _progression_save_timer = PROGRESSION_SAVE_INTERVAL
+    _progression_save_dirty = true
+
+func flush_progression_save() -> void:
+    if not _progression_save_dirty:
+        return
+
     var save_manager := get_node_or_null("/root/SaveManager") as SaveManager
     if save_manager != null:
-        save_manager.save_game({
-            "highest_unlocked_level": highest_unlocked_level,
-            "permanent_upgrades": permanent_upgrades,
-            "soft_currency": soft_currency,
-            "selected_hero_id": selected_hero_id,
-            "selected_weapon_id": selected_weapon_id,
-            "selected_pet_id": selected_pet_id,
-            "unlocked_heroes": unlocked_heroes,
-            "unlocked_weapons": unlocked_weapons,
-            "unlocked_pets": unlocked_pets,
-            "inventory": inventory,
-        })
+        save_manager.save_game(_get_progression_save_data())
+    _progression_save_dirty = false
+    _progression_save_timer = 0.0
+
+func _get_progression_save_data() -> Dictionary:
+    return {
+        "highest_unlocked_level": highest_unlocked_level,
+        "permanent_upgrades": permanent_upgrades,
+        "soft_currency": soft_currency,
+        "selected_hero_id": selected_hero_id,
+        "selected_weapon_id": selected_weapon_id,
+        "selected_pet_id": selected_pet_id,
+        "unlocked_heroes": unlocked_heroes,
+        "unlocked_weapons": unlocked_weapons,
+        "unlocked_pets": unlocked_pets,
+        "inventory": inventory,
+    }
 
 func _validate_selected_loadout() -> void:
     _ensure_unlocked_contains(unlocked_heroes, "hero_knight")

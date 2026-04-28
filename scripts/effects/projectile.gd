@@ -9,17 +9,27 @@ class_name Projectile
 @export var damage: int = 1
 @export var max_distance: float = 20.0
 
+signal recycle_requested(projectile: Projectile)
+
 var direction: Vector3 = Vector3.FORWARD
 var _time_alive: float = 0.0
 var _origin: Vector3 = Vector3.ZERO
 var _has_hit: bool = false
+var _is_recycling: bool = false
 
 func _ready() -> void:
     _origin = global_position
     body_entered.connect(_on_body_entered)
 
 func setup(move_direction: Vector3, travel_distance: float = -1.0) -> void:
+    _time_alive = 0.0
+    _has_hit = false
+    _is_recycling = false
     _origin = global_position
+    visible = true
+    monitoring = true
+    monitorable = true
+    set_physics_process(true)
     if travel_distance > 0.0:
         max_distance = travel_distance
     if move_direction.is_zero_approx():
@@ -27,16 +37,33 @@ func setup(move_direction: Vector3, travel_distance: float = -1.0) -> void:
         return
     direction = move_direction.normalized()
 
+func deactivate() -> void:
+    visible = false
+    monitoring = false
+    monitorable = false
+    set_physics_process(false)
+
+func recycle() -> void:
+    if _is_recycling:
+        return
+
+    _is_recycling = true
+    deactivate()
+    if recycle_requested.get_connections().is_empty():
+        queue_free()
+        return
+    recycle_requested.emit(self)
+
 func _physics_process(delta: float) -> void:
     global_position += direction * speed * delta
 
     _time_alive += delta
     if _time_alive >= lifetime:
-        queue_free()
+        recycle()
         return
 
     if max_distance > 0.0 and global_position.distance_to(_origin) >= max_distance:
-        queue_free()
+        recycle()
 
 func _on_body_entered(body: Node) -> void:
     if _has_hit:
@@ -46,4 +73,4 @@ func _on_body_entered(body: Node) -> void:
 
     _has_hit = true
     body.take_damage(damage)
-    queue_free()
+    recycle()

@@ -22,6 +22,8 @@ signal died
 @export var projectile_count: int = 1
 @export var spread_angle_degrees: float = 0.0
 @export var weapon_range: float = 20.0
+@export var projectile_pool_warmup_count: int = 8
+@export var projectile_pool_max_size: int = 32
 @export var play_area_radius: float = 600.0
 @export var damage_cooldown: float = 0.45
 @export var visual_yaw_offset_degrees: float = 180.0
@@ -56,6 +58,7 @@ var _visual_anim_time: float = 0.0
 var _shoot_recoil_timer: float = 0.0
 var _animation_player: AnimationPlayer
 var _current_animation: String = ""
+var _projectile_pool: Array[Projectile] = []
 var current_weapon_id: String = "weapon_basic"
 var current_weapon_display_name: String = "Basic Gun"
 var game_manager: GameManager
@@ -74,6 +77,7 @@ func _ready() -> void:
     character_root = _resolve_character_root()
     _setup_character_animation_player()
     _setup_feedback_material()
+    _warm_projectile_pool()
     hp_changed.emit(current_hp)
 
 func _physics_process(delta: float) -> void:
@@ -177,10 +181,9 @@ func spawn_projectile() -> void:
     var start_angle := -deg_to_rad(spread_angle_degrees) * 0.5
 
     for shot_index in range(shot_count):
-        var projectile := projectile_scene.instantiate() as Projectile
+        var projectile := _acquire_projectile(projectile_container)
         if projectile == null:
             continue
-        projectile_container.add_child(projectile)
         projectile.global_transform = shoot_point.global_transform
         projectile.damage = projectile_damage
         projectile.speed = projectile_speed
@@ -269,6 +272,68 @@ func _find_nearest_enemy(require_weapon_range: bool = true) -> Node3D:
             nearest_distance = distance
             nearest_enemy = enemy
     return nearest_enemy
+
+func _warm_projectile_pool() -> void:
+    if projectile_scene == null:
+        return
+    if get_node_or_null(projectile_container_path) == null:
+        return
+
+    for index in range(max(projectile_pool_warmup_count, 0)):
+        if _projectile_pool.size() >= projectile_pool_max_size:
+            return
+        var projectile := _create_projectile()
+        if projectile == null:
+            continue
+        add_child(projectile)
+        projectile.deactivate()
+        _projectile_pool.append(projectile)
+
+func _acquire_projectile(projectile_container: Node3D) -> Projectile:
+    while not _projectile_pool.is_empty():
+        var pooled_projectile: Projectile = _projectile_pool.pop_back()
+        if not is_instance_valid(pooled_projectile):
+            continue
+        _move_projectile_to_container(pooled_projectile, projectile_container)
+        return pooled_projectile
+
+    var projectile := _create_projectile()
+    if projectile == null:
+        return null
+    projectile_container.add_child(projectile)
+    return projectile
+
+func _create_projectile() -> Projectile:
+    var projectile := projectile_scene.instantiate() as Projectile
+    if projectile == null:
+        return null
+    projectile.recycle_requested.connect(_on_projectile_recycle_requested)
+    return projectile
+
+func _move_projectile_to_container(projectile: Projectile, projectile_container: Node3D) -> void:
+    var current_parent := projectile.get_parent()
+    if current_parent != null:
+        current_parent.remove_child(projectile)
+    projectile_container.add_child(projectile)
+
+func _on_projectile_recycle_requested(projectile: Projectile) -> void:
+    call_deferred("_pool_projectile", projectile)
+
+func _pool_projectile(projectile: Projectile) -> void:
+    if not is_instance_valid(projectile):
+        return
+
+    var current_parent := projectile.get_parent()
+    if current_parent != null:
+        current_parent.remove_child(projectile)
+
+    if _projectile_pool.size() >= max(projectile_pool_max_size, 0):
+        projectile.queue_free()
+        return
+
+    add_child(projectile)
+    projectile.deactivate()
+    _projectile_pool.append(projectile)
 
 func _face_direction(world_direction: Vector3) -> void:
     var facing_direction := _project_to_plane(world_direction)

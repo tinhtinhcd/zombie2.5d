@@ -14,7 +14,6 @@ class_name WaveManager
 @export var boss_wave_interval: int = 5
 @export var boss_support_spawn_count: int = 2
 @export var enemy_recycle_distance: float = 160.0
-@export var projectile_recycle_safe_distance: float = 28.0
 @export var wave_definitions: Array[Dictionary] = [
     {"spawn_count": 2, "enemy_types": ["normal"]},
     {"spawn_count": 3, "enemy_types": ["normal", "fast"]},
@@ -77,7 +76,7 @@ func _recycle_far_enemies() -> void:
         if child is not Node3D:
             continue
         var enemy := child as Node3D
-        if enemy.global_position.distance_squared_to(_spawner.player_target.global_position) > recycle_distance_squared and not _is_enemy_near_active_projectile(enemy):
+        if enemy.global_position.distance_squared_to(_spawner.player_target.global_position) > recycle_distance_squared:
             _spawner.recycle_enemy(enemy)
 
 func start_next_wave() -> void:
@@ -130,10 +129,12 @@ func _start_boss_wave(spawner: EnemySpawner) -> void:
 
     if current_wave >= max(_get_active_boss_interval(), 1) * 2:
         enemy_types.append_array(["normal", "fast"])
-        spawner.spawn_enemies(1 + active_support_spawn_count, speed_bonus, enemy_types)
+        var later_boss_wave_enemies := spawner.spawn_enemies(1 + active_support_spawn_count, speed_bonus, enemy_types)
+        _apply_boss_health_scaling(later_boss_wave_enemies)
         return
 
-    spawner.spawn_enemies(1, speed_bonus, enemy_types)
+    var boss_wave_enemies := spawner.spawn_enemies(1, speed_bonus, enemy_types)
+    _apply_boss_health_scaling(boss_wave_enemies)
 
 func _on_upgrade_selected(_upgrade_id: StringName) -> void:
     if not _waiting_for_upgrade_selection:
@@ -181,19 +182,24 @@ func _get_active_boss_interval() -> int:
         return _active_level_data.boss_wave_interval
     return boss_wave_interval
 
-func _is_enemy_near_active_projectile(enemy: Node3D) -> bool:
-    if _projectile_container == null:
-        return false
+func _apply_boss_health_scaling(spawned_enemies: Array[Node3D]) -> void:
+    var health_multiplier := _get_boss_health_multiplier()
+    if is_equal_approx(health_multiplier, 1.0):
+        return
 
-    var safe_distance: float = maxf(projectile_recycle_safe_distance, 0.0)
-    var safe_distance_squared: float = safe_distance * safe_distance
-    for child in _projectile_container.get_children():
-        if child is not Node3D:
-            continue
-        var projectile := child as Node3D
-        if enemy.global_position.distance_squared_to(projectile.global_position) <= safe_distance_squared:
-            return true
-    return false
+    for spawned_enemy in spawned_enemies:
+        if spawned_enemy is Enemy and (spawned_enemy as Enemy).enemy_type == &"boss":
+            (spawned_enemy as Enemy).apply_health_multiplier(health_multiplier)
+
+func _get_boss_health_multiplier() -> float:
+    var multiplier := 1.0
+    var active_interval: int = maxi(_get_active_boss_interval(), 1)
+    var boss_tier: int = maxi(int(floor(float(current_wave) / float(active_interval))) - 1, 0)
+    multiplier += float(boss_tier) * 0.25
+
+    if _active_level_data != null and _active_level_data.difficulty != null:
+        multiplier *= maxf(_active_level_data.difficulty.health_multiplier, 0.1)
+    return multiplier
 
 func _clear_runtime_nodes() -> void:
     if _enemy_container != null:

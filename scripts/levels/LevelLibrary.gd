@@ -6,10 +6,20 @@ class_name LevelLibrary
 
 const LEVELS_DIRECTORY := "res://data/levels"
 
+static var _cached_levels_directory: String = ""
+static var _cached_levels: Array[LevelData] = []
+static var _has_cached_levels: bool = false
+
 static func load_all_levels(levels_directory: String = LEVELS_DIRECTORY) -> Array[LevelData]:
+    if _has_cached_levels and _cached_levels_directory == levels_directory:
+        return _cached_levels
+
     var levels: Array[LevelData] = []
     var directory := DirAccess.open(levels_directory)
     if directory == null:
+        _cached_levels_directory = levels_directory
+        _cached_levels = levels
+        _has_cached_levels = true
         return levels
 
     var file_names: PackedStringArray = []
@@ -34,7 +44,19 @@ static func load_all_levels(levels_directory: String = LEVELS_DIRECTORY) -> Arra
         if level_data != null:
             levels.append(level_data)
 
+    _cached_levels_directory = levels_directory
+    _cached_levels = levels
+    _has_cached_levels = true
     return levels
+
+static func invalidate_cache() -> void:
+    _cached_levels_directory = ""
+    _cached_levels.clear()
+    _has_cached_levels = false
+
+static func reload_levels(levels_directory: String = LEVELS_DIRECTORY) -> Array[LevelData]:
+    invalidate_cache()
+    return load_all_levels(levels_directory)
 
 static func load_level(level_id: StringName, levels_directory: String = LEVELS_DIRECTORY) -> LevelData:
     for level_data in load_all_levels(levels_directory):

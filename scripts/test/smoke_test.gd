@@ -51,9 +51,17 @@ func _run() -> void:
 		push_error("Smoke test failed: hero carousel right navigation did not update selected hero.")
 		quit(1)
 		return
-	var home_preview_after_right := home.get_node_or_null("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/HeroStage/GameplayHeroPreview/PreviewViewport/PreviewWorld/Player") as Node3D
-	if home_preview_after_right == null or str(home_preview_after_right.get_meta("hero_id", "")) != "hero_rogue":
-		push_error("Smoke test failed: home hero preview did not track hero carousel selection.")
+	var rogue_preview_after_right := home.call("_get_ui_node", "ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/RogueCard/Margin/VBox/Portrait/GameplayHeroPreview/PreviewViewport/PreviewWorld/Player") as Node3D
+	if rogue_preview_after_right == null or str(rogue_preview_after_right.get_meta("hero_id", "")) != "hero_rogue":
+		push_error("Smoke test failed: hero carousel preview did not track the focused rogue.")
+		quit(1)
+		return
+	if home.call("_get_ui_node", "ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/KnightCard/Margin/VBox/Portrait/GameplayHeroPreview/PreviewViewport/PreviewWorld/Player") != null:
+		push_error("Smoke test failed: previous knight card kept a duplicate gameplay preview after focusing rogue.")
+		quit(1)
+		return
+	if home.get_node_or_null("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/HeroStage/GameplayHeroPreview/PreviewViewport/PreviewWorld/Player") != null:
+		push_error("Smoke test failed: hidden home hero preview stayed loaded while hero select was open.")
 		quit(1)
 		return
 	var hero_confirm := home.call("_get_ui_node", "ScreenRoot/HeroSelectScreen/Layout/Root/Footer/ContinueButton") as Button
@@ -73,9 +81,13 @@ func _run() -> void:
 		push_error("Smoke test failed: hero carousel left navigation did not return to available hero.")
 		quit(1)
 		return
-	var home_preview_after_left := home.get_node_or_null("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/HeroStage/GameplayHeroPreview/PreviewViewport/PreviewWorld/Player") as Node3D
-	if home_preview_after_left == null or str(home_preview_after_left.get_meta("hero_id", "")) != "hero_knight":
-		push_error("Smoke test failed: home hero preview did not return to the selected hero.")
+	var knight_preview_after_left := home.call("_get_ui_node", "ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/KnightCard/Margin/VBox/Portrait/GameplayHeroPreview/PreviewViewport/PreviewWorld/Player") as Node3D
+	if knight_preview_after_left == null or str(knight_preview_after_left.get_meta("hero_id", "")) != "hero_knight":
+		push_error("Smoke test failed: hero carousel preview did not return to the focused knight.")
+		quit(1)
+		return
+	if home.call("_get_ui_node", "ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/RogueCard/Margin/VBox/Portrait/GameplayHeroPreview/PreviewViewport/PreviewWorld/Player") != null:
+		push_error("Smoke test failed: previous rogue card kept a duplicate gameplay preview after focusing knight.")
 		quit(1)
 		return
 	home.call("_on_knight_pressed")
@@ -180,6 +192,21 @@ func _run() -> void:
 		push_error("Smoke test failed: home UI manager back navigation did not return to hero select.")
 		quit(1)
 		return
+	home.call("_show_screen", "MainMenuScreen", false)
+	await process_frame
+	if not bool(home.get_node("ScreenRoot/MainMenuScreen").visible):
+		push_error("Smoke test failed: home UI manager did not return to main menu.")
+		quit(1)
+		return
+	var home_preview_after_return := home.get_node_or_null("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/HeroStage/GameplayHeroPreview/PreviewViewport/PreviewWorld/Player") as Node3D
+	if home_preview_after_return == null or str(home_preview_after_return.get_meta("hero_id", "")) != "hero_knight":
+		push_error("Smoke test failed: home hero preview was not restored after returning to main menu.")
+		quit(1)
+		return
+	if home.call("_get_ui_node", "ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/KnightCard/Margin/VBox/Portrait/GameplayHeroPreview/PreviewViewport/PreviewWorld/Player") != null:
+		push_error("Smoke test failed: hidden hero select preview stayed loaded after returning home.")
+		quit(1)
+		return
 	home.queue_free()
 	await process_frame
 
@@ -236,6 +263,22 @@ func _run() -> void:
 		push_error("Smoke test failed: SaveManager autoload is missing.")
 		quit(1)
 		return
+	var saved_currency_before := int(save_manager.last_saved_snapshot.get("soft_currency", 0))
+	game_manager.add_score(3)
+	await process_frame
+	if not bool(game_manager.get("_progression_save_dirty")):
+		push_error("Smoke test failed: progression reward did not mark a debounced save dirty.")
+		quit(1)
+		return
+	if int(save_manager.last_saved_snapshot.get("soft_currency", 0)) == game_manager.soft_currency and game_manager.soft_currency != saved_currency_before:
+		push_error("Smoke test failed: progression reward saved immediately instead of batching.")
+		quit(1)
+		return
+	game_manager.flush_progression_save()
+	if int(save_manager.last_saved_snapshot.get("soft_currency", 0)) != game_manager.soft_currency:
+		push_error("Smoke test failed: progression flush did not persist the dirty reward state.")
+		quit(1)
+		return
 	if save_manager.DEFAULT_SAVE_DATA["unlocked_heroes"].size() != 1 or save_manager.DEFAULT_SAVE_DATA["unlocked_weapons"].size() != 1 or save_manager.DEFAULT_SAVE_DATA["unlocked_pets"].size() != 1:
 		push_error("Smoke test failed: default save unlocks are not minimal.")
 		quit(1)
@@ -270,6 +313,23 @@ func _run() -> void:
 		push_error("Smoke test failed: up/down input direction is inverted.")
 		quit(1)
 		return
+	var pet_companion := game.get_node_or_null("PetCompanion") as PetCompanion
+	if pet_companion != null:
+		pet_companion.attack_range = 3.0
+		pet_companion.global_position = player.global_position
+		for enemy in enemy_container.get_children():
+			if enemy is Node3D:
+				(enemy as Node3D).global_position = player.global_position + Vector3(0.0, 0.0, -12.0)
+		if pet_companion.call("_find_nearest_enemy") != null:
+			push_error("Smoke test failed: pet companion targeted an enemy outside attack range.")
+			quit(1)
+			return
+		var pet_range_enemy := enemy_container.get_child(0) as Node3D
+		pet_range_enemy.global_position = player.global_position + Vector3(0.0, 0.0, -2.0)
+		if pet_companion.call("_find_nearest_enemy") == null:
+			push_error("Smoke test failed: pet companion did not target an enemy inside attack range.")
+			quit(1)
+			return
 
 	for enemy in enemy_container.get_children():
 		if enemy is Node3D:
@@ -333,6 +393,21 @@ func _run() -> void:
 		push_error("Smoke test failed: projectile did not receive weapon range.")
 		quit(1)
 		return
+	var recycled_projectile := first_projectile
+	recycled_projectile.recycle()
+	await process_frame
+	if projectile_container.get_children().has(recycled_projectile):
+		push_error("Smoke test failed: recycled projectile stayed in the active projectile container.")
+		quit(1)
+		return
+	player.projectile_count = 1
+	player.spawn_projectile()
+	await process_frame
+	if not projectile_container.get_children().has(recycled_projectile):
+		push_error("Smoke test failed: player did not reuse a pooled projectile.")
+		quit(1)
+		return
+	player.apply_weapon_definition(spread_weapon)
 
 	for child in projectile_container.get_children():
 		child.queue_free()
@@ -362,6 +437,16 @@ func _run() -> void:
 	enemy_before_recycle.global_position = player.global_position + Vector3(999.0, 0.0, 0.0)
 	if wave_manager != null:
 		wave_manager.call("_recycle_far_enemies")
+		var original_wave := int(wave_manager.get("current_wave"))
+		wave_manager.set("current_wave", 5)
+		var early_boss_multiplier := float(wave_manager.call("_get_boss_health_multiplier"))
+		wave_manager.set("current_wave", 10)
+		var later_boss_multiplier := float(wave_manager.call("_get_boss_health_multiplier"))
+		wave_manager.set("current_wave", original_wave)
+		if later_boss_multiplier <= early_boss_multiplier:
+			push_error("Smoke test failed: later boss wave HP multiplier did not increase.")
+			quit(1)
+			return
 	var recycled_distance := enemy_before_recycle.global_position.distance_to(player.global_position)
 	if recycled_distance < 32.0 or recycled_distance > 70.0:
 		push_error("Smoke test failed: far enemy was not recycled into the fixed physical spawn ring.")
@@ -503,9 +588,7 @@ func _assert_hero_carousel_layout(home: Node) -> bool:
 		"ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/KnightCard",
 		"ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/KnightCard/Margin/VBox/Portrait/GameplayHeroPreview",
 		"ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/RogueCard",
-		"ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/RogueCard/Margin/VBox/Portrait/GameplayHeroPreview",
 		"ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/MageCard",
-		"ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/MageCard/Margin/VBox/Portrait/GameplayHeroPreview",
 		"ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/CarouselRightButton",
 		"ScreenRoot/HeroSelectScreen/Layout/Root/Content/SelectionSummary",
 		"ScreenRoot/HeroSelectScreen/Layout/Root/Footer",
@@ -551,6 +634,12 @@ func _assert_hero_carousel_layout(home: Node) -> bool:
 	var selected_preview_animation := selected_preview_player.get_node_or_null("VisualRoot/HeroModel/KayKitAnimationPlayer") as AnimationPlayer
 	if selected_preview_animation == null or not selected_preview_animation.is_playing():
 		push_error("Smoke test failed: selected hero preview animation is not running.")
+		return false
+	if home.call("_get_ui_node", "ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/RogueCard/Margin/VBox/Portrait/GameplayHeroPreview/PreviewViewport/PreviewWorld/Player") != null:
+		push_error("Smoke test failed: non-centered rogue card spawned a duplicate gameplay preview.")
+		return false
+	if home.call("_get_ui_node", "ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/MageCard/Margin/VBox/Portrait/GameplayHeroPreview/PreviewViewport/PreviewWorld/Player") != null:
+		push_error("Smoke test failed: non-centered mage card spawned a duplicate gameplay preview.")
 		return false
 	return true
 

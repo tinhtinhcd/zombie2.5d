@@ -26,6 +26,11 @@ const HOME_UI_MANAGER_SCRIPT := preload("res://scripts/ui/home/HomeUIManager.gd"
 const HOME_STATE_SCRIPT := preload("res://scripts/ui/home/HomeState.gd")
 const HOME_UI_STYLE := preload("res://scripts/ui/home/HomeUIStyle.gd")
 const HERO_PREVIEW_SPAWNER := preload("res://scripts/ui/home/HeroPreviewSpawner.gd")
+const HERO_PORTRAIT_TEXTURES := {
+	"hero_knight": preload("res://assets/KayKit_Adventurers_2.0_FREE/KayKit_Adventurers_2.0_FREE/Samples/knight.png"),
+	"hero_rogue": preload("res://assets/KayKit_Adventurers_2.0_FREE/KayKit_Adventurers_2.0_FREE/Samples/rogue.png"),
+	"hero_mage": preload("res://assets/KayKit_Adventurers_2.0_FREE/KayKit_Adventurers_2.0_FREE/Samples/mage.png"),
+}
 
 @onready var screen_root: Control = $ScreenRoot
 @onready var background_art: TextureRect = $BackgroundArt
@@ -264,6 +269,7 @@ func _on_home_panel_changed(screen_name: String) -> void:
 		_refresh_equipment_summary()
 	elif screen_name == SCREEN_PET_SELECT:
 		_refresh_pet_summary()
+	_refresh_hero_preview_models()
 	_apply_responsive_layout()
 	_reset_scroll_position(screen_name)
 
@@ -307,10 +313,26 @@ func _refresh_hero_preview_models() -> void:
 	var selected_hero_id := _selected_hero_id
 	if _home_state != null:
 		selected_hero_id = _home_state.selected_hero_id
+
+	if main_menu_screen != null and main_menu_screen.visible:
+		_refresh_hub_hero_preview(selected_hero_id)
+		_clear_hero_select_previews()
+		return
+
+	if hero_select_screen != null and hero_select_screen.visible:
+		HERO_PREVIEW_SPAWNER.clear_preview(hub_hero_stage)
+		_refresh_hero_select_previews(selected_hero_id)
+		return
+
+	HERO_PREVIEW_SPAWNER.clear_preview(hub_hero_stage)
+	_clear_hero_select_previews()
+
+func _refresh_hub_hero_preview(selected_hero_id: String) -> void:
 	if hub_hero_image != null:
 		hub_hero_image.visible = false
 	HERO_PREVIEW_SPAWNER.show_preview(hub_hero_stage, selected_hero_id, true)
 
+func _refresh_hero_select_previews(selected_hero_id: String) -> void:
 	var portrait_slots := {
 		"hero_knight": hero_knight_portrait,
 		"hero_rogue": hero_rogue_portrait,
@@ -320,7 +342,21 @@ func _refresh_hero_preview_models() -> void:
 		var portrait := portrait_slots[hero_id] as Control
 		if portrait == null:
 			continue
-		HERO_PREVIEW_SPAWNER.show_preview(portrait, str(hero_id), str(hero_id) == selected_hero_id)
+		if str(hero_id) == selected_hero_id:
+			HERO_PREVIEW_SPAWNER.show_preview(portrait, str(hero_id), true)
+		else:
+			HERO_PREVIEW_SPAWNER.clear_preview(portrait)
+			_set_hero_portrait_texture(portrait, str(hero_id))
+
+func _clear_hero_select_previews() -> void:
+	for portrait in [hero_knight_portrait, hero_rogue_portrait, hero_mage_portrait]:
+		HERO_PREVIEW_SPAWNER.clear_preview(portrait)
+
+func _set_hero_portrait_texture(portrait: Control, hero_id: String) -> void:
+	if portrait is not TextureRect:
+		return
+	var texture_rect := portrait as TextureRect
+	texture_rect.texture = HERO_PORTRAIT_TEXTURES.get(hero_id)
 
 func _refresh_equipment_summary() -> void:
 	_equipment_panel.refresh(_selected_weapon_id)

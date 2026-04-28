@@ -60,7 +60,8 @@ static func clear_preview(slot: Control) -> void:
 		return
 	var container := slot.get_node_or_null(PREVIEW_CONTAINER_NAME)
 	if container != null:
-		container.queue_free()
+		slot.remove_child(container)
+		container.free()
 
 static func _get_or_create_container(slot: Control) -> SubViewportContainer:
 	var container := slot.get_node_or_null(PREVIEW_CONTAINER_NAME) as SubViewportContainer
