@@ -1,18 +1,21 @@
 {
   "hero_knight": {
     "display_name": "Knight",
+    "model_scene_path": "res://assets/KayKit_Adventurers_2.0_FREE/KayKit_Adventurers_2.0_FREE/Characters/gltf/Knight.glb",
     "max_hp_bonus": 4,
     "move_speed_bonus": 0.0,
     "projectile_damage_bonus": 1
   },
   "hero_rogue": {
     "display_name": "Rogue",
+    "model_scene_path": "res://assets/KayKit_Adventurers_2.0_FREE/KayKit_Adventurers_2.0_FREE/Characters/gltf/Rogue_Hooded.glb",
     "max_hp_bonus": 0,
     "move_speed_bonus": 1.0,
     "projectile_damage_bonus": 0
   },
   "hero_mage": {
     "display_name": "Mage",
+    "model_scene_path": "res://assets/KayKit_Adventurers_2.0_FREE/KayKit_Adventurers_2.0_FREE/Characters/gltf/Mage.glb",
     "max_hp_bonus": -2,
     "move_speed_bonus": 0.2,
     "projectile_damage_bonus": 2

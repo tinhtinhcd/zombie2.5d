@@ -1,28 +1,59 @@
 extends RefCounted
 class_name EquipmentPanel
 
-signal equip_slot_requested(slot_id: String)
+signal slot_selected(slot_id: String)
+signal change_requested(slot_id: String)
+signal unequip_requested(slot_id: String)
 
 const HOME_UI_STYLE := preload("res://scripts/ui/home/HomeUIStyle.gd")
 
+const SLOT_DEFINITIONS := [
+	{"slot_id": "weapon", "display_name": "Weapon", "short_label": "WPN", "accepted_item_type": "weapon", "can_change": true},
+	{"slot_id": "armor", "display_name": "Armor", "short_label": "ARM", "accepted_item_type": "armor", "can_change": true},
+	{"slot_id": "helmet", "display_name": "Helmet", "short_label": "HELM", "accepted_item_type": "helmet", "can_change": false},
+	{"slot_id": "boots", "display_name": "Boots", "short_label": "BOOTS", "accepted_item_type": "boots", "can_change": false},
+	{"slot_id": "accessory", "display_name": "Accessory", "short_label": "ACC", "accepted_item_type": "accessory", "can_change": true},
+	{"slot_id": "pet_gear", "display_name": "Pet Gear", "short_label": "PET", "accepted_item_type": "pet_gear", "can_change": false},
+]
+
 var _summary_label: Label
-var _weapon_slot_button: Button
-var _armor_slot_button: Button
-var _accessory_slot_button: Button
+var _change_button: Button
+var _unequip_button: Button
+var _upgrade_button: Button
+var _slot_buttons: Dictionary = {}
+var _category_buttons: Dictionary = {}
 var _game_manager: GameManager
 var _home_state
 var _weapon_cycle_index: int = 0
 
-func setup(summary_label: Label, weapon_slot_button: Button, armor_slot_button: Button, accessory_slot_button: Button, game_manager: GameManager, home_state = null) -> void:
+func setup(summary_label: Label, slot_buttons: Dictionary, change_button: Button, unequip_button: Button, upgrade_button: Button, game_manager: GameManager, home_state = null, category_buttons: Dictionary = {}) -> void:
 	_summary_label = summary_label
-	_weapon_slot_button = weapon_slot_button
-	_armor_slot_button = armor_slot_button
-	_accessory_slot_button = accessory_slot_button
+	_slot_buttons = slot_buttons
+	_change_button = change_button
+	_unequip_button = unequip_button
+	_upgrade_button = upgrade_button
 	_game_manager = game_manager
 	_home_state = home_state
-	_connect_slot_button(_weapon_slot_button, "weapon")
-	_connect_slot_button(_armor_slot_button, "armor")
-	_connect_slot_button(_accessory_slot_button, "accessory")
+	_category_buttons = category_buttons
+
+	for slot_definition in SLOT_DEFINITIONS:
+		var slot_id := str(slot_definition.get("slot_id", ""))
+		var button := _slot_buttons.get(slot_id) as Button
+		_connect_slot_button(button, slot_id)
+
+	if _change_button != null:
+		_change_button.pressed.connect(_on_change_pressed)
+	if _unequip_button != null:
+		_unequip_button.pressed.connect(_on_unequip_pressed)
+	if _upgrade_button != null:
+		_upgrade_button.disabled = true
+		HOME_UI_STYLE.apply_compact_button_state(_upgrade_button, "locked")
+
+	_connect_category_button("weapon", "weapon")
+	_connect_category_button("armor", "armor")
+	_connect_category_button("accessory", "accessory")
+	_connect_category_button("pet", "pet_gear")
+	_connect_category_button("all", "weapon")
 
 func sync_selected_weapon(selected_weapon_id: String) -> void:
 	if _game_manager == null:
@@ -57,65 +88,184 @@ func refresh(selected_weapon_id: String) -> void:
 	if selected_weapon_id.is_empty() and _home_state != null:
 		selected_weapon_id = _home_state.selected_weapon_id
 
-	var weapon_definition := _game_manager.get_weapon_definition(selected_weapon_id)
-	var weapon_name := _game_manager.get_display_name(weapon_definition, "Basic Gun")
-	var selected_slot := "none"
-	var slot_info := "Select a slot to equip gear."
-	if _home_state != null:
-		selected_slot = _home_state.selected_equipment_slot
-		slot_info = _format_selected_slot_info(selected_slot, weapon_name)
-	_summary_label.text = "Selected: %s\n%s  ATK %d  %.1fm" % [
-		slot_info,
-		weapon_name,
-		int(weapon_definition.get("damage", weapon_definition.get("projectile_damage", 1))),
-		float(weapon_definition.get("range", 20.0)),
-	]
-	if _weapon_slot_button != null:
-		_weapon_slot_button.text = "Equip Weapon"
-		HOME_UI_STYLE.apply_button_state(_weapon_slot_button, "selected" if _has_equipped_item("weapon") else "default")
-		HOME_UI_STYLE.apply_related_card_from_button(_weapon_slot_button, _home_state != null and _home_state.selected_equipment_slot == "weapon")
-	if _armor_slot_button != null:
-		_armor_slot_button.text = "Equip Armor"
-		HOME_UI_STYLE.apply_button_state(_armor_slot_button, "selected" if _has_equipped_item("armor") else "secondary")
-		HOME_UI_STYLE.apply_related_card_from_button(_armor_slot_button, _home_state != null and _home_state.selected_equipment_slot == "armor")
-	if _accessory_slot_button != null:
-		_accessory_slot_button.text = "Equip Accessory"
-		HOME_UI_STYLE.apply_button_state(_accessory_slot_button, "selected" if _has_equipped_item("accessory") else "secondary")
-		HOME_UI_STYLE.apply_related_card_from_button(_accessory_slot_button, _home_state != null and _home_state.selected_equipment_slot == "accessory")
+	_refresh_gear_screen(selected_weapon_id)
+	_refresh_selected_slot_info(selected_weapon_id)
+
+func _refresh_gear_screen(selected_weapon_id: String) -> void:
+	for slot_definition in SLOT_DEFINITIONS:
+		var slot_id := str(slot_definition.get("slot_id", ""))
+		var button := _slot_buttons.get(slot_id) as Button
+		if button == null:
+			continue
+
+		var is_selected := _get_selected_slot_id() == slot_id
+		var status := _get_slot_status(slot_definition)
+		button.text = "%s\n%s" % [
+			str(slot_definition.get("short_label", slot_id.to_upper())),
+			_get_slot_button_value(slot_id, selected_weapon_id, status),
+		]
+		button.disabled = false
+		HOME_UI_STYLE.apply_compact_button_state(button, "selected" if is_selected else ("locked" if status == "locked" else "secondary"))
+		HOME_UI_STYLE.apply_related_card_from_button(button, is_selected)
+
+	for category_id in _category_buttons.keys():
+		var category_button := _category_buttons.get(category_id) as Button
+		if category_button == null:
+			continue
+		HOME_UI_STYLE.apply_compact_button_state(category_button, "selected" if _is_category_selected(str(category_id)) else "secondary")
+
+func _refresh_selected_slot_info(selected_weapon_id: String) -> void:
+	var slot_id := _get_selected_slot_id()
+	var slot_definition := _get_slot_definition(slot_id)
+	var display_name := str(slot_definition.get("display_name", slot_id.capitalize()))
+	var equipped_item := _get_display_item_for_slot(slot_id, selected_weapon_id)
+	var status := _get_slot_status(slot_definition)
+	var can_change := bool(slot_definition.get("can_change", false))
+	var has_equipped_item := not _get_equipped_item(slot_id).is_empty()
+
+	if _summary_label != null:
+		_summary_label.text = "%s\n%s | %s\n%s\n%s" % [
+			display_name.to_upper(),
+			str(equipped_item.get("name", "Empty")),
+			str(equipped_item.get("rarity", status)).capitalize(),
+			_format_stats(equipped_item),
+			_shorten_text(str(equipped_item.get("description", _get_empty_description(slot_definition))), 42),
+		]
+
+	if _change_button != null:
+		_change_button.text = "Change"
+		_change_button.disabled = not can_change
+		HOME_UI_STYLE.apply_compact_button_state(_change_button, "selected" if can_change else "locked")
+	if _unequip_button != null:
+		_unequip_button.text = "Unequip"
+		_unequip_button.disabled = not has_equipped_item
+		HOME_UI_STYLE.apply_compact_button_state(_unequip_button, "secondary" if has_equipped_item else "locked")
+	if _upgrade_button != null:
+		_upgrade_button.text = "Upgrade"
+		_upgrade_button.disabled = true
+		HOME_UI_STYLE.apply_compact_button_state(_upgrade_button, "locked")
 
 func _connect_slot_button(button: Button, slot_id: String) -> void:
 	if button == null:
 		return
 	button.pressed.connect(_on_slot_button_pressed.bind(slot_id))
 
+func _connect_category_button(category_id: String, slot_id: String) -> void:
+	var button := _category_buttons.get(category_id) as Button
+	if button == null:
+		return
+	button.pressed.connect(_on_slot_button_pressed.bind(slot_id))
+
 func _on_slot_button_pressed(slot_id: String) -> void:
-	equip_slot_requested.emit(slot_id)
+	slot_selected.emit(slot_id)
 
-func _format_weapon_unlocks() -> String:
-	var lines := PackedStringArray()
-	lines.append("Weapon Unlocks")
-	if _game_manager == null:
-		return "\n".join(lines)
+func _on_change_pressed() -> void:
+	var slot_id := _get_selected_slot_id()
+	var slot_definition := _get_slot_definition(slot_id)
+	if not bool(slot_definition.get("can_change", false)):
+		return
+	change_requested.emit(slot_id)
 
-	for weapon_id in _game_manager.get_weapon_ids():
-		var weapon_definition := _game_manager.get_weapon_definition(str(weapon_id))
-		var status := "Unlocked" if _game_manager.is_weapon_unlocked(str(weapon_id)) else "Locked"
-		lines.append("%s: %s" % [_game_manager.get_display_name(weapon_definition, str(weapon_id)), status])
-	return "\n".join(lines)
+func _on_unequip_pressed() -> void:
+	unequip_requested.emit(_get_selected_slot_id())
 
-func _format_selected_slot_info(slot_id: String, weapon_name: String) -> String:
-	if slot_id.is_empty():
-		return "None selected"
-	if slot_id == "weapon":
-		return "Weapon: %s" % weapon_name
+func _get_selected_slot_id() -> String:
 	if _home_state == null:
-		return "%s: Empty" % slot_id.capitalize()
-	var equipped_item: Dictionary = _home_state.get_equipped_item(slot_id)
-	if equipped_item.is_empty():
-		return "%s: Empty" % slot_id.capitalize()
-	return "%s: %s" % [slot_id.capitalize(), str(equipped_item.get("name", "Equipped"))]
+		return "weapon"
+	var slot_id := str(_home_state.selected_equipment_slot)
+	return "weapon" if slot_id.is_empty() else slot_id
 
-func _has_equipped_item(slot_id: String) -> bool:
+func _get_slot_definition(slot_id: String) -> Dictionary:
+	for slot_definition in SLOT_DEFINITIONS:
+		if str(slot_definition.get("slot_id", "")) == slot_id:
+			return slot_definition
+	return SLOT_DEFINITIONS[0]
+
+func _get_slot_status(slot_definition: Dictionary) -> String:
+	if not bool(slot_definition.get("can_change", false)):
+		return "locked"
+	if not _get_equipped_item(str(slot_definition.get("slot_id", ""))).is_empty():
+		return "equipped"
+	return "empty"
+
+func _get_slot_button_value(slot_id: String, selected_weapon_id: String, status: String) -> String:
+	if status == "locked":
+		return "Locked"
+	var item := _get_display_item_for_slot(slot_id, selected_weapon_id)
+	if item.is_empty():
+		return "Empty"
+	return _shorten_text(str(item.get("name", "Equipped")), 13)
+
+func _get_display_item_for_slot(slot_id: String, selected_weapon_id: String) -> Dictionary:
+	var equipped_item := _get_equipped_item(slot_id)
+	if not equipped_item.is_empty():
+		return equipped_item
+	if slot_id == "weapon" and _game_manager != null:
+		var weapon_definition := _game_manager.get_weapon_definition(selected_weapon_id)
+		return {
+			"name": _game_manager.get_display_name(weapon_definition, "Basic Gun"),
+			"rarity": "starter",
+			"stats": {
+				"atk": int(weapon_definition.get("damage", weapon_definition.get("projectile_damage", 1))),
+				"range": "%.1fm" % float(weapon_definition.get("range", 20.0)),
+			},
+			"description": str(weapon_definition.get("description", "Current weapon loadout.")),
+		}
+	if slot_id == "pet_gear" and _game_manager != null:
+		var pet_definition := _game_manager.get_pet_definition(_home_state.selected_pet_id if _home_state != null else _game_manager.selected_pet_id)
+		return {
+			"name": _game_manager.get_display_name(pet_definition, "Pet"),
+			"rarity": "locked",
+			"stats": {"pet": "active"},
+			"description": "Pet gear mods are not available yet.",
+		}
+	return {
+		"name": "Empty",
+		"rarity": "locked" if not bool(_get_slot_definition(slot_id).get("can_change", false)) else "empty",
+		"stats": {},
+		"description": _get_empty_description(_get_slot_definition(slot_id)),
+	}
+
+func _get_equipped_item(slot_id: String) -> Dictionary:
 	if _home_state == null:
-		return false
-	return not _home_state.get_equipped_item(slot_id).is_empty()
+		return {}
+	return _home_state.get_equipped_item(slot_id)
+
+func _format_stats(item: Dictionary) -> String:
+	var stats_value: Variant = item.get("stats", {})
+	if typeof(stats_value) != TYPE_DICTIONARY:
+		return "No stats"
+	var stats: Dictionary = stats_value
+	if stats.is_empty():
+		return "No stats"
+	var parts := PackedStringArray()
+	for key in stats.keys():
+		if parts.size() >= 3:
+			break
+		parts.append("%s %s" % [str(key).to_upper(), str(stats[key]).replace(" placeholder", "")])
+	return "  ".join(parts)
+
+func _get_empty_description(slot_definition: Dictionary) -> String:
+	if bool(slot_definition.get("can_change", false)):
+		return "Tap Change to equip matching gear."
+	return "Slot visible for progression, but not equippable yet."
+
+func _is_category_selected(category_id: String) -> bool:
+	var selected_slot := _get_selected_slot_id()
+	match category_id:
+		"weapon":
+			return selected_slot == "weapon"
+		"armor":
+			return selected_slot == "armor" or selected_slot == "helmet" or selected_slot == "boots"
+		"accessory":
+			return selected_slot == "accessory"
+		"pet":
+			return selected_slot == "pet_gear"
+		"all":
+			return false
+	return false
+
+func _shorten_text(value: String, max_length: int) -> String:
+	if value.length() <= max_length:
+		return value
+	return "%s..." % value.substr(0, max(max_length - 3, 1))

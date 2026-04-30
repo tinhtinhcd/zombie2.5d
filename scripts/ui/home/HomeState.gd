@@ -9,7 +9,7 @@ signal equipment_changed(slot_id: String, item: Dictionary)
 signal equipment_summary_changed(summary: String)
 signal inventory_summary_changed(summary: String)
 
-const EQUIPMENT_SLOTS := ["weapon", "armor", "accessory"]
+const EQUIPMENT_SLOTS := ["weapon", "armor", "helmet", "boots", "accessory", "pet_gear"]
 const MOCK_INVENTORY_ITEMS := [
 	{
 		"id": "training_blade",
@@ -61,14 +61,17 @@ const MOCK_INVENTORY_ITEMS := [
 var selected_hero_id: String = "hero_knight"
 var selected_weapon_id: String = "weapon_basic"
 var selected_pet_id: String = "pet_drone"
-var selected_equipment_slot: String = ""
+var selected_equipment_slot: String = "weapon"
 var inventory_items: Array = MOCK_INVENTORY_ITEMS.duplicate(true)
 var equipped_items: Dictionary = {
 	"weapon": {},
 	"armor": {},
+	"helmet": {},
+	"boots": {},
 	"accessory": {},
+	"pet_gear": {},
 }
-var equipped_items_summary: String = "Weapon Gear: Empty\nArmor: Empty\nAccessory: Empty"
+var equipped_items_summary: String = "Weapon: Empty\nArmor: Empty\nHelmet: Locked\nBoots: Locked\nAccessory: Empty\nPet Gear: Locked"
 var inventory_summary: String = "Inventory depth stays intentionally light."
 
 func sync_loadout(hero_id: String, weapon_id: String, pet_id: String, emit_changes: bool = false) -> void:
@@ -132,6 +135,16 @@ func equip_item(item_id: String) -> bool:
 	equipment_changed.emit(selected_equipment_slot, item.duplicate(true))
 	return true
 
+func unequip_item(slot_id: String) -> bool:
+	if not EQUIPMENT_SLOTS.has(slot_id):
+		return false
+	if get_equipped_item(slot_id).is_empty():
+		return false
+	equipped_items[slot_id] = {}
+	set_equipment_summary(_format_equipped_items_summary())
+	equipment_changed.emit(slot_id, {})
+	return true
+
 func get_inventory_item(item_id: String) -> Dictionary:
 	for item in inventory_items:
 		if typeof(item) != TYPE_DICTIONARY:
@@ -165,10 +178,13 @@ func _refresh_inventory_summary() -> void:
 	set_inventory_summary("Choose an item for %s. Mock inventory data is temporary." % slot_label)
 
 func _format_equipped_items_summary() -> String:
-	return "Weapon Gear: %s\nArmor: %s\nAccessory: %s" % [
+	return "Weapon: %s\nArmor: %s\nHelmet: %s\nBoots: %s\nAccessory: %s\nPet Gear: %s" % [
 		_get_equipped_item_name("weapon"),
 		_get_equipped_item_name("armor"),
+		_get_equipped_item_name("helmet"),
+		_get_equipped_item_name("boots"),
 		_get_equipped_item_name("accessory"),
+		_get_equipped_item_name("pet_gear"),
 	]
 
 func _get_equipped_item_name(slot_id: String) -> String:

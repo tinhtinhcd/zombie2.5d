@@ -19,6 +19,7 @@ func _ready() -> void:
     game_manager.reset_game()
     game_manager.apply_selected_loadout(player)
     game_manager.apply_permanent_upgrades(player)
+    _spawn_selected_pet_companion()
     _apply_map_radius_from_player()
     if pet_companion != null:
         pet_companion.apply_pet_definition(game_manager.get_selected_pet_definition())
@@ -56,6 +57,36 @@ func _apply_map_radius_from_player() -> void:
     if endless_map == null or player == null:
         return
     endless_map.map_radius = player.play_area_radius
+
+func _spawn_selected_pet_companion() -> void:
+    if game_manager == null:
+        return
+    var pet_id := game_manager.selected_pet_id
+    var model_path := game_manager.resolve_pet_model_path(pet_id)
+    var pet_scene := load(model_path) as PackedScene
+    if pet_scene == null:
+        push_warning("Gameplay pet %s could not resolve model scene %s; keeping existing pet." % [pet_id, model_path])
+        return
+
+    var previous_pet := pet_companion as Node3D
+    var spawn_position := Vector3(-1.2, 0.7, 0.8)
+    if previous_pet != null:
+        spawn_position = previous_pet.position
+        remove_child(previous_pet)
+        previous_pet.free()
+
+    var new_pet := pet_scene.instantiate() as Node3D
+    if new_pet == null:
+        push_warning("Gameplay pet %s model %s did not instantiate as Node3D." % [pet_id, model_path])
+        return
+    new_pet.name = "PetCompanion"
+    new_pet.position = spawn_position
+    new_pet.set_meta("pet_id", pet_id)
+    new_pet.set_meta("model_path", model_path)
+    new_pet.set_meta("source_scene_path", model_path)
+    add_child(new_pet)
+    move_child(new_pet, min(2, get_child_count() - 1))
+    pet_companion = new_pet
 
 func _toggle_pause_menu() -> void:
     if game_manager.is_game_over:

@@ -1,0 +1,19 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/entities/pet_companion.gd" id="1_pet"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wisp"]
+albedo_color = Color(0.9, 0.55, 1, 1)
+emission_enabled = true
+emission = Color(0.55, 0.14, 0.8, 1)
+
+[sub_resource type="TorusMesh" id="TorusMesh_wisp"]
+inner_radius = 0.12
+outer_radius = 0.28
+material = SubResource("StandardMaterial3D_wisp")
+
+[node name="PetCompanion" type="Node3D"]
+script = ExtResource("1_pet")
+
+[node name="WispCore" type="MeshInstance3D" parent="."]
+mesh = SubResource("TorusMesh_wisp")

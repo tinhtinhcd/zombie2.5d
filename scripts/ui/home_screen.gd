@@ -62,6 +62,7 @@ const HERO_PORTRAIT_TEXTURES := {
 @onready var hub_hero_name_label: Label = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/HeroStage/HeroNameLabel
 @onready var hub_power_label: Label = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/HeroStage/StatsPanel/StatsMargin/StatsLabel
 @onready var hub_power_value_label: Label = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/PowerCard/Margin/VBox/PowerValue
+@onready var hub_pet_portrait: Control = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/RightPanel/PetPanel/PetMargin/PetRow/PetPortrait
 
 @onready var survival_button: Button = $ScreenRoot/ModeSelectScreen/Layout/Root/Content/ModeList/SurvivalButton
 @onready var endless_button: Button = $ScreenRoot/ModeSelectScreen/Layout/Root/Content/ModeList/EndlessButton
@@ -80,12 +81,23 @@ const HERO_PORTRAIT_TEXTURES := {
 
 @onready var equipment_summary_label: Label = $ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/LoadoutCard/Margin/LoadoutSummary
 @onready var equipment_inventory_button: Button = $ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/InventoryButton
+@onready var equipment_unequip_button: Button = $ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/UnequipButton
+@onready var equipment_upgrade_button: Button = $ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/UpgradeButton
 @onready var equipment_continue_button: Button = $ScreenRoot/EquipmentSelectScreen/Layout/Root/Footer/ContinueButton
 @onready var equipment_back_button: Button = $ScreenRoot/EquipmentSelectScreen/Layout/Root/Header/BackButton
 @onready var weapon_slot_button: Button = $ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/WeaponSlot/Margin/VBox/SlotButton
 @onready var armor_slot_button: Button = $ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/ArmorSlot/Margin/VBox/SlotButton
+@onready var helmet_slot_button: Button = $ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/HelmetSlot/Margin/VBox/SlotButton
+@onready var boots_slot_button: Button = $ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/BootsSlot/Margin/VBox/SlotButton
 @onready var pet_equipment_slot_button: Button = $ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/PetSlot/Margin/VBox/SlotButton
 @onready var accessory_slot_button: Button = $ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/AccessorySlot/Margin/VBox/SlotButton
+@onready var equipment_hero_stage: Control = $ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/CharacterPanel
+@onready var equipment_character_placeholder: TextureRect = $ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/CharacterPanel/Center/CharacterPlaceholder
+@onready var equipment_weapon_filter_button: Button = $ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/CategoryBar/Margin/Buttons/WeaponFilterButton
+@onready var equipment_armor_filter_button: Button = $ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/CategoryBar/Margin/Buttons/ArmorFilterButton
+@onready var equipment_accessory_filter_button: Button = $ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/CategoryBar/Margin/Buttons/AccessoryFilterButton
+@onready var equipment_pet_filter_button: Button = $ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/CategoryBar/Margin/Buttons/PetFilterButton
+@onready var equipment_all_filter_button: Button = $ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/CategoryBar/Margin/Buttons/AllFilterButton
 
 @onready var pet_status_label: Label = $ScreenRoot/PetSelectScreen/Layout/Root/Content/SelectionSummary/SummaryMargin/StatusLabel
 @onready var pet_start_button: Button = $ScreenRoot/PetSelectScreen/Layout/Root/Footer/StartGameButton
@@ -93,6 +105,9 @@ const HERO_PORTRAIT_TEXTURES := {
 @onready var pet_drone_button: Button = $ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards/DroneCard/Margin/VBox/SelectButton
 @onready var pet_sprite_button: Button = $ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards/SpriteCard/Margin/VBox/SelectButton
 @onready var pet_wisp_button: Button = $ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards/WispCard/Margin/VBox/SelectButton
+@onready var pet_drone_portrait: Control = $ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards/DroneCard/Margin/VBox/PortraitLabel
+@onready var pet_sprite_portrait: Control = $ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards/SpriteCard/Margin/VBox/PortraitLabel
+@onready var pet_wisp_portrait: Control = $ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards/WispCard/Margin/VBox/PortraitLabel
 
 @onready var inventory_back_button: Button = $ScreenRoot/InventoryScreen/Layout/Root/Header/BackButton
 @onready var hub_preview_list: Label = $ScreenRoot/MainMenuScreen/Layout/Root/MainContent/LeftMenu/MissionCard/PreviewMargin/PreviewContent/PreviewList
@@ -174,13 +189,37 @@ func _ready() -> void:
 
 	_hub_summary_panel.setup(hub_preview_list, hub_preview_note, game_manager, _home_state, hub_weapon_preview, hub_armor_preview, hub_pet_preview, hub_defense_preview)
 	_hero_select_panel.setup(hero_status_label, hero_continue_button, hero_knight_button, hero_rogue_button, hero_mage_button, game_manager, _home_state)
-	_equipment_panel.setup(equipment_summary_label, weapon_slot_button, armor_slot_button, accessory_slot_button, game_manager, _home_state)
+	_equipment_panel.setup(
+		equipment_summary_label,
+		{
+			"weapon": weapon_slot_button,
+			"armor": armor_slot_button,
+			"helmet": helmet_slot_button,
+			"boots": boots_slot_button,
+			"accessory": accessory_slot_button,
+			"pet_gear": pet_equipment_slot_button,
+		},
+		equipment_inventory_button,
+		equipment_unequip_button,
+		equipment_upgrade_button,
+		game_manager,
+		_home_state,
+		{
+			"weapon": equipment_weapon_filter_button,
+			"armor": equipment_armor_filter_button,
+			"accessory": equipment_accessory_filter_button,
+			"pet": equipment_pet_filter_button,
+			"all": equipment_all_filter_button,
+		}
+	)
 	_pet_select_panel.setup(pet_status_label, pet_start_button, pet_drone_button, pet_sprite_button, pet_wisp_button, game_manager, _home_state)
 	_inventory_panel.setup(inventory_description_label, inventory_item_buttons, game_manager, _home_state, inventory_name_label, inventory_type_label, inventory_stats_label, inventory_equip_button, inventory_drop_button, inventory_slot_target_label, inventory_upgrade_button, inventory_icon_label)
-	_equipment_panel.equip_slot_requested.connect(_on_equipment_slot_requested)
+	_equipment_panel.slot_selected.connect(_on_equipment_slot_requested)
+	_equipment_panel.change_requested.connect(_on_equipment_change_requested)
+	_equipment_panel.unequip_requested.connect(_on_equipment_unequip_requested)
 	_inventory_panel.equip_requested.connect(_on_inventory_item_selected)
 
-	play_button.pressed.connect(_on_play_pressed)
+	play_button.pressed.connect(_start_game)
 	equipment_button.pressed.connect(_on_hub_equipment_pressed)
 	inventory_button.pressed.connect(_on_inventory_pressed)
 	settings_button.pressed.connect(_on_settings_pressed)
@@ -206,15 +245,13 @@ func _ready() -> void:
 	hero_continue_button.pressed.connect(_on_hero_continue_pressed)
 	hero_back_button.pressed.connect(_go_back)
 
-	equipment_inventory_button.pressed.connect(_on_inventory_pressed)
 	equipment_continue_button.pressed.connect(_on_equipment_continue_pressed)
 	equipment_back_button.pressed.connect(_go_back)
-	pet_equipment_slot_button.pressed.connect(_on_hub_pet_pressed)
 
 	pet_drone_button.pressed.connect(_on_drone_pressed)
 	pet_sprite_button.pressed.connect(_on_sprite_pressed)
 	pet_wisp_button.pressed.connect(_on_wisp_pressed)
-	pet_start_button.pressed.connect(_start_game)
+	pet_start_button.pressed.connect(_on_pet_confirm_pressed)
 	pet_back_button.pressed.connect(_go_back)
 
 	inventory_back_button.pressed.connect(_go_back)
@@ -249,11 +286,13 @@ func _apply_home_visual_style() -> void:
 	HOME_UI_STYLE.apply_button_state(mode_back_button, "secondary")
 	HOME_UI_STYLE.apply_button_state(hero_back_button, "secondary")
 	HOME_UI_STYLE.apply_button_state(equipment_back_button, "secondary")
-	HOME_UI_STYLE.apply_button_state(pet_equipment_slot_button, "secondary")
 	HOME_UI_STYLE.apply_button_state(pet_back_button, "secondary")
 	HOME_UI_STYLE.apply_button_state(inventory_back_button, "secondary")
 	HOME_UI_STYLE.apply_button_state(equipment_continue_button, "selected")
 	HOME_UI_STYLE.apply_button_state(pet_start_button, "selected")
+	play_button.text = "Start"
+	equipment_continue_button.text = "Done"
+	pet_start_button.text = "Confirm"
 
 func _show_screen(screen_name: String, add_to_history: bool = true) -> void:
 	_home_ui_manager.open_panel(screen_name, add_to_history)
@@ -270,6 +309,7 @@ func _on_home_panel_changed(screen_name: String) -> void:
 	elif screen_name == SCREEN_PET_SELECT:
 		_refresh_pet_summary()
 	_refresh_hero_preview_models()
+	_refresh_pet_preview_models()
 	_apply_responsive_layout()
 	_reset_scroll_position(screen_name)
 
@@ -321,16 +361,30 @@ func _refresh_hero_preview_models() -> void:
 
 	if hero_select_screen != null and hero_select_screen.visible:
 		HERO_PREVIEW_SPAWNER.clear_preview(hub_hero_stage)
+		HERO_PREVIEW_SPAWNER.clear_preview(equipment_hero_stage)
 		_refresh_hero_select_previews(selected_hero_id)
 		return
 
+	if equipment_select_screen != null and equipment_select_screen.visible:
+		HERO_PREVIEW_SPAWNER.clear_preview(hub_hero_stage)
+		_clear_hero_select_previews()
+		_refresh_equipment_hero_preview(selected_hero_id)
+		return
+
 	HERO_PREVIEW_SPAWNER.clear_preview(hub_hero_stage)
+	HERO_PREVIEW_SPAWNER.clear_preview(equipment_hero_stage)
 	_clear_hero_select_previews()
 
 func _refresh_hub_hero_preview(selected_hero_id: String) -> void:
+	HERO_PREVIEW_SPAWNER.clear_preview(equipment_hero_stage)
 	if hub_hero_image != null:
 		hub_hero_image.visible = false
-	HERO_PREVIEW_SPAWNER.show_preview(hub_hero_stage, selected_hero_id, true)
+	HERO_PREVIEW_SPAWNER.show_hero_preview(hub_hero_stage, selected_hero_id, _get_hero_definition_for_model(selected_hero_id), true, _get_weapon_definition_for_model(_get_selected_weapon_id_for_model()))
+
+func _refresh_equipment_hero_preview(selected_hero_id: String) -> void:
+	if equipment_character_placeholder != null:
+		equipment_character_placeholder.visible = false
+	HERO_PREVIEW_SPAWNER.show_hero_preview(equipment_hero_stage, selected_hero_id, _get_hero_definition_for_model(selected_hero_id), false, _get_weapon_definition_for_model(_get_selected_weapon_id_for_model()))
 
 func _refresh_hero_select_previews(selected_hero_id: String) -> void:
 	var portrait_slots := {
@@ -343,7 +397,7 @@ func _refresh_hero_select_previews(selected_hero_id: String) -> void:
 		if portrait == null:
 			continue
 		if str(hero_id) == selected_hero_id:
-			HERO_PREVIEW_SPAWNER.show_preview(portrait, str(hero_id), true)
+			HERO_PREVIEW_SPAWNER.show_hero_preview(portrait, str(hero_id), _get_hero_definition_for_model(str(hero_id)), true, _get_weapon_definition_for_model(_get_selected_weapon_id_for_model()))
 		else:
 			HERO_PREVIEW_SPAWNER.clear_preview(portrait)
 			_set_hero_portrait_texture(portrait, str(hero_id))
@@ -378,12 +432,78 @@ func _focus_pet(pet_id: String) -> void:
 
 func _refresh_pet_summary() -> void:
 	_pet_select_panel.refresh(_selected_pet_id)
+	_refresh_pet_preview_models()
+
+func _refresh_pet_preview_models() -> void:
+	var selected_pet_id := _selected_pet_id
+	if _home_state != null:
+		selected_pet_id = _home_state.selected_pet_id
+
+	if pet_select_screen != null and pet_select_screen.visible:
+		HERO_PREVIEW_SPAWNER.clear_preview(hub_pet_portrait)
+		_refresh_pet_select_previews(selected_pet_id)
+		return
+	if main_menu_screen != null and main_menu_screen.visible:
+		_clear_pet_select_previews()
+		_refresh_hub_pet_preview(selected_pet_id)
+		return
+	HERO_PREVIEW_SPAWNER.clear_preview(hub_pet_portrait)
+	_clear_pet_select_previews()
+
+func _refresh_hub_pet_preview(selected_pet_id: String) -> void:
+	if hub_pet_portrait == null:
+		return
+	HERO_PREVIEW_SPAWNER.show_pet_preview(hub_pet_portrait, selected_pet_id, _get_pet_definition_for_model(selected_pet_id))
+
+func _refresh_pet_select_previews(selected_pet_id: String) -> void:
+	var portrait_slots := {
+		"pet_drone": pet_drone_portrait,
+		"pet_sprite": pet_sprite_portrait,
+		"pet_wisp": pet_wisp_portrait,
+	}
+	for pet_id in portrait_slots.keys():
+		var portrait := portrait_slots[pet_id] as Control
+		if portrait == null:
+			continue
+		if str(pet_id) == selected_pet_id:
+			var preview := HERO_PREVIEW_SPAWNER.show_pet_preview(portrait, str(pet_id), _get_pet_definition_for_model(str(pet_id)))
+			if preview != null and portrait is Label:
+				(portrait as Label).text = ""
+		else:
+			HERO_PREVIEW_SPAWNER.clear_preview(portrait)
+
+func _clear_pet_select_previews() -> void:
+	for portrait in [pet_drone_portrait, pet_sprite_portrait, pet_wisp_portrait]:
+		HERO_PREVIEW_SPAWNER.clear_preview(portrait)
+
+func _get_hero_definition_for_model(hero_id: String) -> Dictionary:
+	var definition := game_manager.get_hero_definition(hero_id)
+	var raw_model_path := str(definition.get("model_scene_path", "")).strip_edges()
+	definition["model_scene_path"] = game_manager.resolve_hero_model_path(hero_id)
+	definition["model_fallback_used"] = raw_model_path != str(definition["model_scene_path"])
+	return definition
+
+func _get_pet_definition_for_model(pet_id: String) -> Dictionary:
+	var definition := game_manager.get_pet_definition(pet_id)
+	var raw_model_path := str(definition.get("model_scene_path", "")).strip_edges()
+	definition["model_scene_path"] = game_manager.resolve_pet_model_path(pet_id)
+	definition["model_fallback_used"] = raw_model_path != str(definition["model_scene_path"])
+	return definition
+
+func _get_weapon_definition_for_model(weapon_id: String) -> Dictionary:
+	var definition := game_manager.get_weapon_definition(weapon_id)
+	var raw_model_path := str(definition.get("model_scene_path", "")).strip_edges()
+	definition["model_scene_path"] = game_manager.resolve_weapon_model_path(weapon_id)
+	definition["model_fallback_used"] = raw_model_path != str(definition["model_scene_path"])
+	return definition
+
+func _get_selected_weapon_id_for_model() -> String:
+	if _home_state != null and not _home_state.selected_weapon_id.is_empty():
+		return _home_state.selected_weapon_id
+	return _selected_weapon_id
 
 func _start_game() -> void:
 	if scene_router != null:
-		_select_pet(_selected_pet_id, game_manager.is_pet_unlocked(_selected_pet_id))
-		if game_manager.selected_pet_id != _selected_pet_id:
-			return
 		game_manager.set_selected_loadout(_selected_hero_id, _selected_weapon_id, _selected_pet_id)
 		scene_router.go_to_game()
 
@@ -469,7 +589,7 @@ func _refresh_inventory_summary(_inventory: Dictionary = {}) -> void:
 	_inventory_panel.refresh(_inventory)
 
 func _on_play_pressed() -> void:
-	_show_screen(SCREEN_MODE_SELECT)
+	_start_game()
 
 func _on_inventory_pressed() -> void:
 	_show_screen(SCREEN_INVENTORY)
@@ -514,10 +634,15 @@ func _on_mage_pressed() -> void:
 func _on_hero_continue_pressed() -> void:
 	_select_hero(_selected_hero_id, game_manager.is_hero_unlocked(_selected_hero_id))
 	if game_manager.selected_hero_id == _selected_hero_id:
-		_show_screen(SCREEN_EQUIPMENT_SELECT)
+		_show_screen(SCREEN_MAIN_MENU, false)
 
 func _on_equipment_continue_pressed() -> void:
-	_show_screen(SCREEN_PET_SELECT)
+	_show_screen(SCREEN_MAIN_MENU, false)
+
+func _on_pet_confirm_pressed() -> void:
+	_select_pet(_selected_pet_id, game_manager.is_pet_unlocked(_selected_pet_id))
+	if game_manager.selected_pet_id == _selected_pet_id:
+		_show_screen(SCREEN_MAIN_MENU, false)
 
 func _on_drone_pressed() -> void:
 	_focus_pet("pet_drone")
@@ -533,12 +658,22 @@ func _on_placeholder_closed() -> void:
 
 func _on_equipment_slot_requested(slot_id: String) -> void:
 	_home_state.set_selected_equipment_slot(slot_id)
+	_refresh_equipment_summary()
+
+func _on_equipment_change_requested(slot_id: String) -> void:
+	_home_state.set_selected_equipment_slot(slot_id)
 	_refresh_inventory_summary(game_manager.inventory)
 	_show_screen(SCREEN_INVENTORY)
+
+func _on_equipment_unequip_requested(slot_id: String) -> void:
+	if _home_state.unequip_item(slot_id):
+		_refresh_equipment_summary()
+		_refresh_hub_summary(game_manager.soft_currency)
 
 func _on_inventory_item_selected(item_id: String) -> void:
 	if _home_state.equip_item(item_id):
 		_home_ui_manager.go_back()
+		_refresh_equipment_summary()
 		return
 	_show_placeholder("Cannot Equip", "That item does not fit the selected equipment slot.")
 
@@ -548,7 +683,9 @@ func _on_home_state_hero_changed(_hero_id: String) -> void:
 	_refresh_hub_summary(game_manager.soft_currency)
 
 func _on_home_state_weapon_changed(_weapon_id: String) -> void:
+	_selected_weapon_id = _weapon_id
 	_refresh_equipment_summary()
+	_refresh_hero_preview_models()
 	_refresh_hub_summary(game_manager.soft_currency)
 
 func _on_home_state_pet_changed(_pet_id: String) -> void:
@@ -564,6 +701,7 @@ func _on_home_state_inventory_summary_changed(_summary: String) -> void:
 	_refresh_inventory_summary(game_manager.inventory)
 
 func _on_home_state_equipment_slot_changed(_slot_id: String) -> void:
+	_refresh_equipment_summary()
 	_refresh_inventory_summary(game_manager.inventory)
 
 func _apply_responsive_layout() -> void:
@@ -579,7 +717,7 @@ func _apply_responsive_layout() -> void:
 	var inner_margin := 4 if is_short_landscape else (8 if is_mobile else (12 if is_tablet else 16))
 	var mobile_or_tablet := is_mobile or is_tablet
 	var hero_pet_columns := 1 if is_mobile else (2 if is_tablet else 3)
-	var equipment_columns := 3 if responsive_mode == LAYOUT_DESKTOP and viewport_size.x >= 1400.0 else 1
+	var equipment_columns := 3
 	var equipment_slot_columns := 1
 	var inventory_content_columns := 2
 	var inventory_item_columns := 6 if is_mobile else (7 if is_tablet else 8)
@@ -617,6 +755,7 @@ func _apply_responsive_layout() -> void:
 		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content",
 		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn",
 		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn",
+		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/CategoryBar/Margin/Buttons",
 		"ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin/VBox",
 		"ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin/GridScroll/ItemGrid",
 	]:
@@ -696,9 +835,12 @@ func _apply_responsive_layout() -> void:
 		"ScreenRoot/MainMenuScreen/Layout/Root/BottomNavBar/Margin",
 		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/WeaponSlot/Margin",
 		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/ArmorSlot/Margin",
+		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/HelmetSlot/Margin",
+		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/BootsSlot/Margin",
 		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/PetSlot/Margin",
 		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/AccessorySlot/Margin",
 		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/LoadoutCard/Margin",
+		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/CategoryBar/Margin",
 		"ScreenRoot/InventoryScreen/Layout/Root/Content/GridPanel/Margin",
 		"ScreenRoot/InventoryScreen/Layout/Root/Content/DetailsPanel/Margin",
 	]:
@@ -742,9 +884,28 @@ func _apply_responsive_layout() -> void:
 			inventory_button.custom_minimum_size = Vector2(58.0 if is_mobile else 64.0, 58.0 if is_mobile else 64.0)
 	_set_minimum_size("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/WeaponSlot", Vector2(0.0, 0.0))
 	_set_minimum_size("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/ArmorSlot", Vector2(0.0, 0.0))
+	_set_minimum_size("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/HelmetSlot", Vector2(0.0, 0.0))
+	_set_minimum_size("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/BootsSlot", Vector2(0.0, 0.0))
 	_set_minimum_size("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/PetSlot", Vector2(0.0, 0.0))
 	_set_minimum_size("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/AccessorySlot", Vector2(0.0, 0.0))
-	_set_minimum_size("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/CharacterPanel", Vector2(0.0, 150.0 if is_mobile else (280.0 if responsive_mode == LAYOUT_DESKTOP and viewport_size.x >= 1400.0 else 190.0)))
+	_set_minimum_size("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/CharacterPanel", Vector2(0.0, 300.0 if is_mobile else (320.0 if is_tablet else 340.0)))
+	_set_minimum_size("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/CategoryBar", Vector2(0.0, 34.0 if is_short_landscape else 38.0))
+	_set_control_font_size("ScreenRoot/EquipmentSelectScreen/Layout/Root/Header/Title", 18 if is_mobile else 22)
+	_set_control_font_size("ScreenRoot/EquipmentSelectScreen/Layout/Root/Header/Subtitle", 12)
+	_set_control_font_size("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/LoadoutCard/Margin/LoadoutSummary", 12)
+	_set_label_line_limit("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/LoadoutCard/Margin/LoadoutSummary", 4)
+	for gear_button_path in [
+		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/WeaponSlot/Margin/VBox/SlotButton",
+		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/ArmorSlot/Margin/VBox/SlotButton",
+		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/HelmetSlot/Margin/VBox/SlotButton",
+		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/BootsSlot/Margin/VBox/SlotButton",
+		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/PetSlot/Margin/VBox/SlotButton",
+		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/AccessorySlot/Margin/VBox/SlotButton",
+		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/InventoryButton",
+		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/UnequipButton",
+		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/UpgradeButton",
+	]:
+		_set_control_font_size(gear_button_path, 12)
 	_update_touch_targets(screen_root, responsive_mode)
 
 func _install_scroll_containers() -> void:
@@ -890,28 +1051,28 @@ func _apply_equipment_layout_order() -> void:
 	if columns == null or left_column == null or character_panel == null or right_column == null:
 		return
 
-	var viewport_size := get_viewport_rect().size
-	var use_split_layout := _resolve_responsive_mode(viewport_size) == LAYOUT_DESKTOP and viewport_size.x >= 1400.0
-	if not use_split_layout:
-		columns.move_child(character_panel, 0)
-		columns.move_child(left_column, 1)
-		columns.move_child(right_column, 2)
-	else:
-		columns.move_child(left_column, 0)
-		columns.move_child(character_panel, 1)
-		columns.move_child(right_column, 2)
+	columns.move_child(left_column, 0)
+	columns.move_child(character_panel, 1)
+	columns.move_child(right_column, 2)
 
 	var weapon_slot := _get_ui_node("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/WeaponSlot") as Control
 	var armor_slot := _get_ui_node("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/ArmorSlot") as Control
+	var helmet_slot := _get_ui_node("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/HelmetSlot") as Control
+	var boots_slot := _get_ui_node("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/BootsSlot") as Control
 	var pet_slot := _get_ui_node("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/PetSlot") as Control
 	var accessory_slot := _get_ui_node("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/AccessorySlot") as Control
 	var loadout_card := _get_ui_node("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/LoadoutCard") as Control
 	var inventory_button := _get_ui_node("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/InventoryButton") as Control
 	var unequip_button := _get_ui_node("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/UnequipButton") as Control
+	var upgrade_button := _get_ui_node("ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/UpgradeButton") as Control
 	if weapon_slot != null:
 		left_column.move_child(weapon_slot, 0)
 	if armor_slot != null:
 		left_column.move_child(armor_slot, 1)
+	if helmet_slot != null:
+		left_column.move_child(helmet_slot, 2)
+	if boots_slot != null:
+		left_column.move_child(boots_slot, 3)
 	if pet_slot != null:
 		right_column.move_child(pet_slot, 0)
 	if accessory_slot != null:
@@ -922,6 +1083,8 @@ func _apply_equipment_layout_order() -> void:
 		right_column.move_child(inventory_button, 3)
 	if unequip_button != null:
 		right_column.move_child(unequip_button, 4)
+	if upgrade_button != null:
+		right_column.move_child(upgrade_button, 5)
 
 func _apply_inventory_layout_order() -> void:
 	var content := _get_ui_node("ScreenRoot/InventoryScreen/Layout/Root/Content") as BoxContainer
@@ -1036,6 +1199,8 @@ func _update_touch_targets(root: Node, responsive_mode: String) -> void:
 					local_touch_height = 38.0
 				elif button_path.find("PrimaryActionBar") != -1:
 					local_touch_height = 44.0 if is_short_landscape else 50.0
+			elif button_path.find("EquipmentSelectScreen") != -1:
+				local_touch_height = 34.0 if button_path.find("CategoryBar") != -1 else 40.0
 			var target_height: float = max(original_size.y, local_touch_height)
 			button.custom_minimum_size = Vector2(0.0 if uses_touch_targets else original_size.x, target_height if uses_touch_targets else original_size.y)
 			if uses_touch_targets:

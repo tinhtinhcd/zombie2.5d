@@ -1,16 +1,19 @@
 {
   "pet_drone": {
     "display_name": "Drone",
+    "model_scene_path": "res://scenes/entities/pet_companion.tscn",
     "damage": 1,
     "attack_interval": 1.2
   },
   "pet_sprite": {
     "display_name": "Sprite",
+    "model_scene_path": "res://scenes/entities/pet_sprite.tscn",
     "damage": 1,
     "attack_interval": 0.9
   },
   "pet_wisp": {
     "display_name": "Wisp",
+    "model_scene_path": "res://scenes/entities/pet_wisp.tscn",
     "damage": 2,
     "attack_interval": 1.6
   }

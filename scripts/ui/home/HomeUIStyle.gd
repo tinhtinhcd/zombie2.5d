@@ -102,6 +102,31 @@ static func apply_button_state(button: Button, state: String = "default") -> voi
 	button.add_theme_color_override("font_disabled_color", Color(0.45, 0.56, 0.58, 1.0))
 	button.add_theme_font_size_override("font_size", 15)
 
+static func apply_compact_button_state(button: Button, state: String = "default") -> void:
+	if button == null:
+		return
+	var fill := Color(0.045, 0.085, 0.095, 0.92)
+	var border := COLOR_BORDER
+	var font := COLOR_TEXT
+	if state == "selected":
+		fill = COLOR_SELECTED_DARK
+		border = COLOR_SELECTED
+	elif state == "locked":
+		fill = COLOR_LOCKED
+		border = COLOR_LOCKED_BORDER
+		font = Color(0.58, 0.66, 0.68, 1.0)
+	button.add_theme_stylebox_override("normal", _make_compact_button_style(fill, border))
+	button.add_theme_stylebox_override("hover", _make_compact_button_style(fill.lightened(0.08), border))
+	button.add_theme_stylebox_override("focus", _make_compact_button_style(fill.lightened(0.08), border))
+	button.add_theme_stylebox_override("pressed", _make_compact_button_style(fill.lightened(0.13), COLOR_SELECTED))
+	button.add_theme_stylebox_override("disabled", _make_compact_button_style(COLOR_LOCKED, COLOR_LOCKED_BORDER))
+	button.add_theme_color_override("font_color", font)
+	button.add_theme_color_override("font_hover_color", font)
+	button.add_theme_color_override("font_pressed_color", font)
+	button.add_theme_color_override("font_disabled_color", Color(0.45, 0.52, 0.54, 1.0))
+	button.add_theme_font_size_override("font_size", 12)
+	button.alignment = HORIZONTAL_ALIGNMENT_CENTER
+
 static func apply_item_button(button: Button, is_equipped: bool = false) -> void:
 	var texture: Texture2D = _get_texture(WENREXA_ITEM_ENABLE_PATH if is_equipped else WENREXA_ITEM_DISABLE_PATH)
 	var normal_modulate := Color(0.75, 1.0, 1.0, 1.0) if is_equipped else Color(0.65, 0.82, 0.88, 0.92)
@@ -228,4 +253,22 @@ static func _make_button_style(fill: Color, border: Color) -> StyleBoxFlat:
 	style.content_margin_top = 8.0
 	style.content_margin_right = 12.0
 	style.content_margin_bottom = 8.0
+	return style
+
+static func _make_compact_button_style(fill: Color, border: Color) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = fill
+	style.border_color = border
+	style.border_width_left = 1
+	style.border_width_top = 1
+	style.border_width_right = 1
+	style.border_width_bottom = 2
+	style.corner_radius_top_left = 5
+	style.corner_radius_top_right = 5
+	style.corner_radius_bottom_right = 5
+	style.corner_radius_bottom_left = 5
+	style.content_margin_left = 5.0
+	style.content_margin_top = 3.0
+	style.content_margin_right = 5.0
+	style.content_margin_bottom = 3.0
 	return style

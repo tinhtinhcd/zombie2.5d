@@ -2,8 +2,8 @@
 
 [ext_resource type="Script" path="res://scripts/player/player.gd" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/effects/projectile.tscn" id="2_projectile"]
-[ext_resource type="PackedScene" path="res://assets/Modular Character Outfits - Fantasy[Standard]/Modular Character Outfits - Fantasy[Standard]/Exports/glTF (Godot-Unreal)/Outfits/Male_Ranger.gltf" id="3_hero"]
-[ext_resource type="PackedScene" path="res://assets/Universal Animation Library[Standard]/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb" id="4_ual1"]
+[ext_resource type="PackedScene" path="res://assets/KayKit_Adventurers_2.0_FREE/KayKit_Adventurers_2.0_FREE/Characters/gltf/Knight.glb" id="3_hero"]
+[ext_resource type="PackedScene" path="res://assets/KayKit_Adventurers_2.0_FREE/KayKit_Adventurers_2.0_FREE/Animations/gltf/Rig_Medium/Rig_Medium_MovementBasic.glb" id="4_movement"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_player"]
 radius = 0.4
@@ -16,10 +16,10 @@ mid_height = 1.2
 [node name="Player" type="CharacterBody3D"]
 script = ExtResource("1_player")
 projectile_scene = ExtResource("2_projectile")
-movement_animation_scene = ExtResource("4_ual1")
+movement_animation_scene = ExtResource("4_movement")
 character_root_path = NodePath("VisualRoot/HeroModel")
-idle_animation_name = "Idle"
-run_animation_name = "Jog_Fwd"
+idle_animation_name = "Walking_A"
+run_animation_name = "Running_A"
 run_bob_amount = 0.04
 run_lean_amount = 0.04
 

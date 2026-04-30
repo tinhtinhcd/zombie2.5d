@@ -21,16 +21,10 @@ func _run() -> void:
 	if not _assert_home_hub_layout(home):
 		quit(1)
 		return
-	home.call("_on_play_pressed")
-	await process_frame
-	if not bool(home.get_node("ScreenRoot/ModeSelectScreen").visible):
-		push_error("Smoke test failed: home UI manager did not open mode select.")
-		quit(1)
-		return
-	home.call("_on_survival_pressed")
+	home.call("_on_hub_hero_pressed")
 	await process_frame
 	if not bool(home.get_node("ScreenRoot/HeroSelectScreen").visible):
-		push_error("Smoke test failed: home UI manager did not open hero select.")
+		push_error("Smoke test failed: home Hero button did not open hero select.")
 		quit(1)
 		return
 	if not _assert_hero_carousel_layout(home):
@@ -54,6 +48,13 @@ func _run() -> void:
 	var rogue_preview_after_right := home.call("_get_ui_node", "ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/RogueCard/Margin/VBox/Portrait/GameplayHeroPreview/PreviewViewport/PreviewWorld/Player") as Node3D
 	if rogue_preview_after_right == null or str(rogue_preview_after_right.get_meta("hero_id", "")) != "hero_rogue":
 		push_error("Smoke test failed: hero carousel preview did not track the focused rogue.")
+		quit(1)
+		return
+	if str(rogue_preview_after_right.get_meta("model_path", "")) != "res://assets/KayKit_Adventurers_2.0_FREE/KayKit_Adventurers_2.0_FREE/Characters/gltf/Rogue_Hooded.glb":
+		push_error("Smoke test failed: rogue preview did not resolve the rogue model path.")
+		quit(1)
+		return
+	if not _assert_weapon_visual(rogue_preview_after_right, "rogue hero select preview"):
 		quit(1)
 		return
 	if home.call("_get_ui_node", "ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/KnightCard/Margin/VBox/Portrait/GameplayHeroPreview/PreviewViewport/PreviewWorld/Player") != null:
@@ -86,6 +87,13 @@ func _run() -> void:
 		push_error("Smoke test failed: hero carousel preview did not return to the focused knight.")
 		quit(1)
 		return
+	if str(knight_preview_after_left.get_meta("model_path", "")) != "res://assets/KayKit_Adventurers_2.0_FREE/KayKit_Adventurers_2.0_FREE/Characters/gltf/Knight.glb":
+		push_error("Smoke test failed: knight preview did not resolve the knight model path.")
+		quit(1)
+		return
+	if not _assert_weapon_visual(knight_preview_after_left, "knight hero select preview"):
+		quit(1)
+		return
 	if home.call("_get_ui_node", "ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/RogueCard/Margin/VBox/Portrait/GameplayHeroPreview/PreviewViewport/PreviewWorld/Player") != null:
 		push_error("Smoke test failed: previous rogue card kept a duplicate gameplay preview after focusing knight.")
 		quit(1)
@@ -103,12 +111,16 @@ func _run() -> void:
 		return
 	home.call("_on_hero_continue_pressed")
 	await process_frame
-	if not bool(home.get_node("ScreenRoot/EquipmentSelectScreen").visible):
-		push_error("Smoke test failed: home UI manager did not open equipment select.")
+	if not bool(home.get_node("ScreenRoot/MainMenuScreen").visible):
+		push_error("Smoke test failed: hero confirm did not return to the home hub.")
 		quit(1)
 		return
-	home.call("_show_screen", "PetSelectScreen", false)
+	home.call("_on_hub_pet_pressed")
 	await process_frame
+	if not bool(home.get_node("ScreenRoot/PetSelectScreen").visible):
+		push_error("Smoke test failed: home Pet button did not open pet select.")
+		quit(1)
+		return
 	if not _assert_pet_carousel_layout(home):
 		quit(1)
 		return
@@ -124,6 +136,19 @@ func _run() -> void:
 	await process_frame
 	if home_state.selected_pet_id != "pet_sprite":
 		push_error("Smoke test failed: pet carousel right navigation did not update selected pet.")
+		quit(1)
+		return
+	var sprite_preview_after_right := home.call("_get_ui_node", "ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards/SpriteCard/Margin/VBox/PortraitLabel/GameplayHeroPreview/PreviewViewport/PreviewWorld/PetCompanion") as Node3D
+	if sprite_preview_after_right == null or str(sprite_preview_after_right.get_meta("pet_id", "")) != "pet_sprite":
+		push_error("Smoke test failed: pet carousel preview did not track the focused sprite.")
+		quit(1)
+		return
+	if str(sprite_preview_after_right.get_meta("model_path", "")) != "res://scenes/entities/pet_sprite.tscn":
+		push_error("Smoke test failed: sprite pet preview did not resolve the sprite model path.")
+		quit(1)
+		return
+	if home.call("_get_ui_node", "ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards/DroneCard/Margin/VBox/PortraitLabel/GameplayHeroPreview/PreviewViewport/PreviewWorld/PetCompanion") != null:
+		push_error("Smoke test failed: previous drone card kept a duplicate gameplay pet preview after focusing sprite.")
 		quit(1)
 		return
 	var pet_confirm := home.call("_get_ui_node", "ScreenRoot/PetSelectScreen/Layout/Root/Footer/StartGameButton") as Button
@@ -143,12 +168,65 @@ func _run() -> void:
 		push_error("Smoke test failed: pet carousel left navigation did not return to available pet.")
 		quit(1)
 		return
+	var drone_preview_after_left := home.call("_get_ui_node", "ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards/DroneCard/Margin/VBox/PortraitLabel/GameplayHeroPreview/PreviewViewport/PreviewWorld/PetCompanion") as Node3D
+	if drone_preview_after_left == null or str(drone_preview_after_left.get_meta("pet_id", "")) != "pet_drone":
+		push_error("Smoke test failed: pet carousel preview did not return to the focused drone.")
+		quit(1)
+		return
+	if str(drone_preview_after_left.get_meta("model_path", "")) != "res://scenes/entities/pet_companion.tscn":
+		push_error("Smoke test failed: drone pet preview did not resolve the drone model path.")
+		quit(1)
+		return
+	if home.call("_get_ui_node", "ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards/SpriteCard/Margin/VBox/PortraitLabel/GameplayHeroPreview/PreviewViewport/PreviewWorld/PetCompanion") != null:
+		push_error("Smoke test failed: previous sprite card kept a duplicate gameplay pet preview after focusing drone.")
+		quit(1)
+		return
+	pet_confirm.pressed.emit()
+	await process_frame
+	if not bool(home.get_node("ScreenRoot/MainMenuScreen").visible):
+		push_error("Smoke test failed: pet confirm did not return to the home hub.")
+		quit(1)
+		return
+	if root.get_node_or_null("GameRoot") != null:
+		push_error("Smoke test failed: pet confirm started gameplay.")
+		quit(1)
+		return
 	home.call("_show_screen", "EquipmentSelectScreen", false)
 	await process_frame
+	if not _assert_equipment_layout(home):
+		quit(1)
+		return
+	var helmet_button := home.call("_get_ui_node", "ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/HelmetSlot/Margin/VBox/SlotButton") as Button
+	if helmet_button == null:
+		push_error("Smoke test failed: helmet gear slot button is missing.")
+		quit(1)
+		return
+	helmet_button.pressed.emit()
+	await process_frame
+	var gear_change_button := home.call("_get_ui_node", "ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/InventoryButton") as Button
+	var gear_detail := home.call("_get_ui_node", "ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/LoadoutCard/Margin/LoadoutSummary") as Label
+	if home_state.selected_equipment_slot != "helmet" or gear_change_button == null or not gear_change_button.disabled or gear_detail == null or not gear_detail.text.contains("HELMET"):
+		push_error("Smoke test failed: locked helmet slot did not select safely with disabled Change.")
+		quit(1)
+		return
 	home.call("_on_equipment_slot_requested", "armor")
 	await process_frame
+	if home_state.selected_equipment_slot != "armor" or not bool(home.get_node("ScreenRoot/EquipmentSelectScreen").visible):
+		push_error("Smoke test failed: equipment slot selection did not stay on gear with armor selected.")
+		quit(1)
+		return
+	if gear_detail == null or not gear_detail.text.contains("ARMOR"):
+		push_error("Smoke test failed: equipment slot selection did not update gear detail panel.")
+		quit(1)
+		return
+	if gear_change_button == null or gear_change_button.disabled:
+		push_error("Smoke test failed: gear change button is not available for armor.")
+		quit(1)
+		return
+	gear_change_button.pressed.emit()
+	await process_frame
 	if home_state.selected_equipment_slot != "armor" or not bool(home.get_node("ScreenRoot/InventoryScreen").visible):
-		push_error("Smoke test failed: equipment slot selection did not open inventory for armor.")
+		push_error("Smoke test failed: gear Change did not open inventory for armor.")
 		quit(1)
 		return
 	if not _assert_inventory_layout(home):
@@ -182,20 +260,19 @@ func _run() -> void:
 		push_error("Smoke test failed: equipment panel did not refresh after equipping armor.")
 		quit(1)
 		return
+	var armor_button := home.call("_get_ui_node", "ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/ArmorSlot/Margin/VBox/SlotButton") as Button
+	if armor_button == null or not armor_button.text.contains("Leather"):
+		push_error("Smoke test failed: armor slot visual did not refresh after equipping armor.")
+		quit(1)
+		return
 	if not hub_summary.text.contains("Leather Vest"):
 		push_error("Smoke test failed: hub summary did not refresh after equipping armor.")
 		quit(1)
 		return
 	home.call("_go_back")
 	await process_frame
-	if not bool(home.get_node("ScreenRoot/HeroSelectScreen").visible):
-		push_error("Smoke test failed: home UI manager back navigation did not return to hero select.")
-		quit(1)
-		return
-	home.call("_show_screen", "MainMenuScreen", false)
-	await process_frame
 	if not bool(home.get_node("ScreenRoot/MainMenuScreen").visible):
-		push_error("Smoke test failed: home UI manager did not return to main menu.")
+		push_error("Smoke test failed: gear Back did not return to the home hub.")
 		quit(1)
 		return
 	var home_preview_after_return := home.get_node_or_null("ScreenRoot/MainMenuScreen/Layout/Root/MainContent/CenterHero/Margin/HeroStage/GameplayHeroPreview/PreviewViewport/PreviewWorld/Player") as Node3D
@@ -203,21 +280,28 @@ func _run() -> void:
 		push_error("Smoke test failed: home hero preview was not restored after returning to main menu.")
 		quit(1)
 		return
+	if str(home_preview_after_return.get_meta("model_path", "")) != "res://assets/KayKit_Adventurers_2.0_FREE/KayKit_Adventurers_2.0_FREE/Characters/gltf/Knight.glb":
+		push_error("Smoke test failed: home hero preview did not use the selected knight model path.")
+		quit(1)
+		return
+	if not _assert_weapon_visual(home_preview_after_return, "home hero preview after return"):
+		quit(1)
+		return
 	if home.call("_get_ui_node", "ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/KnightCard/Margin/VBox/Portrait/GameplayHeroPreview/PreviewViewport/PreviewWorld/Player") != null:
 		push_error("Smoke test failed: hidden hero select preview stayed loaded after returning home.")
 		quit(1)
 		return
-	home.queue_free()
+	home.call("_on_play_pressed")
 	await process_frame
-
-	var game_scene := load(GAME_SCENE) as PackedScene
-	if game_scene == null:
-		push_error("Smoke test failed: game scene did not load.")
+	await process_frame
+	await process_frame
+	var game := root.get_node_or_null("GameRoot")
+	if game == null:
+		game = current_scene
+	if game == null or game.name != "GameRoot":
+		push_error("Smoke test failed: Home Start did not load gameplay.")
 		quit(1)
 		return
-
-	var game := game_scene.instantiate()
-	root.add_child(game)
 	await process_frame
 	await process_frame
 	await process_frame
@@ -315,6 +399,9 @@ func _run() -> void:
 		return
 	var pet_companion := game.get_node_or_null("PetCompanion") as PetCompanion
 	if pet_companion != null:
+		if not _assert_visible_model(pet_companion, "gameplay pet companion"):
+			quit(1)
+			return
 		pet_companion.attack_range = 3.0
 		pet_companion.global_position = player.global_position
 		for enemy in enemy_container.get_children():
@@ -350,10 +437,21 @@ func _run() -> void:
 		push_error("Smoke test failed: player hero animation player is not running.")
 		quit(1)
 		return
-	player.call("_play_character_animation", "Jog_Fwd", 1.25)
-	var player_running_animation := player_animation.get_animation("Jog_Fwd")
+	if str(player.get_meta("model_path", "")).is_empty():
+		push_error("Smoke test failed: gameplay player did not record resolved model_path metadata.")
+		quit(1)
+		return
+	if not _assert_full_hero_model(player, "gameplay player"):
+		quit(1)
+		return
+	if not _assert_weapon_visual(player, "gameplay player"):
+		quit(1)
+		return
+	var run_animation_name := str(player.run_animation_name)
+	player.call("_play_character_animation", run_animation_name, 1.25)
+	var player_running_animation := player_animation.get_animation(run_animation_name)
 	if player_running_animation == null or player_running_animation.loop_mode != Animation.LOOP_LINEAR:
-		push_error("Smoke test failed: player UAL1 jog animation is not configured to loop.")
+		push_error("Smoke test failed: player run animation is not configured to loop.")
 		quit(1)
 		return
 
@@ -379,6 +477,13 @@ func _run() -> void:
 
 	var spread_weapon: Dictionary = game_manager.get_weapon_definition("weapon_spread")
 	player.apply_weapon_definition(spread_weapon)
+	if str(player.get_meta("weapon_id", "")) != "weapon_spread" or not str(player.get_meta("weapon_model_path", "")).ends_with("/shotgun.glb"):
+		push_error("Smoke test failed: applying spread weapon did not update gameplay weapon metadata.")
+		quit(1)
+		return
+	if not _assert_weapon_visual(player, "gameplay player after weapon switch"):
+		quit(1)
+		return
 	var first_enemy_for_weapon := enemy_container.get_child(0) as Node3D
 	first_enemy_for_weapon.global_position = player.global_position + Vector3(0.0, 0.0, -5.0)
 	var projectile_count_before := projectile_container.get_child_count()
@@ -491,6 +596,98 @@ func _run() -> void:
 	print("Smoke test passed: home, gameplay, wave, upgrade, and game-over flow.")
 	quit(0)
 
+func _assert_full_hero_model(root_node: Node, context: String) -> bool:
+	var parts := {
+		"has_body": false,
+		"has_head": false,
+		"visible_mesh_count": 0,
+		"mesh_names": [],
+	}
+	_collect_full_hero_parts(root_node, parts)
+	var mesh_names: Array = parts["mesh_names"]
+	if int(parts["visible_mesh_count"]) == 0:
+		push_error("Smoke test failed: %s has no visible mesh nodes." % context)
+		return false
+	if not bool(parts["has_body"]):
+		push_error("Smoke test failed: %s is missing a visible body mesh. Visible meshes: %s" % [context, ", ".join(mesh_names)])
+		return false
+	if not bool(parts["has_head"]):
+		push_error("Smoke test failed: %s is missing a visible human head mesh. Visible meshes: %s" % [context, ", ".join(mesh_names)])
+		return false
+	return true
+
+func _assert_visible_model(root_node: Node, context: String) -> bool:
+	var parts := {
+		"has_body": false,
+		"has_head": false,
+		"visible_mesh_count": 0,
+		"mesh_names": [],
+	}
+	_collect_full_hero_parts(root_node, parts)
+	if int(parts["visible_mesh_count"]) == 0:
+		push_error("Smoke test failed: %s has no visible mesh nodes." % context)
+		return false
+	return true
+
+func _assert_weapon_visual(player_node: Node, context: String) -> bool:
+	var weapon_id := str(player_node.get_meta("weapon_id", ""))
+	var weapon_model_path := str(player_node.get_meta("weapon_model_path", ""))
+	if weapon_id.is_empty():
+		push_error("Smoke test failed: %s did not record weapon_id metadata." % context)
+		return false
+	if weapon_model_path.is_empty():
+		push_error("Smoke test failed: %s did not record weapon_model_path metadata." % context)
+		return false
+	var weapon_count := _count_weapon_visuals(player_node)
+	if weapon_count != 1:
+		push_error("Smoke test failed: %s has %d attached weapon visuals." % [context, weapon_count])
+		return false
+	var weapon_node := _find_weapon_visual(player_node)
+	if weapon_node == null:
+		push_error("Smoke test failed: %s weapon visual could not be found." % context)
+		return false
+	if str(weapon_node.get_meta("weapon_id", "")) != weapon_id:
+		push_error("Smoke test failed: %s weapon visual metadata does not match selected weapon." % context)
+		return false
+	if str(weapon_node.get_meta("model_path", "")) != weapon_model_path:
+		push_error("Smoke test failed: %s weapon visual model path does not match player metadata." % context)
+		return false
+	if not _assert_visible_model(weapon_node, "%s weapon visual" % context):
+		return false
+	return true
+
+func _collect_full_hero_parts(node: Node, parts: Dictionary) -> void:
+	if node is MeshInstance3D:
+		var mesh_instance := node as MeshInstance3D
+		if mesh_instance.is_visible_in_tree() and mesh_instance.mesh != null:
+			parts["visible_mesh_count"] = int(parts["visible_mesh_count"]) + 1
+			var mesh_name := mesh_instance.name.to_lower()
+			var mesh_names: Array = parts["mesh_names"]
+			mesh_names.append(mesh_instance.name)
+			if mesh_name.contains("body"):
+				parts["has_body"] = true
+			if mesh_name.contains("head"):
+				parts["has_head"] = true
+	for child in node.get_children():
+		_collect_full_hero_parts(child, parts)
+
+func _find_weapon_visual(root_node: Node) -> Node3D:
+	if root_node is Node3D and (root_node.name == "EquippedWeapon" or str(root_node.get_meta("model_kind", "")) == "weapon"):
+		return root_node as Node3D
+	for child in root_node.get_children():
+		var found := _find_weapon_visual(child)
+		if found != null:
+			return found
+	return null
+
+func _count_weapon_visuals(root_node: Node) -> int:
+	var count := 0
+	if root_node is Node3D and (root_node.name == "EquippedWeapon" or str(root_node.get_meta("model_kind", "")) == "weapon"):
+		count += 1
+	for child in root_node.get_children():
+		count += _count_weapon_visuals(child)
+	return count
+
 func _assert_home_hub_layout(home: Node) -> bool:
 	var viewport_size := home.get_viewport().get_visible_rect().size
 	var required_paths := [
@@ -567,6 +764,10 @@ func _assert_home_hub_layout(home: Node) -> bool:
 	if str(home_preview_player.get_meta("source_scene_path", "")) != "res://scenes/player/player.tscn":
 		push_error("Smoke test failed: home hero preview is not sourced from the gameplay player scene.")
 		return false
+	if not _assert_full_hero_model(home_preview_player, "home hero preview"):
+		return false
+	if not _assert_weapon_visual(home_preview_player, "home hero preview"):
+		return false
 	if home_preview_player.scale.x > 0.7 or abs(home_preview_player.rotation_degrees.y) > 0.5:
 		push_error("Smoke test failed: home hero preview is not using the compact front-facing transform.")
 		return false
@@ -586,7 +787,6 @@ func _assert_hero_carousel_layout(home: Node) -> bool:
 		"ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards",
 		"ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/CarouselLeftButton",
 		"ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/KnightCard",
-		"ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/KnightCard/Margin/VBox/Portrait/GameplayHeroPreview",
 		"ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/RogueCard",
 		"ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/MageCard",
 		"ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/CarouselRightButton",
@@ -621,12 +821,31 @@ func _assert_hero_carousel_layout(home: Node) -> bool:
 	if content.get_global_rect().end.y > footer.get_global_rect().position.y + 0.5:
 		push_error("Smoke test failed: hero select carousel content overlaps confirm footer.")
 		return false
-	var selected_preview_player := home.call("_get_ui_node", "ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/KnightCard/Margin/VBox/Portrait/GameplayHeroPreview/PreviewViewport/PreviewWorld/Player") as Node3D
+	var home_state: Variant = home.get("_home_state")
+	var selected_hero_id := "hero_knight"
+	if home_state != null:
+		selected_hero_id = str(home_state.selected_hero_id)
+	var hero_preview_paths := {
+		"hero_knight": "ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/KnightCard/Margin/VBox/Portrait/GameplayHeroPreview/PreviewViewport/PreviewWorld/Player",
+		"hero_rogue": "ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/RogueCard/Margin/VBox/Portrait/GameplayHeroPreview/PreviewViewport/PreviewWorld/Player",
+		"hero_mage": "ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/MageCard/Margin/VBox/Portrait/GameplayHeroPreview/PreviewViewport/PreviewWorld/Player",
+	}
+	var selected_preview_player := home.call("_get_ui_node", str(hero_preview_paths.get(selected_hero_id, hero_preview_paths["hero_knight"]))) as Node3D
 	if selected_preview_player == null:
 		push_error("Smoke test failed: selected hero card did not spawn the gameplay player scene.")
 		return false
+	if str(selected_preview_player.get_meta("hero_id", "")) != selected_hero_id:
+		push_error("Smoke test failed: selected hero preview metadata does not match focused hero.")
+		return false
 	if str(selected_preview_player.get_meta("source_scene_path", "")) != "res://scenes/player/player.tscn":
 		push_error("Smoke test failed: hero select preview is not sourced from the gameplay player scene.")
+		return false
+	if str(selected_preview_player.get_meta("model_path", "")).is_empty():
+		push_error("Smoke test failed: hero select preview did not record resolved model_path metadata.")
+		return false
+	if not _assert_full_hero_model(selected_preview_player, "hero select preview"):
+		return false
+	if not _assert_weapon_visual(selected_preview_player, "hero select preview"):
 		return false
 	if selected_preview_player.scale.x > 0.7 or abs(selected_preview_player.rotation_degrees.y) > 0.5:
 		push_error("Smoke test failed: hero select preview is not using the compact front-facing transform.")
@@ -635,12 +854,12 @@ func _assert_hero_carousel_layout(home: Node) -> bool:
 	if selected_preview_animation == null or not selected_preview_animation.is_playing():
 		push_error("Smoke test failed: selected hero preview animation is not running.")
 		return false
-	if home.call("_get_ui_node", "ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/RogueCard/Margin/VBox/Portrait/GameplayHeroPreview/PreviewViewport/PreviewWorld/Player") != null:
-		push_error("Smoke test failed: non-centered rogue card spawned a duplicate gameplay preview.")
-		return false
-	if home.call("_get_ui_node", "ScreenRoot/HeroSelectScreen/Layout/Root/Content/HeroCards/MageCard/Margin/VBox/Portrait/GameplayHeroPreview/PreviewViewport/PreviewWorld/Player") != null:
-		push_error("Smoke test failed: non-centered mage card spawned a duplicate gameplay preview.")
-		return false
+	for hero_id in hero_preview_paths.keys():
+		if str(hero_id) == selected_hero_id:
+			continue
+		if home.call("_get_ui_node", str(hero_preview_paths[hero_id])) != null:
+			push_error("Smoke test failed: non-centered %s card spawned a duplicate gameplay preview." % hero_id)
+			return false
 	return true
 
 func _assert_pet_carousel_layout(home: Node) -> bool:
@@ -686,6 +905,87 @@ func _assert_pet_carousel_layout(home: Node) -> bool:
 		return false
 	if content.get_global_rect().end.y > footer.get_global_rect().position.y + 0.5:
 		push_error("Smoke test failed: pet select carousel content overlaps confirm footer.")
+		return false
+	var home_state: Variant = home.get("_home_state")
+	var selected_pet_id := "pet_drone"
+	if home_state != null:
+		selected_pet_id = str(home_state.selected_pet_id)
+	var pet_preview_paths := {
+		"pet_drone": "ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards/DroneCard/Margin/VBox/PortraitLabel/GameplayHeroPreview/PreviewViewport/PreviewWorld/PetCompanion",
+		"pet_sprite": "ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards/SpriteCard/Margin/VBox/PortraitLabel/GameplayHeroPreview/PreviewViewport/PreviewWorld/PetCompanion",
+		"pet_wisp": "ScreenRoot/PetSelectScreen/Layout/Root/Content/PetCards/WispCard/Margin/VBox/PortraitLabel/GameplayHeroPreview/PreviewViewport/PreviewWorld/PetCompanion",
+	}
+	var selected_pet_preview := home.call("_get_ui_node", str(pet_preview_paths.get(selected_pet_id, pet_preview_paths["pet_drone"]))) as Node3D
+	if selected_pet_preview == null:
+		push_error("Smoke test failed: selected pet card did not spawn the gameplay pet scene.")
+		return false
+	if str(selected_pet_preview.get_meta("model_path", "")).is_empty():
+		push_error("Smoke test failed: pet select preview did not record resolved model_path metadata.")
+		return false
+	if not _assert_visible_model(selected_pet_preview, "pet select preview"):
+		return false
+	return true
+
+func _assert_equipment_layout(home: Node) -> bool:
+	var viewport_size := home.get_viewport().get_visible_rect().size
+	var required_paths := [
+		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Header",
+		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Header/BackButton",
+		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Header/Title",
+		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content",
+		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns",
+		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/WeaponSlot/Margin/VBox/SlotButton",
+		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/ArmorSlot/Margin/VBox/SlotButton",
+		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/HelmetSlot/Margin/VBox/SlotButton",
+		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/BootsSlot/Margin/VBox/SlotButton",
+		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/CharacterPanel/GameplayHeroPreview",
+		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/PetSlot/Margin/VBox/SlotButton",
+		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/AccessorySlot/Margin/VBox/SlotButton",
+		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/LoadoutCard",
+		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/InventoryButton",
+		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/UnequipButton",
+		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/UpgradeButton",
+		"ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/CategoryBar",
+	]
+	for path in required_paths:
+		var control := home.call("_get_ui_node", path) as Control
+		if control == null:
+			push_error("Smoke test failed: required equipment node is missing: %s" % path)
+			return false
+		if not control.is_visible_in_tree():
+			push_error("Smoke test failed: required equipment node is hidden: %s" % path)
+			return false
+		var rect := control.get_global_rect()
+		if rect.size.x <= 0.0 or rect.size.y <= 0.0:
+			push_error("Smoke test failed: required equipment node has no layout size: %s" % path)
+			return false
+		if rect.position.y < -0.5 or rect.end.y > viewport_size.y + 0.5:
+			push_error("Smoke test failed: required equipment node is clipped vertically: %s" % path)
+			return false
+		if rect.position.x < -0.5 or rect.end.x > viewport_size.x + 0.5:
+			push_error("Smoke test failed: required equipment node is clipped horizontally: %s" % path)
+			return false
+	var columns := home.call("_get_ui_node", "ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns") as GridContainer
+	var character_panel := home.call("_get_ui_node", "ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/CharacterPanel") as Control
+	if columns == null or columns.columns != 3:
+		push_error("Smoke test failed: equipment screen is not using a three-column landscape layout.")
+		return false
+	if character_panel == null or character_panel.get_index() != 1:
+		push_error("Smoke test failed: equipment hero is not centered between gear columns.")
+		return false
+	var preview_player := home.call("_get_ui_node", "ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/CharacterPanel/GameplayHeroPreview/PreviewViewport/PreviewWorld/Player") as Node3D
+	if preview_player == null:
+		push_error("Smoke test failed: equipment hero preview did not spawn gameplay player.")
+		return false
+	if str(preview_player.get_meta("source_scene_path", "")) != "res://scenes/player/player.tscn":
+		push_error("Smoke test failed: equipment hero preview is not sourced from gameplay player scene.")
+		return false
+	if str(preview_player.get_meta("model_path", "")).is_empty():
+		push_error("Smoke test failed: equipment hero preview did not record resolved model_path metadata.")
+		return false
+	if not _assert_full_hero_model(preview_player, "equipment hero preview"):
+		return false
+	if not _assert_weapon_visual(preview_player, "equipment hero preview"):
 		return false
 	return true
 

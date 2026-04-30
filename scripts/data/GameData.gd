@@ -15,6 +15,7 @@ const DEFAULT_PET_ID := "pet_drone"
 const FALLBACK_HEROES := {
     "hero_knight": {
         "display_name": "Knight",
+        "model_scene_path": "res://assets/KayKit_Adventurers_2.0_FREE/KayKit_Adventurers_2.0_FREE/Characters/gltf/Knight.glb",
         "max_hp_bonus": 4,
         "move_speed_bonus": 0.0,
         "projectile_damage_bonus": 1,
@@ -37,12 +38,18 @@ const FALLBACK_WEAPONS := {
         "implemented": true,
         "icon": "",
         "projectile_scene": "res://scenes/effects/projectile.tscn",
+        "model_scene_path": "res://assets/Styloo Guns Asset Pack GLTF FBX V1.1/Styloo Guns Asset Pack GLTF FBX V1.1/Normal version Color and NormalMap/GLB/pew.glb",
+        "attachment_bone": "handslot.r",
+        "attachment_position": [0.0, 0.0, 0.0],
+        "attachment_rotation_degrees": [0.0, 90.0, 0.0],
+        "attachment_scale": [0.18, 0.18, 0.18],
     },
 }
 
 const FALLBACK_PETS := {
     "pet_drone": {
         "display_name": "Drone",
+        "model_scene_path": "res://scenes/entities/pet_companion.tscn",
         "damage": 1,
         "attack_interval": 1.2,
     },
@@ -111,6 +118,33 @@ func get_weapon_definition(weapon_id: String) -> Dictionary:
 
 func get_pet_definition(pet_id: String) -> Dictionary:
     return pets.get(pet_id, pets[DEFAULT_PET_ID]).duplicate(true)
+
+func resolve_hero_model_scene(hero_id: String) -> PackedScene:
+    var definition := _get_model_definition(heroes, DEFAULT_HERO_ID, hero_id, "Hero")
+    var model_path := str(definition.get("model_scene_path", ""))
+    return _resolve_model_scene("Hero", hero_id, model_path, str(FALLBACK_HEROES[DEFAULT_HERO_ID]["model_scene_path"]))
+
+func resolve_pet_model_scene(pet_id: String) -> PackedScene:
+    var definition := _get_model_definition(pets, DEFAULT_PET_ID, pet_id, "Pet")
+    var model_path := str(definition.get("model_scene_path", ""))
+    return _resolve_model_scene("Pet", pet_id, model_path, str(FALLBACK_PETS[DEFAULT_PET_ID]["model_scene_path"]))
+
+func resolve_weapon_model_scene(weapon_id: String) -> PackedScene:
+    var definition := _get_model_definition(weapons, DEFAULT_WEAPON_ID, weapon_id, "Weapon")
+    var model_path := str(definition.get("model_scene_path", ""))
+    return _resolve_model_scene("Weapon", weapon_id, model_path, str(FALLBACK_WEAPONS[DEFAULT_WEAPON_ID]["model_scene_path"]))
+
+func resolve_hero_model_path(hero_id: String) -> String:
+    var definition := _get_model_definition(heroes, DEFAULT_HERO_ID, hero_id, "Hero")
+    return _resolve_model_path("Hero", hero_id, str(definition.get("model_scene_path", "")), str(FALLBACK_HEROES[DEFAULT_HERO_ID]["model_scene_path"]))
+
+func resolve_pet_model_path(pet_id: String) -> String:
+    var definition := _get_model_definition(pets, DEFAULT_PET_ID, pet_id, "Pet")
+    return _resolve_model_path("Pet", pet_id, str(definition.get("model_scene_path", "")), str(FALLBACK_PETS[DEFAULT_PET_ID]["model_scene_path"]))
+
+func resolve_weapon_model_path(weapon_id: String) -> String:
+    var definition := _get_model_definition(weapons, DEFAULT_WEAPON_ID, weapon_id, "Weapon")
+    return _resolve_model_path("Weapon", weapon_id, str(definition.get("model_scene_path", "")), str(FALLBACK_WEAPONS[DEFAULT_WEAPON_ID]["model_scene_path"]))
 
 func get_permanent_upgrade_definition(upgrade_id: String) -> Dictionary:
     return permanent_upgrades.get(upgrade_id, {}).duplicate(true)
@@ -190,7 +224,9 @@ func _validate_heroes() -> void:
             continue
 
         var hero: Dictionary = heroes[hero_id_variant]
+        hero["id"] = hero_id
         _ensure_string_field(hero, "display_name", str(defaults.get("display_name", _display_name_from_id(hero_id))), "heroes.json", hero_id)
+        _ensure_model_scene_path(hero, "heroes.json", hero_id, str(defaults.get("model_scene_path", FALLBACK_HEROES[DEFAULT_HERO_ID]["model_scene_path"])))
         _ensure_number_field(hero, "max_hp_bonus", defaults.get("max_hp_bonus", 0), "heroes.json", hero_id)
         _ensure_number_field(hero, "move_speed_bonus", defaults.get("move_speed_bonus", 0.0), "heroes.json", hero_id)
         _ensure_number_field(hero, "projectile_damage_bonus", defaults.get("projectile_damage_bonus", 0), "heroes.json", hero_id)
@@ -214,6 +250,11 @@ func _validate_weapons() -> void:
         _ensure_number_field(weapon, "spread_angle", defaults.get("spread_angle", 0.0), "weapons.json", weapon_id)
         _ensure_number_field(weapon, "projectile_speed", defaults.get("projectile_speed", 14.0), "weapons.json", weapon_id)
         _ensure_number_field(weapon, "range", defaults.get("range", 20.0), "weapons.json", weapon_id)
+        _ensure_model_scene_path(weapon, "weapons.json", weapon_id, str(defaults.get("model_scene_path", FALLBACK_WEAPONS[DEFAULT_WEAPON_ID]["model_scene_path"])))
+        _ensure_string_field(weapon, "attachment_bone", str(defaults.get("attachment_bone", "handslot.r")), "weapons.json", weapon_id)
+        _ensure_vector3_array_field(weapon, "attachment_position", defaults.get("attachment_position", [0.0, 0.0, 0.0]), "weapons.json", weapon_id)
+        _ensure_vector3_array_field(weapon, "attachment_rotation_degrees", defaults.get("attachment_rotation_degrees", [0.0, 90.0, 0.0]), "weapons.json", weapon_id)
+        _ensure_vector3_array_field(weapon, "attachment_scale", defaults.get("attachment_scale", [0.18, 0.18, 0.18]), "weapons.json", weapon_id)
 
         if int(weapon.get("projectile_count", 1)) < 1:
             _warn("weapons.json entry \"%s\" invalid projectile_count; using 1." % weapon_id)
@@ -236,7 +277,9 @@ func _validate_pets() -> void:
             continue
 
         var pet: Dictionary = pets[pet_id_variant]
+        pet["id"] = pet_id
         _ensure_string_field(pet, "display_name", str(defaults.get("display_name", _display_name_from_id(pet_id))), "pets.json", pet_id)
+        _ensure_model_scene_path(pet, "pets.json", pet_id, str(defaults.get("model_scene_path", FALLBACK_PETS[DEFAULT_PET_ID]["model_scene_path"])))
         _ensure_number_field(pet, "damage", defaults.get("damage", 1), "pets.json", pet_id)
         _ensure_number_field(pet, "attack_interval", defaults.get("attack_interval", 1.0), "pets.json", pet_id)
         if float(pet.get("attack_interval", 1.0)) <= 0.0:
@@ -334,6 +377,23 @@ func _ensure_number_field(entry: Dictionary, key: String, default_value: Variant
     _warn("%s entry \"%s\" %s %s; using default." % [file_name, entry_id, _field_issue(entry, key), key])
     entry[key] = default_value
 
+func _ensure_model_scene_path(entry: Dictionary, file_name: String, entry_id: String, default_value: String) -> void:
+    if entry.has("model_scene_path") and typeof(entry.get("model_scene_path")) == TYPE_STRING:
+        var model_path := str(entry.get("model_scene_path")).strip_edges()
+        if not model_path.is_empty() and ResourceLoader.exists(model_path):
+            entry["model_scene_path"] = model_path
+            return
+    var reason := "missing" if not entry.has("model_scene_path") else "invalid"
+    _warn("%s entry \"%s\" has %s model_scene_path; explicitly using fallback %s." % [file_name, entry_id, reason, default_value])
+    entry["model_scene_path"] = default_value
+
+func _ensure_vector3_array_field(entry: Dictionary, key: String, default_value: Variant, file_name: String, entry_id: String) -> void:
+    if entry.has(key) and typeof(entry.get(key)) == TYPE_ARRAY and (entry.get(key) as Array).size() >= 3:
+        return
+
+    _warn("%s entry \"%s\" %s %s; using default." % [file_name, entry_id, _field_issue(entry, key), key])
+    entry[key] = default_value
+
 func _has_required_string(entry: Dictionary, key: String) -> bool:
     return entry.has(key) and typeof(entry.get(key)) == TYPE_STRING and not str(entry.get(key)).strip_edges().is_empty()
 
@@ -352,6 +412,7 @@ func _get_dictionary_default(fallback: Dictionary, entry_id: String, safe_defaul
 func _default_hero_entry(hero_id: String) -> Dictionary:
     return {
         "display_name": _display_name_from_id(hero_id),
+        "model_scene_path": str(FALLBACK_HEROES[DEFAULT_HERO_ID]["model_scene_path"]),
         "max_hp_bonus": 0,
         "move_speed_bonus": 0.0,
         "projectile_damage_bonus": 0,
@@ -367,11 +428,17 @@ func _default_weapon_entry(weapon_id: String) -> Dictionary:
         "spread_angle": 0.0,
         "projectile_speed": 14.0,
         "range": 20.0,
+        "model_scene_path": str(FALLBACK_WEAPONS[DEFAULT_WEAPON_ID]["model_scene_path"]),
+        "attachment_bone": "handslot.r",
+        "attachment_position": [0.0, 0.0, 0.0],
+        "attachment_rotation_degrees": [0.0, 90.0, 0.0],
+        "attachment_scale": [0.18, 0.18, 0.18],
     }
 
 func _default_pet_entry(pet_id: String) -> Dictionary:
     return {
         "display_name": _display_name_from_id(pet_id),
+        "model_scene_path": str(FALLBACK_PETS[DEFAULT_PET_ID]["model_scene_path"]),
         "damage": 1,
         "attack_interval": 1.0,
     }
@@ -396,3 +463,39 @@ func _display_name_from_id(entry_id: String) -> String:
 
 func _warn(message: String) -> void:
     push_warning("GameData warning: %s" % message)
+
+func _get_model_definition(collection: Dictionary, default_id: String, requested_id: String, model_type: String) -> Dictionary:
+    if collection.has(requested_id):
+        return collection[requested_id].duplicate(true)
+    _warn("%s %s is not defined; resolving with explicit fallback id %s." % [model_type, requested_id, default_id])
+    return collection[default_id].duplicate(true)
+
+func _resolve_model_scene(model_type: String, requested_id: String, model_path: String, fallback_path: String) -> PackedScene:
+    var resolved_path := _resolve_model_path(model_type, requested_id, model_path, fallback_path)
+    var scene := load(resolved_path) as PackedScene
+    if scene == null:
+        _warn("%s %s resolved model %s could not load." % [model_type, requested_id, resolved_path])
+    return scene
+
+func _resolve_model_path(model_type: String, requested_id: String, model_path: String, fallback_path: String) -> String:
+    var resolved_path := model_path.strip_edges()
+    var used_fallback := false
+    var fallback_reason := ""
+    if resolved_path.is_empty():
+        resolved_path = fallback_path
+        used_fallback = true
+        fallback_reason = "missing model_scene_path"
+    elif not ResourceLoader.exists(resolved_path):
+        fallback_reason = "missing resource %s" % resolved_path
+        resolved_path = fallback_path
+        used_fallback = true
+    print("%s model resolve: requested_id=%s resolved_model_path=%s fallback_used=%s%s" % [
+        model_type,
+        requested_id,
+        resolved_path,
+        str(used_fallback),
+        " reason=%s" % fallback_reason if used_fallback else "",
+    ])
+    if used_fallback:
+        _warn("%s %s using fallback model %s because %s." % [model_type, requested_id, resolved_path, fallback_reason])
+    return resolved_path

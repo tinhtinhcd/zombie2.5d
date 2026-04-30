@@ -702,9 +702,9 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/margin_left = 24
-theme_override_constants/margin_top = 24
+theme_override_constants/margin_top = 18
 theme_override_constants/margin_right = 24
-theme_override_constants/margin_bottom = 24
+theme_override_constants/margin_bottom = 18
 
 [node name="Root" type="VBoxContainer" parent="ScreenRoot/HeroSelectScreen/Layout"]
 layout_mode = 2
@@ -915,112 +915,177 @@ theme_override_constants/margin_bottom = 24
 
 [node name="Root" type="VBoxContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout"]
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 8
 
 [node name="Header" type="HBoxContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root"]
-custom_minimum_size = Vector2(0, 54)
+custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 8
 
 [node name="BackButton" type="Button" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Header"]
-custom_minimum_size = Vector2(0, 50)
+custom_minimum_size = Vector2(96, 40)
 layout_mode = 2
 text = "Back"
 
 [node name="Title" type="Label" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Header"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "03. EQUIPMENT"
+text = "GEAR"
+horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Subtitle" type="Label" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Header"]
-visible = false
+custom_minimum_size = Vector2(122, 0)
 layout_mode = 2
 autowrap_mode = 3
-text = "Select a slot, then equip matching gear from inventory."
+text = "PWR 12"
+horizontal_alignment = 2
+vertical_alignment = 1
 
 [node name="Content" type="VBoxContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root"]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 12
+theme_override_constants/separation = 6
 
 [node name="Columns" type="GridContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content"]
 layout_mode = 2
 size_flags_vertical = 3
-columns = 1
-theme_override_constants/h_separation = 16
-theme_override_constants/v_separation = 16
-theme_override_constants/separation = 16
+columns = 3
+theme_override_constants/h_separation = 6
+theme_override_constants/v_separation = 6
+theme_override_constants/separation = 6
 
 [node name="LeftColumn" type="GridContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 columns = 1
-theme_override_constants/h_separation = 12
-theme_override_constants/v_separation = 12
-theme_override_constants/separation = 12
+theme_override_constants/h_separation = 5
+theme_override_constants/v_separation = 5
+theme_override_constants/separation = 5
 
 [node name="WeaponSlot" type="PanelContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn"]
-custom_minimum_size = Vector2(0, 118)
+custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
 size_flags_horizontal = 3
 
 [node name="Margin" type="MarginContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/WeaponSlot"]
 layout_mode = 2
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 16
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 4
 
 [node name="VBox" type="VBoxContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/WeaponSlot/Margin"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 2
 
 [node name="TitleLabel" type="Label" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/WeaponSlot/Margin/VBox"]
 layout_mode = 2
 text = "Weapon"
 
 [node name="DescriptionLabel" type="Label" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/WeaponSlot/Margin/VBox"]
+visible = false
 layout_mode = 2
 text = "Basic Gun"
 
 [node name="SlotButton" type="Button" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/WeaponSlot/Margin/VBox"]
-custom_minimum_size = Vector2(0, 52)
+custom_minimum_size = Vector2(0, 42)
 layout_mode = 2
 text = "Use Basic Gun"
 
 [node name="ArmorSlot" type="PanelContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn"]
-custom_minimum_size = Vector2(0, 118)
+custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
 size_flags_horizontal = 3
 
 [node name="Margin" type="MarginContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/ArmorSlot"]
 layout_mode = 2
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 16
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 4
 
 [node name="VBox" type="VBoxContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/ArmorSlot/Margin"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 2
 
 [node name="TitleLabel" type="Label" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/ArmorSlot/Margin/VBox"]
 layout_mode = 2
 text = "Armor"
 
 [node name="DescriptionLabel" type="Label" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/ArmorSlot/Margin/VBox"]
+visible = false
 layout_mode = 2
 text = "Empty"
 
 [node name="SlotButton" type="Button" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/ArmorSlot/Margin/VBox"]
-custom_minimum_size = Vector2(0, 52)
+custom_minimum_size = Vector2(0, 42)
 layout_mode = 2
 text = "Coming Soon"
 
+[node name="HelmetSlot" type="PanelContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn"]
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Margin" type="MarginContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/HelmetSlot"]
+layout_mode = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 4
+
+[node name="VBox" type="VBoxContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/HelmetSlot/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="TitleLabel" type="Label" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/HelmetSlot/Margin/VBox"]
+layout_mode = 2
+text = "Helmet"
+
+[node name="DescriptionLabel" type="Label" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/HelmetSlot/Margin/VBox"]
+visible = false
+layout_mode = 2
+text = "Locked"
+
+[node name="SlotButton" type="Button" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/HelmetSlot/Margin/VBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+text = "HELM"
+
+[node name="BootsSlot" type="PanelContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn"]
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Margin" type="MarginContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/BootsSlot"]
+layout_mode = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 4
+
+[node name="VBox" type="VBoxContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/BootsSlot/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="TitleLabel" type="Label" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/BootsSlot/Margin/VBox"]
+layout_mode = 2
+text = "Boots"
+
+[node name="DescriptionLabel" type="Label" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/BootsSlot/Margin/VBox"]
+visible = false
+layout_mode = 2
+text = "Locked"
+
+[node name="SlotButton" type="Button" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/LeftColumn/BootsSlot/Margin/VBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+text = "BOOTS"
+
 [node name="CharacterPanel" type="PanelContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns"]
-custom_minimum_size = Vector2(0, 300)
+custom_minimum_size = Vector2(0, 280)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -1040,76 +1105,78 @@ stretch_mode = 5
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/separation = 10
+theme_override_constants/separation = 5
 
 [node name="PetSlot" type="PanelContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn"]
-custom_minimum_size = Vector2(0, 118)
+custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
 size_flags_horizontal = 3
 
 [node name="Margin" type="MarginContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/PetSlot"]
 layout_mode = 2
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 16
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 4
 
 [node name="VBox" type="VBoxContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/PetSlot/Margin"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 2
 
 [node name="TitleLabel" type="Label" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/PetSlot/Margin/VBox"]
 layout_mode = 2
-text = "Pet"
+text = "Pet Gear"
 
 [node name="DescriptionLabel" type="Label" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/PetSlot/Margin/VBox"]
+visible = false
 layout_mode = 2
 text = "Drone"
 
 [node name="SlotButton" type="Button" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/PetSlot/Margin/VBox"]
-custom_minimum_size = Vector2(0, 52)
+custom_minimum_size = Vector2(0, 42)
 layout_mode = 2
 text = "Choose Pet"
 
 [node name="AccessorySlot" type="PanelContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn"]
-custom_minimum_size = Vector2(0, 118)
+custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
 size_flags_horizontal = 3
 
 [node name="Margin" type="MarginContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/AccessorySlot"]
 layout_mode = 2
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 16
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 4
 
 [node name="VBox" type="VBoxContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/AccessorySlot/Margin"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 2
 
 [node name="TitleLabel" type="Label" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/AccessorySlot/Margin/VBox"]
 layout_mode = 2
 text = "Accessory"
 
 [node name="DescriptionLabel" type="Label" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/AccessorySlot/Margin/VBox"]
+visible = false
 layout_mode = 2
 text = "Empty"
 
 [node name="SlotButton" type="Button" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/AccessorySlot/Margin/VBox"]
-custom_minimum_size = Vector2(0, 52)
+custom_minimum_size = Vector2(0, 42)
 layout_mode = 2
 text = "Equip Accessory"
 
 [node name="LoadoutCard" type="PanelContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn"]
-custom_minimum_size = Vector2(0, 82)
+custom_minimum_size = Vector2(0, 118)
 layout_mode = 2
 
 [node name="Margin" type="MarginContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/LoadoutCard"]
 layout_mode = 2
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 16
+theme_override_constants/margin_left = 6
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 6
+theme_override_constants/margin_bottom = 5
 
 [node name="LoadoutSummary" type="Label" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn/LoadoutCard/Margin"]
 layout_mode = 2
@@ -1117,15 +1184,61 @@ autowrap_mode = 3
 text = "Selected loadout"
 
 [node name="InventoryButton" type="Button" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn"]
-custom_minimum_size = Vector2(0, 54)
+custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
-text = "Open Inventory"
+text = "Change"
 
 [node name="UnequipButton" type="Button" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn"]
-custom_minimum_size = Vector2(0, 54)
+custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 text = "Unequip"
 disabled = true
+
+[node name="UpgradeButton" type="Button" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/Columns/RightColumn"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+text = "Upgrade"
+disabled = true
+
+[node name="CategoryBar" type="PanelContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/CategoryBar"]
+layout_mode = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 2
+
+[node name="Buttons" type="HBoxContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/CategoryBar/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="WeaponFilterButton" type="Button" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/CategoryBar/Margin/Buttons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Weapon"
+
+[node name="ArmorFilterButton" type="Button" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/CategoryBar/Margin/Buttons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Armor"
+
+[node name="AccessoryFilterButton" type="Button" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/CategoryBar/Margin/Buttons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Accessory"
+
+[node name="PetFilterButton" type="Button" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/CategoryBar/Margin/Buttons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Pet"
+
+[node name="AllFilterButton" type="Button" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root/Content/CategoryBar/Margin/Buttons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "All"
 
 [node name="Footer" type="HBoxContainer" parent="ScreenRoot/EquipmentSelectScreen/Layout/Root"]
 visible = false

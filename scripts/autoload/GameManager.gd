@@ -268,13 +268,39 @@ func get_pet_ids() -> Array:
 func get_display_name(definition: Dictionary, fallback: String) -> String:
     return str(definition.get("display_name", fallback))
 
+func resolve_hero_model_scene(hero_id: String) -> PackedScene:
+    return _game_data.resolve_hero_model_scene(hero_id)
+
+func resolve_pet_model_scene(pet_id: String) -> PackedScene:
+    return _game_data.resolve_pet_model_scene(pet_id)
+
+func resolve_weapon_model_scene(weapon_id: String) -> PackedScene:
+    return _game_data.resolve_weapon_model_scene(weapon_id)
+
+func resolve_hero_model_path(hero_id: String) -> String:
+    return _game_data.resolve_hero_model_path(hero_id)
+
+func resolve_pet_model_path(pet_id: String) -> String:
+    return _game_data.resolve_pet_model_path(pet_id)
+
+func resolve_weapon_model_path(weapon_id: String) -> String:
+    return _game_data.resolve_weapon_model_path(weapon_id)
+
 func apply_selected_loadout(player: Player) -> void:
     if player == null:
         return
 
-    player.apply_weapon_definition(get_selected_weapon_definition())
-
     var hero_definition := get_selected_hero_definition()
+    var raw_model_path := str(hero_definition.get("model_scene_path", "")).strip_edges()
+    hero_definition["model_scene_path"] = resolve_hero_model_path(selected_hero_id)
+    hero_definition["model_fallback_used"] = raw_model_path != str(hero_definition["model_scene_path"])
+    player.apply_hero_definition(hero_definition)
+    var weapon_definition := get_selected_weapon_definition()
+    var raw_weapon_model_path := str(weapon_definition.get("model_scene_path", "")).strip_edges()
+    weapon_definition["model_scene_path"] = resolve_weapon_model_path(selected_weapon_id)
+    weapon_definition["model_fallback_used"] = raw_weapon_model_path != str(weapon_definition["model_scene_path"])
+    player.apply_weapon_definition(weapon_definition)
+
     var hp_bonus := int(hero_definition.get("max_hp_bonus", 0))
     if hp_bonus != 0:
         player.increase_max_hp(hp_bonus)
