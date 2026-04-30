@@ -121,7 +121,23 @@ Existing saves are preserved. Loading a save merges with defaults, keeps already
   /ui
 /docs                 Design docs
 /ai-tasks             Implementation task docs and schema notes
-/assets               KayKit/Kenney assets
+/assets               External art/audio assets, ignored by Git
+```
+
+## Asset Setup
+
+The project currently references external KayKit, Wenrexa, and character/animation assets under `/assets`. That folder is ignored by Git, so a fresh checkout needs those packs restored locally before Godot can load every scene without missing-resource errors.
+
+Referenced folders include:
+
+```text
+assets/KayKit_Adventurers_2.0_FREE
+assets/KayKit_Skeletons_1.1_FREE
+assets/KayKit_Forest_Nature_Pack_1.0_FREE
+assets/KayKit_DungeonRemastered_1.1_FREE
+assets/Modular Character Outfits - Fantasy[Standard]
+assets/Universal Animation Library[Standard]
+assets/wenrexa_ui_sci_fi_01
 ```
 
 ## Development Rules
@@ -134,8 +150,10 @@ Existing saves are preserved. Loading a save merges with defaults, keeps already
 
 ## Smoke Test
 
-Use the Godot console binary available on this machine:
+Use a Godot 4.5 console/headless binary and point it at this project:
 
 ```powershell
 & "C:\Users\tinht\Downloads\Godot_v4.5.1-stable_win64.exe\Godot_v4.5.1-stable_win64_console.exe" --headless --path "C:\Users\tinht\Godot2_5DScaffold" --script "res://scripts/test/smoke_test.gd"
 ```
+
+On macOS/Linux, use the same arguments with the local Godot binary path and this repository path.

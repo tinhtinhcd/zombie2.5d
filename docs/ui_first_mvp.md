@@ -173,12 +173,14 @@ Reusable popup:
 
 ## NOT required yet
 
-* Pet system logic
-* Inventory logic
-* Equipment system depth
-* Multiple heroes
-* Boss system
-* Meta progression
+* Deep pet progression
+* Real item drops and inventory storage
+* Armor/accessory gameplay effects
+* Hero unlock economy
+* Boss Rush mode
+* Shop/economy depth
+
+Lightweight runtime versions now exist for starter pet behavior, weapon selection, boss waves, missions, and saved progression. Keep those systems small until their dedicated expansion tasks.
 
 ---
 

@@ -20,11 +20,11 @@ This prevents:
 
 ---
 
-# ⚠️ 2. Core Rule
+# ⚠️ 2. Current Scope Rule
 
-> If it is not in MVP, it must NOT be implemented now.
+> Keep the current playable loop stable before expanding any system further.
 
-It can exist in UI, but not in logic.
+The project has moved past the first tiny MVP. Several formerly placeholder systems now have lightweight runtime behavior. They should stay simple unless a later task explicitly deepens them.
 
 ---
 
@@ -61,8 +61,8 @@ It can exist in UI, but not in logic.
 ## Combat
 
 * Auto shooting
-* Single projectile type
-* Basic damage
+* Projectile-based attacks
+* Weapon data can change damage, fire interval, range, speed, projectile count, and spread
 * Hero facing follows combat range:
 
   * face the nearest enemy only when that enemy is inside current weapon range
@@ -72,7 +72,7 @@ It can exist in UI, but not in logic.
 
 ## Enemy
 
-* One zombie type only
+* Simple enemy variants: normal, fast, tank, boss
 * Simple behavior:
 
   * move toward player
@@ -108,6 +108,8 @@ It can exist in UI, but not in logic.
 * +Damage
 * +Fire Rate
 * +Speed
+* +Max HP / restore HP
+* Projectile speed, range, and count
 
 ---
 
@@ -119,29 +121,46 @@ It can exist in UI, but not in logic.
 
 ---
 
+## Lightweight Runtime Systems
+
+These are real now, but intentionally shallow:
+
+* Weapon selection and weapon stats
+* Pet companion follow/attack behavior
+* Mission progress text
+* Boss wave support
+* Soft currency, starter unlocks, and permanent upgrade persistence
+* Mock inventory equip flow for armor/accessory presentation
+
+Do not turn these into deep systems unless a later task explicitly calls for it.
+
+---
+
 # 🧱 4. UI-ONLY (PLACEHOLDER SYSTEMS)
 
-These must exist in UI but have no real logic:
+These remain visible in UI but are not full gameplay systems:
 
 ## Hero System
 
 * Show hero list
-* Only 1 usable
-* Others locked / coming soon
+* Only starter hero is unlocked by default
+* Locked heroes can be previewed but cannot be confirmed until unlocked
 
 ---
 
 ## Weapon System
 
 * Show equipment slots
-* Only 1 weapon actually used
+* Starter weapon is unlocked by default
+* Additional weapon definitions exist, but unlock/economy depth is not complete
 
 ---
 
 ## Pet System
 
 * Show pet list
-* No real behavior
+* Starter pet is active
+* Locked pets can be previewed but cannot be confirmed until unlocked
 
 ---
 
@@ -149,25 +168,29 @@ These must exist in UI but have no real logic:
 
 * Show UI
 * Mock items only
+* Armor/accessory equip presentation does not yet apply gameplay stats
 
 ---
 
 ## Loot System (Advanced)
 
 * No real item drops
-* Only XP is real
+* XP is real
+* Scrap/currency rewards are lightweight progression hooks
 
 ---
 
 ## Boss System
 
-* No boss in MVP
+* Boss waves exist
+* Boss Rush mode and deeper boss mechanics remain placeholder
 
 ---
 
 ## Meta Progression
 
-* No persistent upgrades
+* Basic persistence exists for starter unlocks, currency, inventory, and permanent upgrade ranks
+* Shop/economy/unlock flow remains placeholder
 
 ---
 
@@ -187,8 +210,8 @@ Do NOT implement:
 * Pathfinding system
 * Skill trees
 * Crafting system
-* Economy/shop system
-* Save/load complexity
+* Full economy/shop system
+* Complex save migrations
 
 ---
 
@@ -250,16 +273,17 @@ Always choose:
 
 # 🎯 9. MVP Definition
 
-The MVP is complete when:
+The current playable vertical slice is complete when:
 
 * Player can move
 * Player auto shoots
-* Zombies spawn and chase
+* Enemies spawn and chase
 * Zombies die
 * XP is collected
 * Player levels up
 * Player dies
 * Game restarts
+* Basic hub/loadout/progression state remains stable
 
 ---
 
@@ -267,9 +291,9 @@ The MVP is complete when:
 
 Do NOT:
 
-* Add second weapon system
-* Add more enemy types
-* Add UI logic for non-MVP systems
+* Add a second weapon architecture
+* Expand enemy behavior into pathfinding or complex AI
+* Present placeholder systems as finished
 * Try to complete all features at once
 
 ---
