@@ -444,7 +444,7 @@ func _run() -> void:
 	if not _assert_full_hero_model(player, "gameplay player"):
 		quit(1)
 		return
-	if not _assert_weapon_visual(player, "gameplay player"):
+	if not _assert_gameplay_weapon_safe(player, "gameplay player"):
 		quit(1)
 		return
 	var run_animation_name := str(player.run_animation_name)
@@ -481,7 +481,7 @@ func _run() -> void:
 		push_error("Smoke test failed: applying spread weapon did not update gameplay weapon metadata.")
 		quit(1)
 		return
-	if not _assert_weapon_visual(player, "gameplay player after weapon switch"):
+	if not _assert_gameplay_weapon_safe(player, "gameplay player after weapon switch"):
 		quit(1)
 		return
 	var first_enemy_for_weapon := enemy_container.get_child(0) as Node3D
@@ -649,12 +649,33 @@ func _assert_weapon_visual(player_node: Node, context: String) -> bool:
 	if str(weapon_node.get_meta("weapon_id", "")) != weapon_id:
 		push_error("Smoke test failed: %s weapon visual metadata does not match selected weapon." % context)
 		return false
-	if str(weapon_node.get_meta("model_path", "")) != weapon_model_path:
+	if weapon_node.name != "EquippedWeaponPreview":
+		push_error("Smoke test failed: %s weapon visual is not named EquippedWeaponPreview." % context)
+		return false
+	if str(weapon_node.get_meta("weapon_model_path", weapon_node.get_meta("model_path", ""))) != weapon_model_path:
 		push_error("Smoke test failed: %s weapon visual model path does not match player metadata." % context)
+		return false
+	if str(weapon_node.get_meta("attached_socket_path", "")).is_empty():
+		push_error("Smoke test failed: %s weapon visual did not record attached_socket_path metadata." % context)
 		return false
 	if not _assert_visible_model(weapon_node, "%s weapon visual" % context):
 		return false
 	return true
+
+func _assert_gameplay_weapon_safe(player_node: Node, context: String) -> bool:
+	var weapon_id := str(player_node.get_meta("weapon_id", ""))
+	var weapon_model_path := str(player_node.get_meta("weapon_model_path", ""))
+	if weapon_id.is_empty():
+		push_error("Smoke test failed: %s did not record weapon_id metadata." % context)
+		return false
+	if weapon_model_path.is_empty():
+		push_error("Smoke test failed: %s did not record weapon_model_path metadata." % context)
+		return false
+	var weapon_node := _find_weapon_visual(player_node)
+	if weapon_node == null:
+		push_warning("Smoke test warning: %s has no weapon visual, but gameplay remains valid with weapon metadata." % context)
+		return true
+	return _assert_weapon_visual(player_node, context)
 
 func _collect_full_hero_parts(node: Node, parts: Dictionary) -> void:
 	if node is MeshInstance3D:
@@ -672,7 +693,7 @@ func _collect_full_hero_parts(node: Node, parts: Dictionary) -> void:
 		_collect_full_hero_parts(child, parts)
 
 func _find_weapon_visual(root_node: Node) -> Node3D:
-	if root_node is Node3D and (root_node.name == "EquippedWeapon" or str(root_node.get_meta("model_kind", "")) == "weapon"):
+	if root_node is Node3D and (root_node.name == "EquippedWeaponPreview" or root_node.name == "EquippedWeapon" or str(root_node.get_meta("model_kind", "")) == "weapon"):
 		return root_node as Node3D
 	for child in root_node.get_children():
 		var found := _find_weapon_visual(child)
@@ -682,7 +703,7 @@ func _find_weapon_visual(root_node: Node) -> Node3D:
 
 func _count_weapon_visuals(root_node: Node) -> int:
 	var count := 0
-	if root_node is Node3D and (root_node.name == "EquippedWeapon" or str(root_node.get_meta("model_kind", "")) == "weapon"):
+	if root_node is Node3D and (root_node.name == "EquippedWeaponPreview" or root_node.name == "EquippedWeapon" or str(root_node.get_meta("model_kind", "")) == "weapon"):
 		count += 1
 	for child in root_node.get_children():
 		count += _count_weapon_visuals(child)

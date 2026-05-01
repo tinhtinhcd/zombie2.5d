@@ -121,7 +121,11 @@ func _apply_ground_variation(ground: MeshInstance3D, seed: int) -> void:
 	color.r = clampf(color.r + noise, 0.0, 1.0)
 	color.g = clampf(color.g + noise, 0.0, 1.0)
 	color.b = clampf(color.b + noise, 0.0, 1.0)
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	material.albedo_color = color
+	material.emission_enabled = true
+	material.emission = color.darkened(0.55)
+	material.emission_energy_multiplier = 0.45
 	ground.material_override = material
 
 func _get_ground_material(ground: MeshInstance3D) -> StandardMaterial3D:
@@ -130,6 +134,7 @@ func _get_ground_material(ground: MeshInstance3D) -> StandardMaterial3D:
 		return active_material.duplicate() as StandardMaterial3D
 
 	var material := StandardMaterial3D.new()
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	material.roughness = 0.9
 	return material
 
@@ -148,7 +153,11 @@ func _rebuild_boundary() -> void:
 	add_child(_boundary_root)
 
 	var material := StandardMaterial3D.new()
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	material.albedo_color = _BOUNDARY_COLOR
+	material.emission_enabled = true
+	material.emission = _BOUNDARY_COLOR.darkened(0.35)
+	material.emission_energy_multiplier = 0.5
 	material.roughness = 0.8
 
 	var full_size := map_radius * 2.0 + boundary_thickness * 2.0

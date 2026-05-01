@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/levels/endless_map.gd" id="1_endless_map"]
 [ext_resource type="PackedScene" path="res://assets/KayKit_Forest_Nature_Pack_1.0_FREE/KayKit_Forest_Nature_Pack_1.0_FREE/Assets/gltf/Grass_1_A_Color1.gltf" id="1_grass_a"]
@@ -7,8 +7,19 @@
 [ext_resource type="PackedScene" path="res://assets/KayKit_DungeonRemastered_1.1_FREE/KayKit_DungeonRemastered_1.1_FREE/Assets/gltf/barrel_small.gltf" id="4_barrel"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ground"]
-albedo_color = Color(0.28, 0.36, 0.25, 1)
+shading_mode = 0
+albedo_color = Color(0.38, 0.52, 0.31, 1)
+emission_enabled = true
+emission = Color(0.12, 0.18, 0.08, 1)
+emission_energy_multiplier = 0.45
 roughness = 0.9
+
+[sub_resource type="Environment" id="Environment_gameplay"]
+background_mode = 1
+background_color = Color(0.07, 0.09, 0.1, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.58, 0.68, 0.58, 1)
+ambient_light_energy = 0.85
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_ground"]
 size = Vector2(28, 28)
@@ -48,6 +59,12 @@ position = Vector3(-3.5, 0, 5.25)
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 rotation = Vector3(-0.785398, -0.523599, 0)
-light_energy = 2.0
+light_energy = 3.0
+
+[node name="GameplayFillLight" type="OmniLight3D" parent="."]
+position = Vector3(0, 8, 0)
+light_energy = 1.8
+omni_range = 70.0
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_gameplay")

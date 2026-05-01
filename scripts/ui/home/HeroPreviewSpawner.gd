@@ -75,7 +75,7 @@ static func show_hero_preview(slot: Control, hero_id: String, hero_definition: D
 		_validate_full_hero_model(player, hero_id)
 
 	if not weapon_definition.is_empty() and player.has_method("apply_weapon_definition"):
-		player.call("apply_weapon_definition", weapon_definition)
+		player.call("apply_weapon_definition", weapon_definition, true, true)
 		player.set_meta("weapon_id", weapon_id)
 		player.set_meta("weapon_model_path", weapon_model_path)
 

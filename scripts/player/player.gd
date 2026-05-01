@@ -241,7 +241,7 @@ func restore_hp(amount: int) -> void:
     current_hp = min(current_hp + max(amount, 0), max_hp)
     hp_changed.emit(current_hp)
 
-func apply_weapon_definition(weapon_definition: Dictionary) -> void:
+func apply_weapon_definition(weapon_definition: Dictionary, attach_visual: bool = true, preview_mode: bool = false) -> void:
     current_weapon_id = str(weapon_definition.get("id", current_weapon_id))
     current_weapon_display_name = str(weapon_definition.get("display_name", weapon_definition.get("name", current_weapon_display_name)))
     fire_interval = float(weapon_definition.get("fire_rate", weapon_definition.get("fire_interval", fire_interval)))
@@ -251,7 +251,8 @@ func apply_weapon_definition(weapon_definition: Dictionary) -> void:
     spread_angle_degrees = max(float(weapon_definition.get("spread_angle", spread_angle_degrees)), 0.0)
     weapon_range = max(float(weapon_definition.get("range", weapon_range)), 1.0)
     enable_auto_fire = true
-    _attach_weapon_visual(weapon_definition)
+    if attach_visual:
+        _attach_weapon_visual(weapon_definition, preview_mode)
 
 func apply_hero_definition(hero_definition: Dictionary) -> void:
     var hero_id := str(hero_definition.get("id", ""))
@@ -270,15 +271,14 @@ func apply_hero_definition(hero_definition: Dictionary) -> void:
         push_warning("Player hero %s could not load model %s; keeping current visual model." % [hero_id, model_scene_path])
         return
 
-    var old_model := visual_root.get_node_or_null("HeroModel") as Node3D
-    if old_model != null:
-        visual_root.remove_child(old_model)
-        old_model.free()
-
     var new_model := model_scene.instantiate() as Node3D
     if new_model == null:
         push_warning("Player hero %s model %s did not instantiate as Node3D." % [hero_id, model_scene_path])
         return
+    var old_model := visual_root.get_node_or_null("HeroModel") as Node3D
+    if old_model != null:
+        visual_root.remove_child(old_model)
+        old_model.free()
     new_model.name = "HeroModel"
     new_model.set_meta("hero_id", hero_id)
     new_model.set_meta("model_path", model_scene_path)
@@ -295,82 +295,170 @@ func apply_hero_definition(hero_definition: Dictionary) -> void:
     set_meta("model_fallback_used", bool(hero_definition.get("model_fallback_used", false)))
     _setup_character_animation_player()
 
-func _attach_weapon_visual(weapon_definition: Dictionary) -> void:
+func _attach_weapon_visual(weapon_definition: Dictionary, preview_mode: bool = false) -> bool:
     var weapon_id := str(weapon_definition.get("id", current_weapon_id))
     var model_scene_path := str(weapon_definition.get("model_scene_path", "")).strip_edges()
+    var trace := {
+        "selected_hero_id": str(get_meta("hero_id", "")),
+        "selected_weapon_id": weapon_id,
+        "resolved_weapon_definition": JSON.stringify(weapon_definition),
+        "weapon_model_path": model_scene_path,
+        "weapon_scene_loaded": false,
+        "hero_instance_path": str(get_path()),
+        "found_weapon_socket_path": "",
+        "final_attached_weapon_node_path": "",
+    }
     if model_scene_path.is_empty():
         _remove_existing_weapon_visuals()
-        push_warning("Player weapon %s has no model_scene_path; no weapon visual attached." % weapon_id)
-        print("Weapon attach: selected_weapon_id=%s resolved_weapon_model_path= attached=false fallback_used=%s" % [weapon_id, str(bool(weapon_definition.get("model_fallback_used", false)))])
-        return
+        if not preview_mode:
+            push_warning("Player weapon %s has no model_scene_path; gameplay continues without weapon visual." % weapon_id)
+            _log_weapon_attach_trace(trace)
+            return false
+        push_warning("Player weapon %s has no model_scene_path; attaching visible preview placeholder for debug." % weapon_id)
+        var placeholder_socket := _get_or_create_visible_weapon_socket()
+        var placeholder_weapon := _create_placeholder_weapon_visual(weapon_id)
+        placeholder_socket.add_child(placeholder_weapon)
+        placeholder_weapon.position = Vector3.ZERO
+        placeholder_weapon.rotation_degrees = _dictionary_vector3(weapon_definition, "attachment_rotation_degrees", Vector3(0.0, 90.0, 0.0))
+        placeholder_weapon.scale = _nonzero_vector3(_dictionary_vector3(weapon_definition, "attachment_scale", Vector3(0.18, 0.18, 0.18)), Vector3(0.18, 0.18, 0.18))
+        placeholder_weapon.set_meta("weapon_model_path", "")
+        placeholder_weapon.set_meta("attached_socket_path", str(placeholder_socket.get_path()))
+        _configure_weapon_preview_node(placeholder_weapon)
+        _ensure_weapon_visible(placeholder_weapon)
+        _current_weapon_model_path = ""
+        set_meta("weapon_id", weapon_id)
+        set_meta("weapon_model_path", "")
+        trace["found_weapon_socket_path"] = str(placeholder_socket.get_path())
+        trace["final_attached_weapon_node_path"] = str(placeholder_weapon.get_path())
+        _log_weapon_attach_trace(trace)
+        _assert_attached_weapon_visible(placeholder_weapon, weapon_id)
+        return true
 
     var existing_weapon := _find_existing_weapon_visual()
-    if existing_weapon != null and str(existing_weapon.get_meta("weapon_id", "")) == weapon_id and str(existing_weapon.get_meta("model_path", "")) == model_scene_path:
+    if existing_weapon != null and str(existing_weapon.get_meta("weapon_id", "")) == weapon_id and str(existing_weapon.get_meta("weapon_model_path", existing_weapon.get_meta("model_path", ""))) == model_scene_path:
         set_meta("weapon_id", weapon_id)
         set_meta("weapon_model_path", model_scene_path)
-        print("Weapon attach: selected_weapon_id=%s resolved_weapon_model_path=%s attached=true fallback_used=%s" % [weapon_id, model_scene_path, str(bool(weapon_definition.get("model_fallback_used", false)))])
-        return
+        trace["weapon_scene_loaded"] = true
+        trace["found_weapon_socket_path"] = str(existing_weapon.get_meta("attached_socket_path", ""))
+        trace["final_attached_weapon_node_path"] = str(existing_weapon.get_path())
+        _log_weapon_attach_trace(trace)
+        _assert_attached_weapon_visible(existing_weapon, weapon_id)
+        return true
 
     _remove_existing_weapon_visuals()
     var weapon_scene := load(model_scene_path) as PackedScene
+    trace["weapon_scene_loaded"] = weapon_scene != null
     if weapon_scene == null:
-        push_warning("Player weapon %s could not load model %s; no weapon visual attached." % [weapon_id, model_scene_path])
-        print("Weapon attach: selected_weapon_id=%s resolved_weapon_model_path=%s attached=false fallback_used=%s" % [weapon_id, model_scene_path, str(bool(weapon_definition.get("model_fallback_used", false)))])
-        return
+        if not preview_mode:
+            push_warning("Player weapon %s could not load model %s; gameplay continues without weapon visual." % [weapon_id, model_scene_path])
+            _current_weapon_model_path = ""
+            set_meta("weapon_id", weapon_id)
+            set_meta("weapon_model_path", model_scene_path)
+            _log_weapon_attach_trace(trace)
+            return false
+        push_warning("Player weapon %s could not load model %s; attaching visible preview placeholder for debug." % [weapon_id, model_scene_path])
+        var missing_socket := _get_or_create_visible_weapon_socket()
+        var missing_weapon := _create_placeholder_weapon_visual(weapon_id)
+        missing_socket.add_child(missing_weapon)
+        missing_weapon.position = Vector3.ZERO
+        missing_weapon.rotation_degrees = _dictionary_vector3(weapon_definition, "attachment_rotation_degrees", Vector3(0.0, 90.0, 0.0))
+        missing_weapon.scale = _nonzero_vector3(_dictionary_vector3(weapon_definition, "attachment_scale", Vector3(0.18, 0.18, 0.18)), Vector3(0.18, 0.18, 0.18))
+        missing_weapon.set_meta("weapon_model_path", model_scene_path)
+        missing_weapon.set_meta("attached_socket_path", str(missing_socket.get_path()))
+        _configure_weapon_preview_node(missing_weapon)
+        _ensure_weapon_visible(missing_weapon)
+        _current_weapon_model_path = model_scene_path
+        set_meta("weapon_id", weapon_id)
+        set_meta("weapon_model_path", model_scene_path)
+        trace["found_weapon_socket_path"] = str(missing_socket.get_path())
+        trace["final_attached_weapon_node_path"] = str(missing_weapon.get_path())
+        _log_weapon_attach_trace(trace)
+        _assert_attached_weapon_visible(missing_weapon, weapon_id)
+        return true
 
     var weapon_model := weapon_scene.instantiate() as Node3D
     if weapon_model == null:
-        push_warning("Player weapon %s model %s did not instantiate as Node3D." % [weapon_id, model_scene_path])
-        print("Weapon attach: selected_weapon_id=%s resolved_weapon_model_path=%s attached=false fallback_used=%s" % [weapon_id, model_scene_path, str(bool(weapon_definition.get("model_fallback_used", false)))])
-        return
+        if not preview_mode:
+            push_warning("Player weapon %s model %s did not instantiate as Node3D; gameplay continues without weapon visual." % [weapon_id, model_scene_path])
+            _current_weapon_model_path = ""
+            set_meta("weapon_id", weapon_id)
+            set_meta("weapon_model_path", model_scene_path)
+            _log_weapon_attach_trace(trace)
+            return false
+        push_warning("Player weapon %s model %s did not instantiate as Node3D; attaching visible preview placeholder for debug." % [weapon_id, model_scene_path])
+        weapon_model = _create_placeholder_weapon_visual(weapon_id)
 
-    weapon_model.name = "EquippedWeapon"
+    weapon_model.name = "EquippedWeaponPreview"
     weapon_model.set_meta("model_kind", "weapon")
     weapon_model.set_meta("weapon_id", weapon_id)
     weapon_model.set_meta("model_path", model_scene_path)
+    weapon_model.set_meta("weapon_model_path", model_scene_path)
     weapon_model.set_meta("source_scene_path", model_scene_path)
 
     var attachment_bone := str(weapon_definition.get("attachment_bone", "handslot.r")).strip_edges()
-    var attachment_parent := _get_or_create_weapon_attachment_parent(attachment_bone)
-    var used_attachment_fallback := false
+    var attachment_result := _get_or_create_weapon_attachment_parent(attachment_bone)
+    var attachment_parent := attachment_result.get("node", null) as Node3D
     if attachment_parent == null:
-        used_attachment_fallback = true
-        attachment_parent = visual_root if visual_root != null else self
-        push_warning("Player weapon %s could not find attachment '%s'; using root fallback." % [weapon_id, attachment_bone])
+        if not preview_mode:
+            push_warning("Player weapon %s could not find attachment '%s'; gameplay continues without weapon visual." % [weapon_id, attachment_bone])
+            weapon_model.free()
+            _current_weapon_model_path = ""
+            set_meta("weapon_id", weapon_id)
+            set_meta("weapon_model_path", model_scene_path)
+            _log_weapon_attach_trace(trace)
+            return false
+        attachment_parent = _get_or_create_visible_weapon_socket()
+        attachment_result["path"] = str(attachment_parent.get_path())
+        attachment_result["fallback"] = true
+        push_warning("Player weapon %s could not find attachment '%s'; using visible preview WeaponSocket debug marker." % [weapon_id, attachment_bone])
 
     attachment_parent.add_child(weapon_model)
+    var used_attachment_fallback := bool(attachment_result.get("fallback", false))
     weapon_model.position = _dictionary_vector3(weapon_definition, "attachment_position", Vector3.ZERO)
-    if used_attachment_fallback and weapon_model.position.is_zero_approx():
-        weapon_model.position = weapon_attachment_fallback_offset
+    if used_attachment_fallback:
+        weapon_model.position = Vector3.ZERO
     weapon_model.rotation_degrees = _dictionary_vector3(weapon_definition, "attachment_rotation_degrees", Vector3(0.0, 90.0, 0.0))
-    weapon_model.scale = _dictionary_vector3(weapon_definition, "attachment_scale", Vector3(0.18, 0.18, 0.18))
+    weapon_model.scale = _nonzero_vector3(_dictionary_vector3(weapon_definition, "attachment_scale", Vector3(0.18, 0.18, 0.18)), Vector3(0.18, 0.18, 0.18))
+    weapon_model.visible = true
+    weapon_model.set_meta("attached_socket_path", str(attachment_result.get("path", attachment_parent.get_path())))
     _configure_weapon_preview_node(weapon_model)
+    _ensure_weapon_visible(weapon_model)
 
     _current_weapon_model_path = model_scene_path
     set_meta("weapon_id", weapon_id)
     set_meta("weapon_model_path", model_scene_path)
-    print("Weapon attach: selected_weapon_id=%s resolved_weapon_model_path=%s attached=true fallback_used=%s attachment=%s" % [
-        weapon_id,
-        model_scene_path,
-        str(bool(weapon_definition.get("model_fallback_used", false))),
-        attachment_parent.name,
-    ])
+    trace["found_weapon_socket_path"] = str(attachment_result.get("path", attachment_parent.get_path()))
+    trace["final_attached_weapon_node_path"] = str(weapon_model.get_path())
+    _log_weapon_attach_trace(trace)
+    _assert_attached_weapon_visible(weapon_model, weapon_id)
+    return true
 
-func _get_or_create_weapon_attachment_parent(attachment_bone: String) -> Node3D:
+func attach_gameplay_weapon_visual(weapon_definition: Dictionary) -> bool:
+    return _attach_weapon_visual(weapon_definition, false)
+
+func attach_preview_weapon_visual(weapon_definition: Dictionary) -> bool:
+    return _attach_weapon_visual(weapon_definition, true)
+
+func _get_or_create_weapon_attachment_parent(attachment_bone: String) -> Dictionary:
     var candidates: Array[String] = []
     if not attachment_bone.is_empty():
         candidates.append(attachment_bone)
-    candidates.append_array(["weapon_socket", "WeaponSocket", "handslot.r", "hand.r", "Hand.R", "right_hand", "RightHand"])
+    candidates.append_array(["WeaponSocket", "RightHandSocket", "weapon_socket", "handslot.r", "hand.r", "Hand.R", "hand_r", "Hand_R", "right_hand", "RightHand"])
 
     var search_root := character_root if character_root != null else visual_root
     if search_root != null:
         for candidate in candidates:
             var socket := _find_node3d_by_name(search_root, candidate)
             if socket != null:
-                return socket
+                return {"node": socket, "path": str(socket.get_path()), "fallback": false}
 
     var skeleton := _find_skeleton(search_root)
     if skeleton != null:
+        var matched_bone := _find_matching_bone_name(skeleton, candidates)
+        if not matched_bone.is_empty():
+            var bone_candidates: Array[String] = [matched_bone]
+            bone_candidates.append_array(candidates)
+            candidates = bone_candidates
         for candidate in candidates:
             var bone_index := skeleton.find_bone(candidate)
             if bone_index >= 0:
@@ -380,8 +468,39 @@ func _get_or_create_weapon_attachment_parent(attachment_bone: String) -> Node3D:
                     attachment.name = "EquippedWeaponAttachment"
                     skeleton.add_child(attachment)
                 attachment.bone_name = candidate
-                return attachment
-    return null
+                return {"node": attachment, "path": "%s:%s" % [str(attachment.get_path()), candidate], "fallback": false}
+    return {"node": null, "path": "", "fallback": false}
+
+func _get_or_create_visible_weapon_socket() -> Node3D:
+    var parent := visual_root if visual_root != null else self
+    var socket := parent.get_node_or_null("WeaponSocket") as Node3D
+    if socket == null:
+        socket = Marker3D.new()
+        socket.name = "WeaponSocket"
+        parent.add_child(socket)
+    socket.position = weapon_attachment_fallback_offset
+    socket.rotation_degrees = Vector3.ZERO
+    socket.scale = Vector3.ONE
+    socket.visible = true
+    return socket
+
+func _find_matching_bone_name(skeleton: Skeleton3D, candidates: Array[String]) -> String:
+    for candidate in candidates:
+        var normalized_candidate := _normalize_attachment_name(candidate)
+        for bone_index in range(skeleton.get_bone_count()):
+            var bone_name := skeleton.get_bone_name(bone_index)
+            if _normalize_attachment_name(bone_name) == normalized_candidate:
+                return bone_name
+    for bone_index in range(skeleton.get_bone_count()):
+        var lower_bone := skeleton.get_bone_name(bone_index).to_lower()
+        if lower_bone.contains("right") and lower_bone.contains("hand"):
+            return skeleton.get_bone_name(bone_index)
+        if lower_bone.contains("hand") and (lower_bone.ends_with("_r") or lower_bone.ends_with(".r") or lower_bone.ends_with(" r")):
+            return skeleton.get_bone_name(bone_index)
+    return ""
+
+func _normalize_attachment_name(value: String) -> String:
+    return value.to_lower().replace("_", "").replace(".", "").replace(" ", "").replace("-", "")
 
 func _find_node3d_by_name(root: Node, node_name: String) -> Node3D:
     if root is Node3D and root.name == node_name:
@@ -407,7 +526,7 @@ func _find_existing_weapon_visual() -> Node3D:
     return _find_weapon_visual(self)
 
 func _find_weapon_visual(root: Node) -> Node3D:
-    if root is Node3D and (root.name == "EquippedWeapon" or str(root.get_meta("model_kind", "")) == "weapon"):
+    if root is Node3D and (root.name == "EquippedWeaponPreview" or root.name == "EquippedWeapon" or str(root.get_meta("model_kind", "")) == "weapon"):
         return root as Node3D
     for child in root.get_children():
         var found := _find_weapon_visual(child)
@@ -431,6 +550,83 @@ func _configure_weapon_preview_node(node: Node) -> void:
         node.set_process_input(false)
     for child in node.get_children():
         _configure_weapon_preview_node(child)
+
+func _create_placeholder_weapon_visual(weapon_id: String) -> Node3D:
+    var root := Node3D.new()
+    root.name = "EquippedWeaponPreview"
+    root.set_meta("model_kind", "weapon")
+    root.set_meta("weapon_id", weapon_id)
+    root.set_meta("model_path", "")
+    root.set_meta("source_scene_path", "placeholder://weapon")
+    var mesh_instance := MeshInstance3D.new()
+    mesh_instance.name = "VisibleWeaponPlaceholder"
+    var box := BoxMesh.new()
+    box.size = Vector3(0.16, 0.12, 0.75)
+    mesh_instance.mesh = box
+    mesh_instance.position = Vector3(0.0, 0.0, -0.25)
+    var material := StandardMaterial3D.new()
+    material.albedo_color = Color(0.95, 0.75, 0.2, 1.0)
+    material.metallic = 0.25
+    material.roughness = 0.45
+    mesh_instance.material_override = material
+    root.add_child(mesh_instance)
+    return root
+
+func _ensure_weapon_visible(node: Node) -> int:
+    var visible_mesh_count := 0
+    if node is Node3D:
+        var node3d := node as Node3D
+        node3d.visible = true
+        node3d.scale = _nonzero_vector3(node3d.scale, Vector3.ONE)
+    if node is MeshInstance3D:
+        var mesh_instance := node as MeshInstance3D
+        mesh_instance.visible = true
+        if mesh_instance.mesh != null:
+            visible_mesh_count += 1
+    for child in node.get_children():
+        visible_mesh_count += _ensure_weapon_visible(child)
+    return visible_mesh_count
+
+func _nonzero_vector3(value: Vector3, fallback: Vector3) -> Vector3:
+    if is_zero_approx(value.x) or is_zero_approx(value.y) or is_zero_approx(value.z):
+        return fallback
+    return value
+
+func _assert_attached_weapon_visible(weapon_node: Node3D, weapon_id: String) -> void:
+    if weapon_node == null:
+        push_warning("Weapon attach assertion failed: EquippedWeaponPreview node is missing for %s." % weapon_id)
+        return
+    if weapon_node.name != "EquippedWeaponPreview":
+        push_warning("Weapon attach assertion failed: attached weapon is named %s, expected EquippedWeaponPreview." % weapon_node.name)
+    if str(weapon_node.get_meta("weapon_id", "")) != weapon_id:
+        push_warning("Weapon attach assertion failed: weapon metadata mismatch for %s." % weapon_id)
+    var visible_mesh_count := _count_visible_weapon_meshes(weapon_node)
+    if visible_mesh_count == 0:
+        push_warning("Weapon attach assertion failed: EquippedWeaponPreview for %s has no visible MeshInstance3D children." % weapon_id)
+    else:
+        print("Weapon attach assertion passed: weapon_id=%s visible_mesh_count=%d node=%s" % [weapon_id, visible_mesh_count, str(weapon_node.get_path())])
+
+func _count_visible_weapon_meshes(node: Node) -> int:
+    var count := 0
+    if node is MeshInstance3D:
+        var mesh_instance := node as MeshInstance3D
+        if mesh_instance.visible and mesh_instance.mesh != null:
+            count += 1
+    for child in node.get_children():
+        count += _count_visible_weapon_meshes(child)
+    return count
+
+func _log_weapon_attach_trace(trace: Dictionary) -> void:
+    print("Weapon attach debug: selected_hero_id=%s selected_weapon_id=%s weapon_model_path=%s scene_loaded=%s hero_instance_path=%s socket_path=%s attached_weapon_path=%s resolved_weapon_definition=%s" % [
+        str(trace.get("selected_hero_id", "")),
+        str(trace.get("selected_weapon_id", "")),
+        str(trace.get("weapon_model_path", "")),
+        str(trace.get("weapon_scene_loaded", false)),
+        str(trace.get("hero_instance_path", "")),
+        str(trace.get("found_weapon_socket_path", "")),
+        str(trace.get("final_attached_weapon_node_path", "")),
+        str(trace.get("resolved_weapon_definition", "")),
+    ])
 
 func _dictionary_vector3(source: Dictionary, key: String, fallback: Vector3) -> Vector3:
     var value: Variant = source.get(key, fallback)

@@ -277,6 +277,9 @@ func resolve_pet_model_scene(pet_id: String) -> PackedScene:
 func resolve_weapon_model_scene(weapon_id: String) -> PackedScene:
     return _game_data.resolve_weapon_model_scene(weapon_id)
 
+func resolve_weapon_scene(weapon_id: String) -> PackedScene:
+    return _game_data.resolve_weapon_scene(weapon_id)
+
 func resolve_hero_model_path(hero_id: String) -> String:
     return _game_data.resolve_hero_model_path(hero_id)
 
@@ -288,18 +291,38 @@ func resolve_weapon_model_path(weapon_id: String) -> String:
 
 func apply_selected_loadout(player: Player) -> void:
     if player == null:
+        push_warning("Gameplay start trace: player spawn result=false; selected loadout was not applied.")
         return
 
+    _validate_selected_loadout()
+    print("Gameplay start trace: selected_level_id=%s selected_hero_id=%s selected_weapon_id=%s" % [
+        String(current_level_id),
+        selected_hero_id,
+        selected_weapon_id,
+    ])
     var hero_definition := get_selected_hero_definition()
     var raw_model_path := str(hero_definition.get("model_scene_path", "")).strip_edges()
     hero_definition["model_scene_path"] = resolve_hero_model_path(selected_hero_id)
     hero_definition["model_fallback_used"] = raw_model_path != str(hero_definition["model_scene_path"])
+    print("Gameplay start trace: resolved_hero_scene_path=%s hero_fallback_used=%s" % [
+        str(hero_definition.get("model_scene_path", "")),
+        str(bool(hero_definition.get("model_fallback_used", false))),
+    ])
     player.apply_hero_definition(hero_definition)
     var weapon_definition := get_selected_weapon_definition()
     var raw_weapon_model_path := str(weapon_definition.get("model_scene_path", "")).strip_edges()
     weapon_definition["model_scene_path"] = resolve_weapon_model_path(selected_weapon_id)
     weapon_definition["model_fallback_used"] = raw_weapon_model_path != str(weapon_definition["model_scene_path"])
-    player.apply_weapon_definition(weapon_definition)
+    print("Gameplay start trace: resolved_weapon_scene_path=%s weapon_fallback_used=%s" % [
+        str(weapon_definition.get("model_scene_path", "")),
+        str(bool(weapon_definition.get("model_fallback_used", false))),
+    ])
+    player.apply_weapon_definition(weapon_definition, false, false)
+    var weapon_attached := player.attach_gameplay_weapon_visual(weapon_definition)
+    print("Gameplay start trace: player_spawn_result=true weapon_attach_result=%s player_path=%s" % [
+        str(weapon_attached),
+        str(player.get_path()),
+    ])
 
     var hp_bonus := int(hero_definition.get("max_hp_bonus", 0))
     if hp_bonus != 0:

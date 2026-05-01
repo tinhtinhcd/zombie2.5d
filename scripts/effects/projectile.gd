@@ -37,18 +37,22 @@ func setup(move_direction: Vector3, travel_distance: float = -1.0) -> void:
         return
     direction = move_direction.normalized()
 
-func deactivate() -> void:
+func deactivate(defer_collision_update: bool = false) -> void:
     visible = false
-    monitoring = false
-    monitorable = false
+    if defer_collision_update:
+        set_deferred("monitoring", false)
+        set_deferred("monitorable", false)
+    else:
+        monitoring = false
+        monitorable = false
     set_physics_process(false)
 
-func recycle() -> void:
+func recycle(defer_collision_update: bool = false) -> void:
     if _is_recycling:
         return
 
     _is_recycling = true
-    deactivate()
+    deactivate(defer_collision_update)
     if recycle_requested.get_connections().is_empty():
         queue_free()
         return
@@ -73,4 +77,4 @@ func _on_body_entered(body: Node) -> void:
 
     _has_hit = true
     body.take_damage(damage)
-    recycle()
+    recycle(true)

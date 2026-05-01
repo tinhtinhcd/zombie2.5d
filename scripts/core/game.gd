@@ -17,10 +17,12 @@ func _ready() -> void:
     # reset_game() clears session state; apply_permanent_upgrades() layers
     # in any persistent progression the player has earned across runs.
     game_manager.reset_game()
+    _trace_gameplay_scene_state("after_reset_before_loadout")
     game_manager.apply_selected_loadout(player)
     game_manager.apply_permanent_upgrades(player)
     _spawn_selected_pet_companion()
     _apply_map_radius_from_player()
+    _trace_gameplay_scene_state("after_loadout")
     if pet_companion != null:
         pet_companion.apply_pet_definition(game_manager.get_selected_pet_definition())
     pause_menu.visible = false
@@ -53,10 +55,32 @@ func _is_pause_event(event: InputEvent) -> bool:
     return false
 
 func _apply_map_radius_from_player() -> void:
-    var endless_map := $LevelContainer as EndlessMap
+    var endless_map := get_node_or_null("LevelContainer") as EndlessMap
     if endless_map == null or player == null:
+        push_warning("Gameplay start trace: map radius apply skipped; map_node=%s player_node=%s" % [str(endless_map), str(player)])
         return
     endless_map.map_radius = player.play_area_radius
+    print("Gameplay start trace: map radius applied=%s level_container_path=%s" % [str(endless_map.map_radius), str(endless_map.get_path())])
+
+func _trace_gameplay_scene_state(stage: String) -> void:
+    var level_container := get_node_or_null("LevelContainer")
+    var level_path := "res://scenes/levels/level_container.tscn"
+    var selected_level_id := String(game_manager.current_level_id) if game_manager != null else ""
+    var hero_id := game_manager.selected_hero_id if game_manager != null else ""
+    var weapon_id := game_manager.selected_weapon_id if game_manager != null else ""
+    print("Gameplay start trace: stage=%s selected_level_id=%s resolved_map_scene_path=%s map_load_result=%s selected_hero_id=%s player_spawn_result=%s selected_weapon_id=%s" % [
+        stage,
+        selected_level_id,
+        level_path,
+        str(level_container != null),
+        hero_id,
+        str(player != null),
+        weapon_id,
+    ])
+    if level_container == null:
+        push_warning("Gameplay start trace: LevelContainer is missing from game scene; map cannot load.")
+    if player == null:
+        push_warning("Gameplay start trace: Player is missing from game scene; hero cannot spawn.")
 
 func _spawn_selected_pet_companion() -> void:
     if game_manager == null:

@@ -17,6 +17,7 @@ static func load_all_levels(levels_directory: String = LEVELS_DIRECTORY) -> Arra
     var levels: Array[LevelData] = []
     var directory := DirAccess.open(levels_directory)
     if directory == null:
+        push_warning("LevelLibrary trace: levels_directory_missing=%s; gameplay will use built-in map scene fallback." % levels_directory)
         _cached_levels_directory = levels_directory
         _cached_levels = levels
         _has_cached_levels = true
@@ -43,10 +44,14 @@ static func load_all_levels(levels_directory: String = LEVELS_DIRECTORY) -> Arra
         var level_data := load(resource_path) as LevelData
         if level_data != null:
             levels.append(level_data)
+            print("LevelLibrary trace: loaded_level_id=%s resource_path=%s" % [String(level_data.level_id), resource_path])
+        else:
+            push_warning("LevelLibrary trace: failed_to_load_level_resource=%s" % resource_path)
 
     _cached_levels_directory = levels_directory
     _cached_levels = levels
     _has_cached_levels = true
+    print("LevelLibrary trace: levels_loaded_count=%d directory=%s" % [levels.size(), levels_directory])
     return levels
 
 static func invalidate_cache() -> void:

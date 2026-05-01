@@ -134,6 +134,9 @@ func resolve_weapon_model_scene(weapon_id: String) -> PackedScene:
     var model_path := str(definition.get("model_scene_path", ""))
     return _resolve_model_scene("Weapon", weapon_id, model_path, str(FALLBACK_WEAPONS[DEFAULT_WEAPON_ID]["model_scene_path"]))
 
+func resolve_weapon_scene(weapon_id: String) -> PackedScene:
+    return resolve_weapon_model_scene(weapon_id)
+
 func resolve_hero_model_path(hero_id: String) -> String:
     var definition := _get_model_definition(heroes, DEFAULT_HERO_ID, hero_id, "Hero")
     return _resolve_model_path("Hero", hero_id, str(definition.get("model_scene_path", "")), str(FALLBACK_HEROES[DEFAULT_HERO_ID]["model_scene_path"]))
