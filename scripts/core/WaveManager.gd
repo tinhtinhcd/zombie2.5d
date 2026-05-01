@@ -56,13 +56,15 @@ func _process(_delta: float) -> void:
     if _enemy_container.get_child_count() > 0:
         return
 
-    # All waves done → advance to the next level.
+    # All waves done -> advance to the next level or finish the run.
     if _is_level_complete():
-        game_manager.advance_to_next_level()
+        game_manager.grant_wave_clear_reward(current_wave)
+        game_manager.complete_current_level()
         return
 
     # Offer an upgrade choice before starting the next wave.
     _waiting_for_upgrade_selection = true
+    game_manager.grant_wave_clear_reward(current_wave)
     game_manager.begin_upgrade_selection()
 
 func _recycle_far_enemies() -> void:

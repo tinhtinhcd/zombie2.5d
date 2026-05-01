@@ -5,6 +5,8 @@ class_name Player
 # Change `movement_plane_normal` to move on a different plane later.
 # Set `use_camera_relative_input` to false if you want fixed world-axis movement.
 
+const DEBUG_WEAPON_ATTACH_TRACE := false
+
 signal hp_changed(current_hp_value: int)
 signal died
 
@@ -314,7 +316,7 @@ func _attach_weapon_visual(weapon_definition: Dictionary, preview_mode: bool = f
             push_warning("Player weapon %s has no model_scene_path; gameplay continues without weapon visual." % weapon_id)
             _log_weapon_attach_trace(trace)
             return false
-        push_warning("Player weapon %s has no model_scene_path; attaching visible preview placeholder for debug." % weapon_id)
+        push_warning("Player weapon %s has no model_scene_path; attaching visible preview placeholder." % weapon_id)
         var placeholder_socket := _get_or_create_visible_weapon_socket()
         var placeholder_weapon := _create_placeholder_weapon_visual(weapon_id)
         placeholder_socket.add_child(placeholder_weapon)
@@ -356,7 +358,7 @@ func _attach_weapon_visual(weapon_definition: Dictionary, preview_mode: bool = f
             set_meta("weapon_model_path", model_scene_path)
             _log_weapon_attach_trace(trace)
             return false
-        push_warning("Player weapon %s could not load model %s; attaching visible preview placeholder for debug." % [weapon_id, model_scene_path])
+        push_warning("Player weapon %s could not load model %s; attaching visible preview placeholder." % [weapon_id, model_scene_path])
         var missing_socket := _get_or_create_visible_weapon_socket()
         var missing_weapon := _create_placeholder_weapon_visual(weapon_id)
         missing_socket.add_child(missing_weapon)
@@ -385,7 +387,7 @@ func _attach_weapon_visual(weapon_definition: Dictionary, preview_mode: bool = f
             set_meta("weapon_model_path", model_scene_path)
             _log_weapon_attach_trace(trace)
             return false
-        push_warning("Player weapon %s model %s did not instantiate as Node3D; attaching visible preview placeholder for debug." % [weapon_id, model_scene_path])
+        push_warning("Player weapon %s model %s did not instantiate as Node3D; attaching visible preview placeholder." % [weapon_id, model_scene_path])
         weapon_model = _create_placeholder_weapon_visual(weapon_id)
 
     weapon_model.name = "EquippedWeaponPreview"
@@ -410,7 +412,7 @@ func _attach_weapon_visual(weapon_definition: Dictionary, preview_mode: bool = f
         attachment_parent = _get_or_create_visible_weapon_socket()
         attachment_result["path"] = str(attachment_parent.get_path())
         attachment_result["fallback"] = true
-        push_warning("Player weapon %s could not find attachment '%s'; using visible preview WeaponSocket debug marker." % [weapon_id, attachment_bone])
+        push_warning("Player weapon %s could not find attachment '%s'; using visible preview WeaponSocket fallback." % [weapon_id, attachment_bone])
 
     attachment_parent.add_child(weapon_model)
     var used_attachment_fallback := bool(attachment_result.get("fallback", false))
@@ -603,7 +605,7 @@ func _assert_attached_weapon_visible(weapon_node: Node3D, weapon_id: String) -> 
     var visible_mesh_count := _count_visible_weapon_meshes(weapon_node)
     if visible_mesh_count == 0:
         push_warning("Weapon attach assertion failed: EquippedWeaponPreview for %s has no visible MeshInstance3D children." % weapon_id)
-    else:
+    elif DEBUG_WEAPON_ATTACH_TRACE:
         print("Weapon attach assertion passed: weapon_id=%s visible_mesh_count=%d node=%s" % [weapon_id, visible_mesh_count, str(weapon_node.get_path())])
 
 func _count_visible_weapon_meshes(node: Node) -> int:
@@ -617,6 +619,8 @@ func _count_visible_weapon_meshes(node: Node) -> int:
     return count
 
 func _log_weapon_attach_trace(trace: Dictionary) -> void:
+    if not DEBUG_WEAPON_ATTACH_TRACE:
+        return
     print("Weapon attach debug: selected_hero_id=%s selected_weapon_id=%s weapon_model_path=%s scene_loaded=%s hero_instance_path=%s socket_path=%s attached_weapon_path=%s resolved_weapon_definition=%s" % [
         str(trace.get("selected_hero_id", "")),
         str(trace.get("selected_weapon_id", "")),

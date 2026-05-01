@@ -5,6 +5,10 @@ class_name GameManager
 
 const GameDataScript := preload("res://scripts/data/GameData.gd")
 const PROGRESSION_SAVE_INTERVAL := 2.0
+const WAVE_CLEAR_CURRENCY_REWARD := 2
+const LEVEL_CLEAR_CURRENCY_REWARD := 10
+const BOSS_CLEAR_CURRENCY_REWARD := 15
+const DEBUG_GAMEPLAY_TRACE := false
 
 signal score_changed(new_score: int)
 signal xp_changed(new_xp: int)
@@ -12,6 +16,7 @@ signal level_changed(level_index: int, level_id: StringName, display_name: Strin
 signal wave_changed(new_wave: int)
 signal boss_wave_changed(is_boss_wave_now: bool)
 signal game_over_changed(is_game_over_now: bool)
+signal victory_changed(is_victory_now: bool)
 signal upgrade_options_requested(options: Array)
 signal upgrade_selection_closed
 signal upgrade_selected(upgrade_id: StringName)
@@ -37,6 +42,7 @@ var current_wave: int = 0
 var is_boss_wave: bool = false
 var is_paused: bool = false
 var is_game_over: bool = false
+var is_victory: bool = false
 var is_upgrade_selection_active: bool = false
 var is_gameplay_active: bool = true
 
@@ -91,6 +97,7 @@ func reset_game() -> void:
     is_boss_wave = false
     is_paused = false
     is_game_over = false
+    is_victory = false
     is_upgrade_selection_active = false
     load_level_by_index(1)
     _update_gameplay_active()
@@ -99,6 +106,7 @@ func reset_game() -> void:
     player_level_changed.emit(run_level, current_level_xp, xp_to_next_level)
     boss_wave_changed.emit(is_boss_wave)
     game_over_changed.emit(is_game_over)
+    victory_changed.emit(is_victory)
     boss_health_changed.emit(0, 0, false)
     _reset_missions()
     upgrade_selection_closed.emit()
@@ -161,7 +169,7 @@ func set_boss_wave(is_boss_wave_now: bool) -> void:
     boss_wave_changed.emit(is_boss_wave)
 
 func trigger_game_over() -> void:
-    if is_game_over:
+    if is_game_over or is_victory:
         return
     get_tree().paused = false
     is_paused = false
@@ -169,6 +177,21 @@ func trigger_game_over() -> void:
     _update_gameplay_active()
     game_over_changed.emit(is_game_over)
     flush_progression_save()
+
+func trigger_victory() -> void:
+    if is_game_over or is_victory:
+        return
+    get_tree().paused = false
+    is_paused = false
+    is_upgrade_selection_active = false
+    is_victory = true
+    _update_gameplay_active()
+    victory_changed.emit(is_victory)
+    flush_progression_save()
+
+    var scene_router := get_node_or_null("/root/SceneRouter") as SceneRouter
+    if scene_router != null:
+        scene_router.call_deferred("go_to_home")
 
 func restart_game() -> void:
     # Intentional roguelike loop: restart always begins a fresh run from
@@ -295,34 +318,38 @@ func apply_selected_loadout(player: Player) -> void:
         return
 
     _validate_selected_loadout()
-    print("Gameplay start trace: selected_level_id=%s selected_hero_id=%s selected_weapon_id=%s" % [
-        String(current_level_id),
-        selected_hero_id,
-        selected_weapon_id,
-    ])
+    if DEBUG_GAMEPLAY_TRACE:
+        print("Gameplay start trace: selected_level_id=%s selected_hero_id=%s selected_weapon_id=%s" % [
+            String(current_level_id),
+            selected_hero_id,
+            selected_weapon_id,
+        ])
     var hero_definition := get_selected_hero_definition()
     var raw_model_path := str(hero_definition.get("model_scene_path", "")).strip_edges()
     hero_definition["model_scene_path"] = resolve_hero_model_path(selected_hero_id)
     hero_definition["model_fallback_used"] = raw_model_path != str(hero_definition["model_scene_path"])
-    print("Gameplay start trace: resolved_hero_scene_path=%s hero_fallback_used=%s" % [
-        str(hero_definition.get("model_scene_path", "")),
-        str(bool(hero_definition.get("model_fallback_used", false))),
-    ])
+    if DEBUG_GAMEPLAY_TRACE:
+        print("Gameplay start trace: resolved_hero_scene_path=%s hero_fallback_used=%s" % [
+            str(hero_definition.get("model_scene_path", "")),
+            str(bool(hero_definition.get("model_fallback_used", false))),
+        ])
     player.apply_hero_definition(hero_definition)
     var weapon_definition := get_selected_weapon_definition()
     var raw_weapon_model_path := str(weapon_definition.get("model_scene_path", "")).strip_edges()
     weapon_definition["model_scene_path"] = resolve_weapon_model_path(selected_weapon_id)
     weapon_definition["model_fallback_used"] = raw_weapon_model_path != str(weapon_definition["model_scene_path"])
-    print("Gameplay start trace: resolved_weapon_scene_path=%s weapon_fallback_used=%s" % [
-        str(weapon_definition.get("model_scene_path", "")),
-        str(bool(weapon_definition.get("model_fallback_used", false))),
-    ])
+    if DEBUG_GAMEPLAY_TRACE:
+        print("Gameplay start trace: resolved_weapon_scene_path=%s weapon_fallback_used=%s" % [
+            str(weapon_definition.get("model_scene_path", "")),
+            str(bool(weapon_definition.get("model_fallback_used", false))),
+        ])
     player.apply_weapon_definition(weapon_definition, false, false)
     var weapon_attached := player.attach_gameplay_weapon_visual(weapon_definition)
-    print("Gameplay start trace: player_spawn_result=true weapon_attach_result=%s player_path=%s" % [
-        str(weapon_attached),
-        str(player.get_path()),
-    ])
+    if DEBUG_GAMEPLAY_TRACE:
+        print("Gameplay start trace: player_spawn_result=true weapon_attach_result=%s player_path=%s" % [
+            str(weapon_attached),
+            str(player.get_path()),
+        ])
 
     var hp_bonus := int(hero_definition.get("max_hp_bonus", 0))
     if hp_bonus != 0:
@@ -400,6 +427,28 @@ func advance_to_next_level() -> void:
         next_level = 1
     load_level_by_index(next_level)
 
+func complete_current_level() -> void:
+    if is_game_over or is_victory:
+        return
+
+    _ensure_levels_loaded()
+    var completed_level := current_level
+    _grant_level_clear_rewards()
+    unlock_level(completed_level + 1)
+    flush_progression_save()
+
+    if _is_final_level(completed_level):
+        trigger_victory()
+        return
+
+    load_level_by_index(completed_level + 1)
+
+func grant_wave_clear_reward(wave: int) -> void:
+    if is_game_over or is_victory:
+        return
+    var reward: int = max(WAVE_CLEAR_CURRENCY_REWARD + max(wave - 1, 0), 1)
+    add_currency(reward)
+
 func unlock_level(level_index: int) -> void:
     _ensure_levels_loaded()
     _ensure_progression_loaded()
@@ -416,7 +465,7 @@ func unlock_level(level_index: int) -> void:
     highest_unlocked_level_changed.emit(highest_unlocked_level)
 
 func begin_upgrade_selection() -> void:
-    if is_game_over:
+    if is_game_over or is_victory:
         return
     if is_upgrade_selection_active:
         return
@@ -436,7 +485,7 @@ func select_upgrade(player: Player, upgrade_id: StringName) -> void:
     upgrade_selected.emit(upgrade_id)
 
 func _update_gameplay_active() -> void:
-    is_gameplay_active = not is_paused and not is_game_over and not is_upgrade_selection_active
+    is_gameplay_active = not is_paused and not is_game_over and not is_victory and not is_upgrade_selection_active
 
 func _ensure_levels_loaded() -> void:
     if not _levels.is_empty():
@@ -494,7 +543,17 @@ func flush_progression_save() -> void:
     _progression_save_timer = 0.0
 
 func _get_progression_save_data() -> Dictionary:
+    var save_version := SaveManager.SAVE_VERSION
+    var settings: Dictionary = {}
+    var save_manager := get_node_or_null("/root/SaveManager") as SaveManager
+    if save_manager != null:
+        save_version = int(save_manager.last_saved_snapshot.get("version", save_version))
+        var settings_value: Variant = save_manager.last_saved_snapshot.get("settings", {})
+        if typeof(settings_value) == TYPE_DICTIONARY:
+            settings = (settings_value as Dictionary).duplicate(true)
+
     return {
+        "version": save_version,
         "highest_unlocked_level": highest_unlocked_level,
         "permanent_upgrades": permanent_upgrades,
         "soft_currency": soft_currency,
@@ -505,7 +564,18 @@ func _get_progression_save_data() -> Dictionary:
         "unlocked_weapons": unlocked_weapons,
         "unlocked_pets": unlocked_pets,
         "inventory": inventory,
+        "settings": settings,
     }
+
+func _grant_level_clear_rewards() -> void:
+    add_currency(max(LEVEL_CLEAR_CURRENCY_REWARD + current_level - 1, 1))
+    if is_boss_wave:
+        add_currency(BOSS_CLEAR_CURRENCY_REWARD)
+
+func _is_final_level(level_index: int) -> bool:
+    if _levels.is_empty():
+        return true
+    return level_index >= _levels.size()
 
 func _validate_selected_loadout() -> void:
     _ensure_unlocked_contains(unlocked_heroes, "hero_knight")

@@ -5,6 +5,7 @@ class_name LevelLibrary
 # Keep levels as `.tres` files so they stay editor-friendly as the project grows.
 
 const LEVELS_DIRECTORY := "res://data/levels"
+const DEBUG_LEVEL_TRACE := false
 
 static var _cached_levels_directory: String = ""
 static var _cached_levels: Array[LevelData] = []
@@ -44,14 +45,16 @@ static func load_all_levels(levels_directory: String = LEVELS_DIRECTORY) -> Arra
         var level_data := load(resource_path) as LevelData
         if level_data != null:
             levels.append(level_data)
-            print("LevelLibrary trace: loaded_level_id=%s resource_path=%s" % [String(level_data.level_id), resource_path])
+            if DEBUG_LEVEL_TRACE:
+                print("LevelLibrary trace: loaded_level_id=%s resource_path=%s" % [String(level_data.level_id), resource_path])
         else:
             push_warning("LevelLibrary trace: failed_to_load_level_resource=%s" % resource_path)
 
     _cached_levels_directory = levels_directory
     _cached_levels = levels
     _has_cached_levels = true
-    print("LevelLibrary trace: levels_loaded_count=%d directory=%s" % [levels.size(), levels_directory])
+    if DEBUG_LEVEL_TRACE:
+        print("LevelLibrary trace: levels_loaded_count=%d directory=%s" % [levels.size(), levels_directory])
     return levels
 
 static func invalidate_cache() -> void:

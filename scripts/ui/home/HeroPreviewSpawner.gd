@@ -16,6 +16,7 @@ const PREVIEW_PLAYER_ROTATION := Vector3(0.0, 0.0, 0.0)
 const PREVIEW_PET_SCALE := Vector3(1.85, 1.85, 1.85)
 const PREVIEW_PET_POSITION := Vector3(0.0, 0.18, 0.0)
 const PREVIEW_PET_ROTATION := Vector3(0.0, 0.0, 0.0)
+const DEBUG_PREVIEW_TRACE := false
 
 const WALK_FALLBACKS: Array[String] = [
 	"Jog_Fwd",
@@ -71,7 +72,8 @@ static func show_hero_preview(slot: Control, hero_id: String, hero_definition: D
 		player.set_meta("model_fallback_used", bool(hero_definition.get("model_fallback_used", false)))
 		_configure_player_node(player)
 		_warn_if_duplicate_preview_models(world_root)
-		print("Hero preview spawn: requested_id=%s resolved_model_path=%s fallback_used=%s" % [hero_id, str(player.get_meta("model_path", "")), str(player.get_meta("model_fallback_used", false))])
+		if DEBUG_PREVIEW_TRACE:
+			print("Hero preview spawn: requested_id=%s resolved_model_path=%s fallback_used=%s" % [hero_id, str(player.get_meta("model_path", "")), str(player.get_meta("model_fallback_used", false))])
 		_validate_full_hero_model(player, hero_id)
 
 	if not weapon_definition.is_empty() and player.has_method("apply_weapon_definition"):
@@ -122,7 +124,8 @@ static func show_pet_preview(slot: Control, pet_id: String, pet_definition: Dict
 		if pet.has_method("apply_pet_definition"):
 			pet.call("apply_pet_definition", pet_definition)
 		_warn_if_duplicate_preview_models(world_root)
-		print("Pet preview spawn: requested_id=%s resolved_model_path=%s fallback_used=%s" % [pet_id, model_path, str(pet.get_meta("model_fallback_used", false))])
+		if DEBUG_PREVIEW_TRACE:
+			print("Pet preview spawn: requested_id=%s resolved_model_path=%s fallback_used=%s" % [pet_id, model_path, str(pet.get_meta("model_fallback_used", false))])
 		_validate_visible_model(pet, "Pet preview '%s'" % pet_id)
 
 	_start_named_animation(pet, "Idle", 0.45, false)

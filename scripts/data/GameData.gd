@@ -7,6 +7,7 @@ const PETS_PATH := "res://data/pets.json"
 const UPGRADES_PATH := "res://data/upgrades.json"
 const MISSIONS_PATH := "res://data/missions.json"
 const PERMANENT_UPGRADES_PATH := "res://data/permanent_upgrades.json"
+const DEBUG_MODEL_TRACE := false
 
 const DEFAULT_HERO_ID := "hero_knight"
 const DEFAULT_WEAPON_ID := "weapon_basic"
@@ -492,13 +493,14 @@ func _resolve_model_path(model_type: String, requested_id: String, model_path: S
         fallback_reason = "missing resource %s" % resolved_path
         resolved_path = fallback_path
         used_fallback = true
-    print("%s model resolve: requested_id=%s resolved_model_path=%s fallback_used=%s%s" % [
-        model_type,
-        requested_id,
-        resolved_path,
-        str(used_fallback),
-        " reason=%s" % fallback_reason if used_fallback else "",
-    ])
+    if DEBUG_MODEL_TRACE:
+        print("%s model resolve: requested_id=%s resolved_model_path=%s fallback_used=%s%s" % [
+            model_type,
+            requested_id,
+            resolved_path,
+            str(used_fallback),
+            " reason=%s" % fallback_reason if used_fallback else "",
+        ])
     if used_fallback:
         _warn("%s %s using fallback model %s because %s." % [model_type, requested_id, resolved_path, fallback_reason])
     return resolved_path
