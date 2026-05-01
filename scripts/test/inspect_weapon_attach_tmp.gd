@@ -7,10 +7,13 @@ const HERO_PATHS := [
 ]
 const PLAYER_PATH := "res://scenes/player/player.tscn"
 
-func _init() -> void:
+func _initialize() -> void:
+	call_deferred("_run")
+
+func _run() -> void:
 	for hero_path in HERO_PATHS:
 		_inspect_hero(hero_path)
-	_inspect_player_attach()
+	await _inspect_player_attach()
 	quit()
 
 func _inspect_hero(hero_path: String) -> void:
@@ -64,7 +67,7 @@ func _inspect_player_attach() -> void:
 			"attachment_bone": "handslot.r",
 			"attachment_position": [0.08, 0.02, -0.18],
 			"attachment_rotation_degrees": [0.0, 90.0, -12.0],
-			"attachment_scale": [0.36, 0.36, 0.36],
+			"attachment_scale": [3.0, 3.0, 3.0],
 		}, true, false)
 	await process_frame
 	_print_weapon_nodes(player)

@@ -126,7 +126,7 @@ Existing saves are preserved. Loading a save merges with defaults, keeps already
 
 ## Asset Setup
 
-The project currently references external KayKit, Wenrexa, and character/animation assets under `/assets`. That folder is ignored by Git, so a fresh checkout needs those packs restored locally before Godot can load every scene without missing-resource errors.
+The project currently references external KayKit, Styloo, Wenrexa, and character/animation assets under `/assets`. That folder is ignored by Git, so a fresh checkout needs those packs restored locally before Godot can load every scene without missing-resource errors. Hero models and weapon models are separate assets; weapons are attached at runtime to the hero `handslot.r` bone.
 
 Referenced folders include:
 
@@ -136,6 +136,7 @@ assets/KayKit_Skeletons_1.1_FREE
 assets/KayKit_Forest_Nature_Pack_1.0_FREE
 assets/KayKit_DungeonRemastered_1.1_FREE
 assets/Modular Character Outfits - Fantasy[Standard]
+assets/Styloo Guns Asset Pack GLTF FBX V1.1
 assets/Universal Animation Library[Standard]
 assets/wenrexa_ui_sci_fi_01
 ```

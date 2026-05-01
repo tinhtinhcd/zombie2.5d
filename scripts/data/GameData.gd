@@ -43,7 +43,7 @@ const FALLBACK_WEAPONS := {
         "attachment_bone": "handslot.r",
         "attachment_position": [0.0, 0.0, 0.0],
         "attachment_rotation_degrees": [0.0, 90.0, 0.0],
-        "attachment_scale": [0.18, 0.18, 0.18],
+        "attachment_scale": [3.0, 3.0, 3.0],
     },
 }
 
@@ -436,7 +436,7 @@ func _default_weapon_entry(weapon_id: String) -> Dictionary:
         "attachment_bone": "handslot.r",
         "attachment_position": [0.0, 0.0, 0.0],
         "attachment_rotation_degrees": [0.0, 90.0, 0.0],
-        "attachment_scale": [0.18, 0.18, 0.18],
+        "attachment_scale": [3.0, 3.0, 3.0],
     }
 
 func _default_pet_entry(pet_id: String) -> Dictionary:

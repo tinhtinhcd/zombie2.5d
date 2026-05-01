@@ -18,7 +18,7 @@
     "attachment_bone": "handslot.r",
     "attachment_position": [0.08, 0.02, -0.18],
     "attachment_rotation_degrees": [0.0, 90.0, -12.0],
-    "attachment_scale": [0.36, 0.36, 0.36]
+    "attachment_scale": [3.0, 3.0, 3.0]
   },
   "weapon_spread": {
     "id": "weapon_spread",
@@ -39,7 +39,7 @@
     "attachment_bone": "handslot.r",
     "attachment_position": [0.08, 0.02, -0.22],
     "attachment_rotation_degrees": [0.0, 90.0, -12.0],
-    "attachment_scale": [0.38, 0.38, 0.38]
+    "attachment_scale": [0.8, 0.8, 0.8]
   },
   "weapon_rapid": {
     "id": "weapon_rapid",
@@ -60,7 +60,7 @@
     "attachment_bone": "handslot.r",
     "attachment_position": [0.08, 0.02, -0.22],
     "attachment_rotation_degrees": [0.0, 90.0, -12.0],
-    "attachment_scale": [0.36, 0.36, 0.36]
+    "attachment_scale": [0.75, 0.75, 0.75]
   },
   "weapon_heavy": {
     "id": "weapon_heavy",
@@ -81,6 +81,6 @@
     "attachment_bone": "handslot.r",
     "attachment_position": [0.1, 0.02, -0.26],
     "attachment_rotation_degrees": [0.0, 90.0, -12.0],
-    "attachment_scale": [0.42, 0.42, 0.42]
+    "attachment_scale": [0.7, 0.7, 0.7]
   }
 }
