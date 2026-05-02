@@ -8,9 +8,12 @@ class_name PetCompanion
 @export var attack_interval: float = 1.2
 @export var damage: int = 1
 @export var attack_range: float = 16.0
+@export var target_scan_interval: float = 0.2
 
 var _target: Node3D
 var _attack_timer: float = 0.0
+var _scan_timer: float = 0.0
+var _cached_enemy: Enemy
 var game_manager: GameManager
 
 func _ready() -> void:
@@ -26,11 +29,18 @@ func _process(delta: float) -> void:
 		return
 
 	_attack_timer -= delta
+	_scan_timer -= delta
+	if _scan_timer <= 0.0:
+		_cached_enemy = _find_nearest_enemy()
+		_scan_timer = max(target_scan_interval, 0.05)
 	if _attack_timer > 0.0:
 		return
 
-	var enemy := _find_nearest_enemy()
-	if enemy == null:
+	var enemy := _cached_enemy
+	if enemy == null or not is_instance_valid(enemy):
+		return
+	if attack_range > 0.0 and global_position.distance_squared_to(enemy.global_position) > attack_range * attack_range:
+		_cached_enemy = null
 		return
 
 	enemy.take_damage(damage)
@@ -40,6 +50,7 @@ func apply_pet_definition(definition: Dictionary) -> void:
 	damage = int(definition.get("damage", damage))
 	attack_interval = float(definition.get("attack_interval", attack_interval))
 	attack_range = float(definition.get("attack_range", attack_range))
+	_cached_enemy = null
 
 func _find_nearest_enemy() -> Enemy:
 	var enemy_container := get_node_or_null(enemy_container_path) as Node3D

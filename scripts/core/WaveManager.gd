@@ -14,6 +14,7 @@ class_name WaveManager
 @export var boss_wave_interval: int = 5
 @export var boss_support_spawn_count: int = 2
 @export var enemy_recycle_distance: float = 160.0
+@export var enemy_recycle_interval: float = 0.4
 @export var wave_definitions: Array[Dictionary] = [
     {"spawn_count": 2, "enemy_types": ["normal"]},
     {"spawn_count": 3, "enemy_types": ["normal", "fast"]},
@@ -28,6 +29,7 @@ var _enemy_container: Node3D
 var _spawner: EnemySpawner
 var _projectile_container: Node3D
 var _pickup_container: Node3D
+var _enemy_recycle_timer: float = 0.0
 
 func _ready() -> void:
     game_manager = get_node("/root/GameManager") as GameManager
@@ -40,14 +42,17 @@ func _ready() -> void:
         game_manager.upgrade_selected.connect(_on_upgrade_selected)
         game_manager.level_changed.connect(_on_level_changed)
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
     if not enable_waves:
         return
     if game_manager == null or _enemy_container == null:
         return
     if not game_manager.is_gameplay_active or game_manager.is_game_over:
         return
-    _recycle_far_enemies()
+    _enemy_recycle_timer -= delta
+    if _enemy_recycle_timer <= 0.0:
+        _recycle_far_enemies()
+        _enemy_recycle_timer = max(enemy_recycle_interval, 0.05)
     if current_wave <= 0:
         return
     if _waiting_for_upgrade_selection:
@@ -151,6 +156,7 @@ func _on_level_changed(_level_index: int, _level_id: StringName, _display_name: 
 
     _active_level_data = game_manager.current_level_data
     current_wave = 0
+    _enemy_recycle_timer = 0.0
     _waiting_for_upgrade_selection = false
     _clear_runtime_nodes()
     if not enable_waves:
