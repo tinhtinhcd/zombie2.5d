@@ -32,6 +32,9 @@ func setup(move_direction: Vector3, travel_distance: float = -1.0) -> void:
     set_physics_process(true)
     if travel_distance > 0.0:
         max_distance = travel_distance
+    var resolved_speed := maxf(speed, 0.001)
+    if max_distance > 0.0:
+        lifetime = maxf(lifetime, max_distance / resolved_speed)
     if move_direction.is_zero_approx():
         direction = Vector3.FORWARD
         return

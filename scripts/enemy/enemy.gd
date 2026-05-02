@@ -102,7 +102,13 @@ func prepare_spawn(new_target: Node3D) -> void:
 func apply_enemy_type(type_key: StringName) -> void:
 	enemy_type = type_key
 
-	var stats: Dictionary = TYPE_STATS.get(String(type_key), TYPE_STATS["normal"])
+	var type_string := String(type_key)
+	var stats: Dictionary
+	if TYPE_STATS.has(type_string):
+		stats = TYPE_STATS[type_string]
+	else:
+		push_warning("Enemy.apply_enemy_type received unknown enemy_type '%s'; falling back to 'normal'." % type_string)
+		stats = TYPE_STATS["normal"]
 	max_hp = int(stats.get("max_hp", max_hp))
 	move_speed = float(stats.get("move_speed", move_speed))
 	contact_damage = int(stats.get("contact_damage", contact_damage))
