@@ -77,6 +77,7 @@ var current_weapon_id: String = "weapon_basic"
 var current_weapon_display_name: String = "Basic Gun"
 var current_weapon_special_effect: String = "none"
 var support_damage_multiplier: float = 1.0
+var healing_received_multiplier: float = 1.0
 var weapon_visuals
 var skill_manager: Node
 var game_manager: GameManager
@@ -301,7 +302,8 @@ func increase_max_hp(amount: int) -> void:
 	hp_changed.emit(current_hp)
 
 func restore_hp(amount: int) -> void:
-	current_hp = min(current_hp + max(amount, 0), max_hp)
+	var resolved_amount := maxi(roundi(float(max(amount, 0)) * maxf(healing_received_multiplier, 0.1)), 0)
+	current_hp = min(current_hp + resolved_amount, max_hp)
 	hp_changed.emit(current_hp)
 
 func _get_modified_projectile_damage() -> int:

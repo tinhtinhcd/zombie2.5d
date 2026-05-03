@@ -21,6 +21,21 @@ func _run() -> void:
 	if not await _run_hero_case(game_manager, "hero_mage", "skill_mage_frost_nova"):
 		quit(1)
 		return
+	if not await _run_hero_case(game_manager, "hero_engineer", "skill_engineer_overclock"):
+		quit(1)
+		return
+	if not await _run_hero_case(game_manager, "hero_engineer", "skill_engineer_deploy_sentry"):
+		quit(1)
+		return
+	if not await _run_hero_case(game_manager, "hero_engineer", "skill_engineer_turbo_boost"):
+		quit(1)
+		return
+	if not await _run_hero_case(game_manager, "hero_medic", "skill_medic_healing_pulse"):
+		quit(1)
+		return
+	if not await _run_hero_case(game_manager, "hero_medic", "skill_medic_sonic_burst"):
+		quit(1)
+		return
 
 	print("SkillManager test passed: hero skills load, passives apply, and active cooldowns trigger.")
 	quit(0)
@@ -72,6 +87,9 @@ func _run_hero_case(game_manager: GameManager, hero_id: String, active_skill_id:
 		game.queue_free()
 		await process_frame
 		return false
+	if hero_id == "hero_medic":
+		player.current_hp = 5
+		player.max_hp = 10
 
 	if not bool(skill_manager.call("try_use_skill", active_skill_id)):
 		push_error("SkillManager test failed: active skill %s did not trigger." % active_skill_id)
@@ -80,6 +98,11 @@ func _run_hero_case(game_manager: GameManager, hero_id: String, active_skill_id:
 		return false
 	if float(skill_manager.cooldowns.get(active_skill_id, 0.0)) <= 0.0:
 		push_error("SkillManager test failed: active skill %s did not start cooldown." % active_skill_id)
+		game.queue_free()
+		await process_frame
+		return false
+	if active_skill_id == "skill_medic_healing_pulse" and player.current_hp < 9:
+		push_error("SkillManager test failed: Medic Healing Pulse did not apply healing multiplier.")
 		game.queue_free()
 		await process_frame
 		return false

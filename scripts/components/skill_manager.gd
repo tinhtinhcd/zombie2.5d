@@ -8,6 +8,8 @@ signal skill_cooldown_updated(skill_id: String, remaining: float, cooldown: floa
 const KNIGHT_SKILLS := preload("res://scripts/skills/knight_skills.gd")
 const ROGUE_SKILLS := preload("res://scripts/skills/rogue_skills.gd")
 const MAGE_SKILLS := preload("res://scripts/skills/mage_skills.gd")
+const ENGINEER_SKILLS := preload("res://scripts/skills/engineer_skills.gd")
+const MEDIC_SKILLS := preload("res://scripts/skills/medic_skills.gd")
 const COMBAT_UTILS := preload("res://scripts/utils/combat_utils.gd")
 
 var player: Player
@@ -190,9 +192,14 @@ func _apply_passive(skill: Dictionary) -> void:
 			dodge_chance = maxf(dodge_chance, 0.12)
 		"skill_mage_arcane_amplify":
 			projectile_damage_multiplier = maxf(projectile_damage_multiplier, 1.15)
+		"skill_medic_field_training":
+			if player != null:
+				player.healing_received_multiplier = maxf(player.healing_received_multiplier, 1.2)
 		_:
 			if effect.begins_with("projectile_damage_multiplier:"):
 				projectile_damage_multiplier = maxf(projectile_damage_multiplier, float(effect.get_slice(":", 1)))
+			elif effect.begins_with("healing_received_multiplier:") and player != null:
+				player.healing_received_multiplier = maxf(player.healing_received_multiplier, float(effect.get_slice(":", 1)))
 
 func _execute_skill(skill: Dictionary) -> bool:
 	match str(skill.get("hero_id", hero_id)):
@@ -202,6 +209,10 @@ func _execute_skill(skill: Dictionary) -> bool:
 			return ROGUE_SKILLS.execute(skill, player, self)
 		"hero_mage":
 			return MAGE_SKILLS.execute(skill, player, self)
+		"hero_engineer":
+			return ENGINEER_SKILLS.execute(skill, player, self)
+		"hero_medic":
+			return MEDIC_SKILLS.execute(skill, player, self)
 		_:
 			return player.activate_explosion_skill() if player != null else false
 
