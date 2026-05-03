@@ -70,6 +70,8 @@ var _skill_primary_timer: float = 0.0
 var _animation_player: AnimationPlayer
 var _current_animation: String = ""
 var _projectile_pool: Array[Projectile] = []
+var _nearest_enemy_this_frame: Node3D
+var _nearest_enemy_frame: int = -1
 var _current_hero_model_path: String = ""
 var _current_weapon_model_path: String = ""
 var current_weapon_id: String = "weapon_basic"
@@ -108,6 +110,7 @@ func _physics_process(delta: float) -> void:
 
     move_and_slide()
     _constrain_to_plane()
+    _cache_nearest_enemy_for_frame()
     _face_combat_target_or_movement(move_direction)
     _animate_visual(delta, move_direction)
 
@@ -180,7 +183,8 @@ func spawn_projectile() -> void:
     if projectile_scene == null:
         return
 
-    var target_enemy := _find_nearest_enemy()
+    _cache_nearest_enemy_for_frame()
+    var target_enemy := _nearest_enemy_this_frame
     if target_enemy == null:
         return
     _face_direction(target_enemy.global_position - global_position)
@@ -237,7 +241,7 @@ func activate_explosion_skill() -> bool:
     return true
 
 func _face_combat_target_or_movement(move_direction: Vector3) -> void:
-    var target_enemy := _find_nearest_enemy()
+    var target_enemy := _nearest_enemy_this_frame
     if target_enemy != null:
         _face_direction(target_enemy.global_position - global_position)
         return
@@ -273,9 +277,8 @@ func increase_projectile_count(amount: int) -> void:
     projectile_count = clampi(projectile_count + max(amount, 0), 1, 5)
 
 func increase_max_hp(amount: int) -> void:
-    var clamped_amount: int = max(amount, 0)
-    max_hp += clamped_amount
-    current_hp = min(current_hp + clamped_amount, max_hp)
+    max_hp = max(max_hp + amount, 1)
+    current_hp = clampi(current_hp + amount, 0, max_hp)
     hp_changed.emit(current_hp)
 
 func restore_hp(amount: int) -> void:
@@ -296,6 +299,8 @@ func apply_weapon_definition(weapon_definition: Dictionary, attach_visual: bool 
         _attach_weapon_visual(weapon_definition, preview_mode)
 
 func apply_hero_definition(hero_definition: Dictionary) -> void:
+    if hero_definition.has("max_hp_bonus"):
+        increase_max_hp(int(hero_definition.get("max_hp_bonus", 0)))
     var hero_id := str(hero_definition.get("id", ""))
     var model_scene_path := str(hero_definition.get("model_scene_path", "")).strip_edges()
     if model_scene_path.is_empty():
@@ -706,6 +711,13 @@ func _find_nearest_enemy(require_weapon_range: bool = true) -> Node3D:
             nearest_distance = distance
             nearest_enemy = enemy
     return nearest_enemy
+
+func _cache_nearest_enemy_for_frame() -> void:
+    var frame := Engine.get_physics_frames()
+    if _nearest_enemy_frame == frame:
+        return
+    _nearest_enemy_this_frame = _find_nearest_enemy()
+    _nearest_enemy_frame = frame
 
 func _warm_projectile_pool() -> void:
     if projectile_scene == null:
