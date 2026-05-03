@@ -1,4 +1,4 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/effects/projectile.gd" id="1_projectile"]
 
@@ -9,6 +9,21 @@ radius = 0.15
 radius = 0.15
 height = 0.3
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_projectile"]
+albedo_color = Color(0.45, 0.9, 1, 1)
+emission_enabled = true
+emission = Color(0.1, 0.55, 1, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_trail"]
+top_radius = 0.025
+bottom_radius = 0.08
+height = 0.55
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_trail"]
+albedo_color = Color(0.2, 0.65, 1, 0.55)
+emission_enabled = true
+emission = Color(0.1, 0.35, 1, 1)
+
 [node name="Projectile" type="Area3D"]
 script = ExtResource("1_projectile")
 
@@ -17,3 +32,10 @@ shape = SubResource("SphereShape3D_projectile")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 mesh = SubResource("SphereMesh_projectile")
+material_override = SubResource("StandardMaterial3D_projectile")
+
+[node name="TrailMesh" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0, 0.28)
+rotation = Vector3(1.5708, 0, 0)
+mesh = SubResource("CylinderMesh_trail")
+material_override = SubResource("StandardMaterial3D_trail")

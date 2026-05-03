@@ -10,6 +10,7 @@ const TYPE_STATS := {
 	"tank": {"max_hp": 6, "move_speed": 1.8, "color": Color(0.9, 0.7, 0.35, 1.0)},
 	"boss": {"max_hp": 18, "move_speed": 2.0, "contact_damage": 2, "visual_scale": Vector3(1.8, 1.8, 1.8), "color": Color(1.0, 0.35, 0.35, 1.0)},
 }
+const SHOCKWAVE_SCENE := preload("res://scenes/effects/shockwave.tscn")
 
 @export var enemy_type: StringName = &"normal"
 @export var move_speed: float = 2.8
@@ -21,6 +22,7 @@ const TYPE_STATS := {
 @export var spawn_warmup_duration: float = 0.35
 @export var xp_pickup_scene: PackedScene
 @export var pickup_container_path: NodePath = NodePath("../../PickupContainer")
+@export var effect_container_path: NodePath = NodePath("../EffectContainer")
 @export var xp_drop_amount: int = 1
 @export var move_bob_amount: float = 0.055
 @export var movement_animation_scene: PackedScene
@@ -40,10 +42,13 @@ var _spawn_warmup_timer: float = 0.0
 var _base_scale: Vector3 = Vector3.ONE
 var _base_color: Color = Color(1.0, 1.0, 1.0, 1.0)
 var _feedback_material: StandardMaterial3D
+var _feedback_materials: Array[StandardMaterial3D] = []
+var _base_colors: Array[Color] = []
 var _feedback_tween: Tween
 var _death_tween: Tween
 var _visual_base_position: Vector3 = Vector3.ZERO
 var _visual_anim_time: float = 0.0
+var _knockback_velocity: Vector3 = Vector3.ZERO
 var _animation_player: AnimationPlayer
 var _current_animation: String = ""
 var game_manager: GameManager
@@ -79,7 +84,8 @@ func _physics_process(delta: float) -> void:
 		return
 
 	var move_direction := _get_move_direction_to_target()
-	velocity = move_direction * move_speed
+	_knockback_velocity = _knockback_velocity.move_toward(Vector3.ZERO, delta * 14.0)
+	velocity = move_direction * move_speed + _knockback_velocity
 	velocity -= _plane_normal * velocity.dot(_plane_normal)
 
 	move_and_slide()
@@ -116,11 +122,12 @@ func apply_health_multiplier(multiplier: float) -> void:
 	if enemy_type == &"boss" and game_manager != null:
 		game_manager.update_boss_health(current_hp, max_hp, true)
 
-func take_damage(amount: int) -> void:
+func take_damage(amount: int, hit_position: Vector3 = Vector3.ZERO, hit_direction: Vector3 = Vector3.ZERO, knockback_strength: float = 0.0) -> void:
 	if _is_dead:
 		return
 
 	current_hp -= max(amount, 0)
+	_apply_knockback(hit_position, hit_direction, knockback_strength)
 	_play_hit_feedback()
 	if enemy_type == &"boss" and game_manager != null:
 		game_manager.update_boss_health(current_hp, max_hp, true)
@@ -142,6 +149,7 @@ func die() -> void:
 		if enemy_type == &"boss":
 			game_manager.update_boss_health(0, max_hp, false)
 	_spawn_xp_pickup()
+	_spawn_death_effect()
 	_play_death_feedback()
 
 func _get_move_direction_to_target() -> Vector3:
@@ -243,26 +251,24 @@ func _on_character_animation_finished(animation_name: StringName) -> void:
 	_animation_player.play(_current_animation, 0.0, max(_animation_player.speed_scale, 0.01))
 
 func _setup_feedback_material() -> void:
-	if mesh_instance == null:
-		return
-
-	var source_material := mesh_instance.material_override as StandardMaterial3D
-	if source_material == null:
-		source_material = StandardMaterial3D.new()
-	else:
-		source_material = source_material.duplicate(true) as StandardMaterial3D
-
-	source_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	mesh_instance.material_override = source_material
-	_feedback_material = source_material
-	_base_color = _feedback_material.albedo_color
+	_feedback_materials.clear()
+	_base_colors.clear()
+	_collect_feedback_materials(visual_root)
+	if _feedback_materials.is_empty() and mesh_instance != null:
+		_prepare_feedback_material(mesh_instance)
+	if not _feedback_materials.is_empty():
+		_feedback_material = _feedback_materials[0]
+		_base_color = _base_colors[0]
 
 func _apply_type_visual() -> void:
-	if _feedback_material == null:
+	if _feedback_materials.is_empty():
 		return
 	var stats: Dictionary = TYPE_STATS.get(String(enemy_type), TYPE_STATS["normal"])
-	_feedback_material.albedo_color = stats.get("color", _feedback_material.albedo_color)
-	_base_color = _feedback_material.albedo_color
+	var type_color: Color = stats.get("color", _base_color)
+	for index in range(_feedback_materials.size()):
+		_feedback_materials[index].albedo_color = type_color
+		_base_colors[index] = type_color
+	_base_color = type_color
 
 func _play_hit_feedback() -> void:
 	if _is_dead:
@@ -289,16 +295,64 @@ func _play_death_feedback() -> void:
 	_death_tween.chain().tween_callback(queue_free)
 
 func _set_hit_flash(strength: float) -> void:
-	if _feedback_material == null:
+	if _feedback_materials.is_empty():
 		return
-	_feedback_material.albedo_color = _base_color.lerp(Color(1.0, 0.25, 0.25, 1.0), strength)
+	for index in range(_feedback_materials.size()):
+		_feedback_materials[index].albedo_color = _base_colors[index].lerp(Color(1.0, 0.25, 0.25, 1.0), strength)
 
 func _set_death_fade(progress: float) -> void:
-	if _feedback_material == null:
+	if _feedback_materials.is_empty():
 		return
 
 	var death_color := Color(1.0, 0.3, 0.3, 1.0 - progress)
-	_feedback_material.albedo_color = _base_color.lerp(death_color, progress)
+	for index in range(_feedback_materials.size()):
+		_feedback_materials[index].albedo_color = _base_colors[index].lerp(death_color, progress)
+
+func _collect_feedback_materials(node: Node) -> void:
+	if node == null:
+		return
+	if node is MeshInstance3D:
+		_prepare_feedback_material(node as MeshInstance3D)
+	for child in node.get_children():
+		_collect_feedback_materials(child)
+
+func _prepare_feedback_material(mesh: MeshInstance3D) -> void:
+	var material := mesh.material_override as StandardMaterial3D
+	if material == null:
+		var active_material := mesh.get_active_material(0)
+		if active_material is StandardMaterial3D:
+			material = (active_material as StandardMaterial3D).duplicate(true) as StandardMaterial3D
+		else:
+			material = StandardMaterial3D.new()
+	else:
+		material = material.duplicate(true) as StandardMaterial3D
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mesh.material_override = material
+	_feedback_materials.append(material)
+	_base_colors.append(material.albedo_color)
+
+func _apply_knockback(hit_position: Vector3, hit_direction: Vector3, knockback_strength: float) -> void:
+	if knockback_strength <= 0.0:
+		return
+	var direction := hit_direction
+	if direction.is_zero_approx() and hit_position != Vector3.ZERO:
+		direction = global_position - hit_position
+	direction -= _plane_normal * direction.dot(_plane_normal)
+	if direction.is_zero_approx():
+		return
+	_knockback_velocity += direction.normalized() * min(knockback_strength, 5.0)
+
+func _spawn_death_effect() -> void:
+	var shockwave := SHOCKWAVE_SCENE.instantiate() as Node3D
+	if shockwave == null:
+		return
+	var effect_container := get_node_or_null(effect_container_path) as Node3D
+	if effect_container == null:
+		effect_container = get_parent() as Node3D
+	if effect_container == null:
+		return
+	effect_container.add_child(shockwave)
+	shockwave.global_position = global_position + Vector3(0.0, 0.05, 0.0)
 
 func _spawn_xp_pickup() -> void:
 	if xp_pickup_scene == null:

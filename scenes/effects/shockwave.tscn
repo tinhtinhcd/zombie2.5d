@@ -1,0 +1,25 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/effects/combat_effect.gd" id="1_effect"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_shockwave"]
+albedo_color = Color(0.35, 0.85, 1, 0.45)
+emission_enabled = true
+emission = Color(0.1, 0.55, 1, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_shockwave"]
+top_radius = 1.0
+bottom_radius = 1.0
+height = 0.035
+material = SubResource("StandardMaterial3D_shockwave")
+
+[node name="Shockwave" type="Node3D"]
+script = ExtResource("1_effect")
+lifetime = 0.28
+start_scale = Vector3(0.2, 0.2, 0.2)
+end_scale = Vector3(4, 1, 4)
+start_color = Color(0.35, 0.85, 1, 0.45)
+end_color = Color(0.2, 0.45, 1, 0)
+
+[node name="RingMesh" type="MeshInstance3D" parent="."]
+mesh = SubResource("CylinderMesh_shockwave")

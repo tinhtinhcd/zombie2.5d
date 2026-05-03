@@ -320,6 +320,7 @@ func _run() -> void:
 
 	var player := game.get_node("Player") as Player
 	var projectile_container := game.get_node_or_null("ProjectileContainer")
+	var effect_container := game.get_node_or_null("EffectContainer")
 	var endless_map := game.get_node_or_null("LevelContainer") as EndlessMap
 	var wave_manager := game.get_node_or_null("WaveManager")
 	var game_manager := root.get_node_or_null("/root/GameManager") as GameManager
@@ -328,8 +329,15 @@ func _run() -> void:
 		push_error("Smoke test failed: projectile container is missing.")
 		quit(1)
 		return
+	if effect_container == null:
+		push_error("Smoke test failed: effect container is missing.")
+		quit(1)
+		return
 	if game_manager == null:
 		push_error("Smoke test failed: GameManager autoload is missing.")
+		quit(1)
+		return
+	if not _assert_testing_unlocks(game_manager):
 		quit(1)
 		return
 	game.call("_toggle_pause_menu")
@@ -456,20 +464,21 @@ func _run() -> void:
 		return
 
 	for enemy in enemy_container.get_children():
-		if enemy is Node3D:
-			(enemy as Node3D).global_position = player.global_position + Vector3(0.0, 0.0, -20.0)
+		if enemy is Enemy:
+			var typed_enemy := enemy as Enemy
+			typed_enemy.current_hp = typed_enemy.max_hp
+			typed_enemy.global_position = player.global_position + Vector3(0.0, 0.0, -20.0)
 	player.weapon_range = 10.0
-	var enemy_for_facing := enemy_container.get_child(0) as Node3D
+	var enemy_for_facing := enemy_container.get_child(0) as Enemy
+	enemy_for_facing.current_hp = enemy_for_facing.max_hp
 	enemy_for_facing.global_position = player.global_position + Vector3.RIGHT * 4.0
 	player.call("_face_combat_target_or_movement", Vector3.FORWARD)
-	await process_frame
 	if not is_equal_approx(player.get_node("ShootPoint").rotation.y, -PI * 0.5):
 		push_error("Smoke test failed: player did not face the nearest in-range enemy over movement direction.")
 		quit(1)
 		return
 	player.weapon_range = 1.0
 	player.call("_face_combat_target_or_movement", Vector3.FORWARD)
-	await process_frame
 	if not is_equal_approx(player.get_node("ShootPoint").rotation.y, 0.0):
 		push_error("Smoke test failed: player did not face movement direction when enemies were out of weapon range.")
 		quit(1)
@@ -487,7 +496,12 @@ func _run() -> void:
 	var first_enemy_for_weapon := enemy_container.get_child(0) as Node3D
 	first_enemy_for_weapon.global_position = player.global_position + Vector3(0.0, 0.0, -5.0)
 	var projectile_count_before := projectile_container.get_child_count()
+	var effect_count_before_fire := effect_container.get_child_count()
 	player.spawn_projectile()
+	if effect_container.get_child_count() <= effect_count_before_fire:
+		push_error("Smoke test failed: player shot did not spawn a muzzle/effect node.")
+		quit(1)
+		return
 	await process_frame
 	if projectile_container.get_child_count() - projectile_count_before != 3:
 		push_error("Smoke test failed: spread weapon did not spawn three projectiles.")
@@ -517,17 +531,43 @@ func _run() -> void:
 	for child in projectile_container.get_children():
 		child.queue_free()
 	await process_frame
+	await process_frame
 	player.weapon_range = 1.0
 	for enemy in enemy_container.get_children():
-		if enemy is Node3D:
-			(enemy as Node3D).global_position = player.global_position + Vector3(0.0, 0.0, -12.0)
+		if enemy is Enemy:
+			var typed_enemy := enemy as Enemy
+			typed_enemy.current_hp = typed_enemy.max_hp
+			typed_enemy.global_position = player.global_position + Vector3(0.0, 0.0, -12.0)
+	var projectile_count_before_range_check := projectile_container.get_child_count()
 	player.spawn_projectile()
 	await process_frame
-	if projectile_container.get_child_count() != 0:
+	if projectile_container.get_child_count() > projectile_count_before_range_check:
 		push_error("Smoke test failed: weapon range did not prevent out-of-range firing.")
 		quit(1)
 		return
 	player.apply_weapon_definition(spread_weapon)
+
+	var skill_enemy := enemy_container.get_child(0) as Enemy
+	for enemy in enemy_container.get_children():
+		if enemy is Enemy:
+			var typed_enemy := enemy as Enemy
+			typed_enemy.global_position = player.global_position + Vector3(0.0, 0.0, -14.0)
+			typed_enemy.current_hp = typed_enemy.max_hp
+	skill_enemy.global_position = player.global_position + Vector3(0.0, 0.0, -2.0)
+	skill_enemy.current_hp = skill_enemy.max_hp
+	player.explosion_skill_damage = 1
+	player.projectile_damage = 1
+	player.set("_skill_primary_timer", 0.0)
+	var skill_hp_before := skill_enemy.current_hp
+	if not player.activate_explosion_skill():
+		push_error("Smoke test failed: explosion skill did not activate.")
+		quit(1)
+		return
+	await process_frame
+	if skill_enemy.current_hp >= skill_hp_before:
+		push_error("Smoke test failed: explosion skill did not damage a nearby enemy.")
+		quit(1)
+		return
 
 	var original_level := game_manager.current_level
 	game_manager.current_level = 3
@@ -676,6 +716,25 @@ func _assert_gameplay_weapon_safe(player_node: Node, context: String) -> bool:
 		push_warning("Smoke test warning: %s has no weapon visual, but gameplay remains valid with weapon metadata." % context)
 		return true
 	return _assert_weapon_visual(player_node, context)
+
+func _assert_testing_unlocks(game_manager: GameManager) -> bool:
+	var levels: Array = game_manager.get("_levels")
+	if not levels.is_empty() and game_manager.highest_unlocked_level < levels.size():
+		push_error("Smoke test failed: testing unlocks did not unlock every level.")
+		return false
+	for hero_id in game_manager.get_hero_ids():
+		if not game_manager.is_hero_unlocked(str(hero_id)):
+			push_error("Smoke test failed: testing unlocks did not unlock hero %s." % str(hero_id))
+			return false
+	for weapon_id in game_manager.get_weapon_ids():
+		if not game_manager.is_weapon_unlocked(str(weapon_id)):
+			push_error("Smoke test failed: testing unlocks did not unlock weapon %s." % str(weapon_id))
+			return false
+	for pet_id in game_manager.get_pet_ids():
+		if not game_manager.is_pet_unlocked(str(pet_id)):
+			push_error("Smoke test failed: testing unlocks did not unlock pet %s." % str(pet_id))
+			return false
+	return true
 
 func _collect_full_hero_parts(node: Node, parts: Dictionary) -> void:
 	if node is MeshInstance3D:

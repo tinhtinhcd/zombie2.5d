@@ -4,14 +4,19 @@ class_name Projectile
 # Minimal projectile scaffold.
 # Add damage, collision responses, and ownership rules here later.
 
+const HIT_SPARK_SCENE := preload("res://scenes/effects/hit_spark.tscn")
+
 @export var speed: float = 14.0
 @export var lifetime: float = 1.5
 @export var damage: int = 1
 @export var max_distance: float = 20.0
+@export var effect_container_path: NodePath = NodePath("../../EffectContainer")
 
 signal recycle_requested(projectile: Projectile)
 
 var direction: Vector3 = Vector3.FORWARD
+var weapon_id: String = ""
+var knockback_strength: float = 0.0
 var _time_alive: float = 0.0
 var _origin: Vector3 = Vector3.ZERO
 var _has_hit: bool = false
@@ -36,6 +41,7 @@ func setup(move_direction: Vector3, travel_distance: float = -1.0) -> void:
         direction = Vector3.FORWARD
         return
     direction = move_direction.normalized()
+    _face_direction(direction)
 
 func deactivate(defer_collision_update: bool = false) -> void:
     visible = false
@@ -76,5 +82,31 @@ func _on_body_entered(body: Node) -> void:
         return
 
     _has_hit = true
-    body.take_damage(damage)
+    _spawn_hit_spark()
+    body.take_damage(damage, global_position, direction, knockback_strength)
     recycle(true)
+
+func _spawn_hit_spark() -> void:
+    var spark := HIT_SPARK_SCENE.instantiate() as Node3D
+    if spark == null:
+        return
+    var effect_container := get_node_or_null(effect_container_path) as Node3D
+    if effect_container == null:
+        effect_container = get_parent() as Node3D
+    if effect_container == null:
+        return
+    effect_container.add_child(spark)
+    spark.global_position = global_position
+    _orient_node_to_direction(spark, direction)
+
+func _face_direction(world_direction: Vector3) -> void:
+    _orient_node_to_direction(self, world_direction)
+
+func _orient_node_to_direction(node: Node3D, world_direction: Vector3) -> void:
+    if node == null or world_direction.is_zero_approx():
+        return
+    var normalized_direction := world_direction.normalized()
+    var up_axis := Vector3.UP
+    if absf(normalized_direction.dot(up_axis)) > 0.96:
+        up_axis = Vector3.RIGHT
+    node.look_at(node.global_position + normalized_direction, up_axis)
