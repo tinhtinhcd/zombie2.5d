@@ -16,5 +16,17 @@
     "model_scene_path": "res://scenes/entities/pet_wisp.tscn",
     "damage": 2,
     "attack_interval": 1.6
+  },
+  "pet_beetle": {
+    "display_name": "Beetle",
+    "model_scene_path": "res://scenes/entities/pet_companion.tscn",
+    "damage": 1,
+    "attack_interval": 1.4
+  },
+  "pet_orb": {
+    "display_name": "Orb",
+    "model_scene_path": "res://scenes/entities/pet_wisp.tscn",
+    "damage": 1,
+    "attack_interval": 1.1
   }
 }

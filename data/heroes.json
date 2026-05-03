@@ -19,5 +19,19 @@
     "max_hp_bonus": -2,
     "move_speed_bonus": 0.2,
     "projectile_damage_bonus": 2
+  },
+  "hero_engineer": {
+    "display_name": "Engineer",
+    "model_scene_path": "res://assets/KayKit_Adventurers_2.0_FREE/KayKit_Adventurers_2.0_FREE/Characters/gltf/Knight.glb",
+    "max_hp_bonus": 1,
+    "move_speed_bonus": 0.1,
+    "projectile_damage_bonus": 0
+  },
+  "hero_medic": {
+    "display_name": "Medic",
+    "model_scene_path": "res://assets/KayKit_Adventurers_2.0_FREE/KayKit_Adventurers_2.0_FREE/Characters/gltf/Mage.glb",
+    "max_hp_bonus": 2,
+    "move_speed_bonus": 0.0,
+    "projectile_damage_bonus": 0
   }
 }

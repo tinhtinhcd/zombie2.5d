@@ -4,6 +4,7 @@ class_name EquipmentPanel
 signal slot_selected(slot_id: String)
 signal change_requested(slot_id: String)
 signal unequip_requested(slot_id: String)
+signal upgrade_requested(weapon_id: String)
 
 const HOME_UI_STYLE := preload("res://scripts/ui/home/HomeUIStyle.gd")
 
@@ -46,8 +47,7 @@ func setup(summary_label: Label, slot_buttons: Dictionary, change_button: Button
 	if _unequip_button != null:
 		_unequip_button.pressed.connect(_on_unequip_pressed)
 	if _upgrade_button != null:
-		_upgrade_button.disabled = true
-		HOME_UI_STYLE.apply_compact_button_state(_upgrade_button, "locked")
+		_upgrade_button.pressed.connect(_on_upgrade_pressed)
 
 	_connect_category_button("weapon", "weapon")
 	_connect_category_button("armor", "armor")
@@ -105,7 +105,11 @@ func _refresh_gear_screen(selected_weapon_id: String) -> void:
 			_get_slot_button_value(slot_id, selected_weapon_id, status),
 		]
 		button.disabled = false
-		HOME_UI_STYLE.apply_compact_button_state(button, "selected" if is_selected else ("locked" if status == "locked" else "secondary"))
+		if slot_id == "weapon" and _game_manager != null:
+			var weapon_definition := _game_manager.get_weapon_definition(selected_weapon_id)
+			HOME_UI_STYLE.apply_compact_button_rarity(button, str(weapon_definition.get("rarity", "common")), is_selected)
+		else:
+			HOME_UI_STYLE.apply_compact_button_state(button, "selected" if is_selected else ("locked" if status == "locked" else "secondary"))
 		HOME_UI_STYLE.apply_related_card_from_button(button, is_selected)
 
 	for category_id in _category_buttons.keys():
@@ -141,9 +145,17 @@ func _refresh_selected_slot_info(selected_weapon_id: String) -> void:
 		_unequip_button.disabled = not has_equipped_item
 		HOME_UI_STYLE.apply_compact_button_state(_unequip_button, "secondary" if has_equipped_item else "locked")
 	if _upgrade_button != null:
-		_upgrade_button.text = "Upgrade"
-		_upgrade_button.disabled = true
-		HOME_UI_STYLE.apply_compact_button_state(_upgrade_button, "locked")
+		if slot_id == "weapon" and _game_manager != null:
+			var weapon_id := selected_weapon_id
+			var level := _game_manager.get_weapon_level(weapon_id)
+			var cost := _game_manager.get_weapon_upgrade_cost(weapon_id)
+			_upgrade_button.text = "Upgrade Lv.%d  %d" % [min(level + 1, 10), cost]
+			_upgrade_button.disabled = level >= 10 or not _game_manager.can_upgrade_weapon(weapon_id)
+			HOME_UI_STYLE.apply_compact_button_state(_upgrade_button, "selected" if not _upgrade_button.disabled else "locked")
+		else:
+			_upgrade_button.text = "Upgrade"
+			_upgrade_button.disabled = true
+			HOME_UI_STYLE.apply_compact_button_state(_upgrade_button, "locked")
 
 func _connect_slot_button(button: Button, slot_id: String) -> void:
 	if button == null:
@@ -168,6 +180,13 @@ func _on_change_pressed() -> void:
 
 func _on_unequip_pressed() -> void:
 	unequip_requested.emit(_get_selected_slot_id())
+
+func _on_upgrade_pressed() -> void:
+	if _home_state == null:
+		return
+	if _get_selected_slot_id() != "weapon":
+		return
+	upgrade_requested.emit(_home_state.selected_weapon_id)
 
 func _get_selected_slot_id() -> String:
 	if _home_state == null:
@@ -202,12 +221,14 @@ func _get_display_item_for_slot(slot_id: String, selected_weapon_id: String) -> 
 		return equipped_item
 	if slot_id == "weapon" and _game_manager != null:
 		var weapon_definition := _game_manager.get_weapon_definition(selected_weapon_id)
+		var level := _game_manager.get_weapon_level(selected_weapon_id)
 		return {
 			"name": _game_manager.get_display_name(weapon_definition, "Basic Gun"),
-			"rarity": "starter",
+			"rarity": "%s Lv.%d" % [str(weapon_definition.get("rarity", "common")).capitalize(), level],
 			"stats": {
 				"atk": int(weapon_definition.get("damage", weapon_definition.get("projectile_damage", 1))),
 				"range": "%.1fm" % float(weapon_definition.get("range", 20.0)),
+				"fx": str(weapon_definition.get("special_effect", "none")).replace("_", " "),
 			},
 			"description": str(weapon_definition.get("description", "Current weapon loadout.")),
 		}

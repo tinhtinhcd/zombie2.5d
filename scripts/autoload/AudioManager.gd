@@ -16,16 +16,21 @@ var _sfx_players: Array[AudioStreamPlayer] = []
 var _warned_missing_paths: Dictionary = {}
 
 func _ready() -> void:
-    # Reserve bus setup and mixer defaults for later.
-    pass
+	# Reserve bus setup and mixer defaults for later.
+	pass
 
 func play_music(track_path: String) -> void:
-    # Record the requested music track until playback is implemented.
-    current_music_path = track_path
+	# Record the requested music track until playback is implemented.
+	current_music_path = track_path
 
 func play_sfx(sfx_path: String) -> void:
 	last_sfx_path = sfx_path
 	if sfx_path.is_empty():
+		return
+	if not ResourceLoader.exists(sfx_path):
+		if not _warned_missing_paths.has(sfx_path):
+			push_warning("AudioManager missing SFX asset: %s" % sfx_path)
+			_warned_missing_paths[sfx_path] = true
 		return
 	var stream := load(sfx_path) as AudioStream
 	if stream == null:
@@ -37,15 +42,7 @@ func play_sfx(sfx_path: String) -> void:
 	player.stream = stream
 	add_child(player)
 	_sfx_players.append(player)
-<<<<<<< ours
-	player.finished.connect(func() -> void:
-		if _sfx_players.has(player):
-			_sfx_players.erase(player)
-		player.queue_free()
-	)
-=======
 	player.finished.connect(_on_sfx_finished.bind(player))
->>>>>>> theirs
 	player.play()
 
 func play_sfx_event(event_name: StringName) -> void:
@@ -54,11 +51,8 @@ func play_sfx_event(event_name: StringName) -> void:
 		push_warning("AudioManager received unknown SFX event: %s" % String(event_name))
 		return
 	play_sfx(sfx_path)
-<<<<<<< ours
-=======
 
 func _on_sfx_finished(player: AudioStreamPlayer) -> void:
 	if _sfx_players.has(player):
 		_sfx_players.erase(player)
 	player.queue_free()
->>>>>>> theirs

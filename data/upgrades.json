@@ -1,47 +1,158 @@
 [
   {
     "id": "projectile_damage",
+    "name": "Power Shot",
     "title": "Power Shot",
-    "description": "Increase projectile damage by 1."
+    "tier": "common",
+    "effect_type": "projectile_damage",
+    "effect_value": 1,
+    "description": "Increase projectile damage by 1.",
+    "icon": "",
+    "weight": 100,
+    "max_stack": 12
   },
   {
     "id": "fire_rate",
+    "name": "Rapid Fire",
     "title": "Rapid Fire",
-    "description": "Reduce fire interval slightly."
+    "tier": "common",
+    "effect_type": "fire_rate",
+    "effect_value": 0.08,
+    "description": "Reduce fire interval slightly.",
+    "icon": "",
+    "weight": 95,
+    "max_stack": 8
   },
   {
     "id": "max_hp",
+    "name": "Vitality",
     "title": "Vitality",
-    "description": "Increase max HP by 2."
+    "tier": "common",
+    "effect_type": "max_hp",
+    "effect_value": 2,
+    "description": "Increase max HP by 2.",
+    "icon": "",
+    "weight": 90,
+    "max_stack": 8
   },
   {
     "id": "restore_hp",
+    "name": "Recover",
     "title": "Recover",
-    "description": "Restore 4 HP."
+    "tier": "common",
+    "effect_type": "restore_hp",
+    "effect_value": 4,
+    "description": "Restore 4 HP.",
+    "icon": "",
+    "weight": 80,
+    "max_stack": 6
   },
   {
     "id": "move_speed",
+    "name": "Sprint",
     "title": "Sprint",
-    "description": "Increase movement speed."
+    "tier": "common",
+    "effect_type": "move_speed",
+    "effect_value": 0.5,
+    "description": "Increase movement speed.",
+    "icon": "",
+    "weight": 85,
+    "max_stack": 6
   },
   {
     "id": "projectile_speed",
+    "name": "Fast Rounds",
     "title": "Fast Rounds",
-    "description": "Projectiles travel faster."
+    "tier": "common",
+    "effect_type": "projectile_speed",
+    "effect_value": 3.0,
+    "description": "Projectiles travel faster.",
+    "icon": "",
+    "weight": 75,
+    "max_stack": 6
   },
   {
     "id": "weapon_range",
+    "name": "Long Barrel",
     "title": "Long Barrel",
-    "description": "Increase weapon range."
+    "tier": "rare",
+    "effect_type": "weapon_range",
+    "effect_value": 4.0,
+    "description": "Increase weapon range.",
+    "icon": "",
+    "weight": 55,
+    "max_stack": 5
   },
   {
     "id": "projectile_count",
+    "name": "Extra Shot",
     "title": "Extra Shot",
-    "description": "Add one projectile to the current weapon, up to five."
+    "tier": "epic",
+    "effect_type": "projectile_count",
+    "effect_value": 1,
+    "description": "Add one projectile to the current weapon, up to five.",
+    "icon": "",
+    "weight": 25,
+    "max_stack": 4
   },
   {
     "id": "hire_shooter_guard",
+    "name": "Hire Shooter Guard",
     "title": "Hire Shooter Guard",
-    "description": "Hire a shooter guard to fight for this run."
+    "tier": "rare",
+    "effect_type": "hire_guard",
+    "effect_value": "guard_shooter",
+    "description": "Hire a shooter guard to fight for this run.",
+    "icon": "",
+    "weight": 40,
+    "max_stack": 1
+  },
+  {
+    "id": "hire_bruiser_guard",
+    "name": "Hire Bruiser Guard",
+    "title": "Hire Bruiser Guard",
+    "tier": "rare",
+    "effect_type": "hire_guard",
+    "effect_value": "guard_bruiser",
+    "description": "Hire a bruiser guard to control enemies around you.",
+    "icon": "",
+    "weight": 40,
+    "max_stack": 1
+  },
+  {
+    "id": "explosion_skill_damage",
+    "name": "Grenade Payload",
+    "title": "Grenade Payload",
+    "tier": "rare",
+    "effect_type": "explosion_skill_damage",
+    "effect_value": 1,
+    "description": "Increase explosion skill damage by 1.",
+    "icon": "",
+    "weight": 45,
+    "max_stack": 6
+  },
+  {
+    "id": "explosion_skill_radius",
+    "name": "Blast Radius",
+    "title": "Blast Radius",
+    "tier": "rare",
+    "effect_type": "explosion_skill_radius",
+    "effect_value": 0.75,
+    "description": "Increase explosion skill radius.",
+    "icon": "",
+    "weight": 40,
+    "max_stack": 5
+  },
+  {
+    "id": "skill_cooldown",
+    "name": "Quick Hands",
+    "title": "Quick Hands",
+    "tier": "epic",
+    "effect_type": "skill_cooldown",
+    "effect_value": 0.9,
+    "description": "Reduce active skill cooldowns by 10%.",
+    "icon": "",
+    "weight": 25,
+    "max_stack": 4
   }
 ]

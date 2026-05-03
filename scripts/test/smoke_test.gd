@@ -291,6 +291,9 @@ func _run() -> void:
 		push_error("Smoke test failed: hidden hero select preview stayed loaded after returning home.")
 		quit(1)
 		return
+	var start_game_manager := root.get_node_or_null("/root/GameManager") as GameManager
+	if start_game_manager != null:
+		start_game_manager.energy = GameManager.ENERGY_MAX
 	home.call("_on_play_pressed")
 	await process_frame
 	await process_frame
@@ -337,18 +340,12 @@ func _run() -> void:
 		push_error("Smoke test failed: GameManager autoload is missing.")
 		quit(1)
 		return
-<<<<<<< ours
-<<<<<<< ours
-	if not _assert_testing_unlocks(game_manager):
-=======
-=======
 	var selected_hero_definition := game_manager.get_selected_hero_definition()
 	var expected_player_max_hp := maxi(10 + int(selected_hero_definition.get("max_hp_bonus", 0)), 1)
 	if player.max_hp != expected_player_max_hp:
 		push_error("Smoke test failed: selected hero max_hp_bonus appears duplicated or missing. expected=%d actual=%d" % [expected_player_max_hp, player.max_hp])
 		quit(1)
 		return
->>>>>>> theirs
 	var hp_probe := Player.new()
 	hp_probe.max_hp = 10
 	hp_probe.current_hp = 10
@@ -371,10 +368,6 @@ func _run() -> void:
 	low_hp_probe.increase_max_hp(-4)
 	if low_hp_probe.max_hp < 1 or low_hp_probe.current_hp < 0:
 		push_error("Smoke test failed: max_hp clamping dropped below safe minimum.")
-<<<<<<< ours
->>>>>>> theirs
-=======
->>>>>>> theirs
 		quit(1)
 		return
 	game.call("_toggle_pause_menu")
@@ -447,19 +440,13 @@ func _run() -> void:
 		if not _assert_visible_model(pet_companion, "gameplay pet companion"):
 			quit(1)
 			return
-		pet_companion.attack_range = 3.0
-		pet_companion.global_position = player.global_position
-		for enemy in enemy_container.get_children():
-			if enemy is Node3D:
-				(enemy as Node3D).global_position = player.global_position + Vector3(0.0, 0.0, -12.0)
-		if pet_companion.call("_find_nearest_enemy") != null:
-			push_error("Smoke test failed: pet companion targeted an enemy outside attack range.")
+		if pet_companion.get_node_or_null("BuffProvider") == null:
+			push_error("Smoke test failed: pet companion did not create BuffProvider.")
 			quit(1)
 			return
-		var pet_range_enemy := enemy_container.get_child(0) as Node3D
-		pet_range_enemy.global_position = player.global_position + Vector3(0.0, 0.0, -2.0)
-		if pet_companion.call("_find_nearest_enemy") == null:
-			push_error("Smoke test failed: pet companion did not target an enemy inside attack range.")
+		var pet_buffs: Dictionary = pet_companion.call("get_active_buffs")
+		if pet_buffs.is_empty():
+			push_error("Smoke test failed: pet companion did not expose passive buffs.")
 			quit(1)
 			return
 

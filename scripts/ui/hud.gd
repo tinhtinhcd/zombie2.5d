@@ -10,6 +10,7 @@ const XP_BAR_TARGET = 10
 const MOBILE_WIDTH_THRESHOLD = 700.0
 const COMPACT_HEIGHT_THRESHOLD = 620.0
 const MOBILE_MARGIN = 12.0
+const SKILL_HUD_SCENE := preload("res://scenes/ui/skill_hud.tscn")
 
 @onready var hud_root: Control = $HUDRoot
 @onready var safe_margin: MarginContainer = $HUDRoot/SafeMargin
@@ -29,6 +30,7 @@ const MOBILE_MARGIN = 12.0
 @onready var xp_bar: ProgressBar = $HUDRoot/SafeMargin/Root/StatusPanel/Margin/Content/Bars/XPRow/XPBar
 @onready var xp_label: Label = $HUDRoot/SafeMargin/Root/StatusPanel/Margin/Content/Bars/XPRow/XPLabel
 @onready var mission_panel: PanelContainer = $HUDRoot/OverlayRoot/MissionPanel
+@onready var root_layout: VBoxContainer = $HUDRoot/SafeMargin/Root
 
 @onready var upgrade_panel: PanelContainer = $HUDRoot/OverlayRoot/ModalCenter/UpgradePanel
 @onready var upgrade_button_1: Button = $HUDRoot/OverlayRoot/ModalCenter/UpgradePanel/MarginContainer/VBoxContainer/UpgradeButtons/UpgradeButton1
@@ -48,6 +50,7 @@ const MOBILE_MARGIN = 12.0
 var _upgrade_option_ids: Array = []
 var _elapsed_time: float = 0.0
 var game_manager: GameManager
+var skill_hud: HBoxContainer
 var _original_minimum_sizes: Dictionary = {}
 
 func _ready() -> void:
@@ -67,6 +70,7 @@ func _ready() -> void:
 	result_panel.visible = false
 	upgrade_panel.visible = false
 	boss_panel.visible = false
+	_setup_skill_hud()
 	_apply_responsive_layout()
 
 	if game_manager != null:
@@ -98,6 +102,25 @@ func set_hp(value: int) -> void:
 	hp_bar.max_value = max(hp_bar.max_value, value)
 	hp_bar.value = value
 	hp_label.text = "HP %d / %d" % [value, int(hp_bar.max_value)]
+
+func setup_skill_manager(manager: Node) -> void:
+	if skill_hud == null:
+		_setup_skill_hud()
+	if skill_hud != null:
+		skill_hud.call("setup", manager)
+
+func _setup_skill_hud() -> void:
+	if skill_hud != null:
+		return
+	skill_hud = root_layout.get_node_or_null("SkillHud") as HBoxContainer
+	if skill_hud == null:
+		skill_hud = SKILL_HUD_SCENE.instantiate() as HBoxContainer
+		if skill_hud == null:
+			return
+		root_layout.add_child(skill_hud)
+		var status_panel_index := root_layout.get_children().find(boss_panel)
+		if status_panel_index >= 0:
+			root_layout.move_child(skill_hud, status_panel_index + 1)
 
 func _on_score_changed(value: int) -> void:
 	kills_label.text = "Kills: %d" % value
@@ -187,6 +210,9 @@ func _show_upgrade_options(options: Array) -> void:
 	upgrade_button_1.text = _format_upgrade_text(options[0])
 	upgrade_button_2.text = _format_upgrade_text(options[1])
 	upgrade_button_3.text = _format_upgrade_text(options[2])
+	_style_upgrade_button(upgrade_button_1, options[0])
+	_style_upgrade_button(upgrade_button_2, options[1])
+	_style_upgrade_button(upgrade_button_3, options[2])
 	upgrade_panel.visible = true
 	pause_button.disabled = true
 
@@ -202,7 +228,37 @@ func _emit_upgrade_selected(index: int) -> void:
 	upgrade_selected.emit(_upgrade_option_ids[index])
 
 func _format_upgrade_text(option: Dictionary) -> String:
-	return "%s\n%s" % [option.get("title", ""), option.get("description", "")]
+	return "%s  %s  x%d\n%s" % [
+		option.get("title", option.get("name", "")),
+		str(option.get("tier", "common")).capitalize(),
+		int(option.get("stack_count", 0)),
+		option.get("description", ""),
+	]
+
+func _style_upgrade_button(button: Button, option: Dictionary) -> void:
+	var tier := str(option.get("tier", "common"))
+	var border := Color(0.61, 0.64, 0.69, 1.0)
+	match tier:
+		"rare":
+			border = Color(0.23, 0.51, 0.96, 1.0)
+		"epic":
+			border = Color(0.66, 0.33, 0.97, 1.0)
+		"legendary":
+			border = Color(0.98, 0.45, 0.09, 1.0)
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.035, 0.07, 0.08, 0.96).lerp(border, 0.08)
+	style.border_color = border
+	style.border_width_left = 2
+	style.border_width_top = 2
+	style.border_width_right = 2
+	style.border_width_bottom = 2
+	style.corner_radius_top_left = 7
+	style.corner_radius_top_right = 7
+	style.corner_radius_bottom_left = 7
+	style.corner_radius_bottom_right = 7
+	button.add_theme_stylebox_override("normal", style)
+	button.add_theme_stylebox_override("hover", style)
+	button.add_theme_stylebox_override("focus", style)
 
 func _show_result_screen() -> void:
 	game_over_panel.visible = false

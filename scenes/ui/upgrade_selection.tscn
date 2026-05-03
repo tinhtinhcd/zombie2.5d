@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/upgrade_selection.gd" id="1_upgrade_selection"]
+
+[node name="UpgradeSelection" type="PanelContainer"]
+visible = false
+custom_minimum_size = Vector2(420, 300)
+script = ExtResource("1_upgrade_selection")

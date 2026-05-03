@@ -5,7 +5,7 @@ class_name ExplosionAoE
 @export var damage: int = 2
 @export var knockback_strength: float = 1.5
 @export var lifetime: float = 0.24
-@export var enemy_container_path: NodePath = NodePath("../EnemyContainer")
+@export var enemy_container_path: NodePath = NodePath("../../EnemyContainer")
 @export var start_color: Color = Color(1.0, 0.72, 0.18, 0.55)
 @export var end_color: Color = Color(1.0, 0.12, 0.02, 0.0)
 
@@ -53,6 +53,8 @@ func _apply_damage() -> void:
 		if child is not Enemy:
 			continue
 		var enemy := child as Enemy
+		if enemy.is_dead():
+			continue
 		var offset := enemy.global_position - global_position
 		if offset.length_squared() > radius_squared:
 			continue

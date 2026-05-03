@@ -143,6 +143,9 @@ func take_damage(amount: int, hit_position: Vector3 = Vector3.ZERO, hit_directio
 	if current_hp <= 0:
 		die()
 
+func is_dead() -> bool:
+	return _is_dead
+
 func die() -> void:
 	if _is_dead:
 		return
@@ -160,12 +163,6 @@ func die() -> void:
 	_spawn_xp_pickup()
 	if audio_manager != null:
 		audio_manager.play_sfx_event(&"enemy_death")
-<<<<<<< ours
-	_spawn_death_effect()
-	if audio_manager != null:
-		audio_manager.play_sfx_event(&"enemy_death")
-=======
->>>>>>> theirs
 	_play_death_feedback()
 	_spawn_death_effect()
 
@@ -393,23 +390,3 @@ func _play_enemy_hit_flash() -> void:
 	_feedback_material.emission_enabled = true
 	_feedback_material.emission = Color(1.0, 1.0, 1.0, 1.0)
 	_feedback_material.emission_energy_multiplier = 0.8
-
-func _spawn_death_effect() -> void:
-	var puff := MeshInstance3D.new()
-	var mesh := SphereMesh.new()
-	mesh.radius = 0.4
-	mesh.height = 0.8
-	puff.mesh = mesh
-	var mat := StandardMaterial3D.new()
-	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	mat.emission_enabled = true
-	mat.emission = Color(1.0, 0.35, 0.25, 1.0)
-	mat.emission_energy_multiplier = 1.6
-	puff.material_override = mat
-	get_tree().current_scene.add_child(puff)
-	puff.global_position = global_position
-	var tween := create_tween()
-	tween.set_parallel(true)
-	tween.tween_property(puff, "scale", Vector3(1.4, 0.2, 1.4), 0.18)
-	tween.tween_property(puff, "modulate:a", 0.0, 0.18)
-	tween.finished.connect(puff.queue_free)

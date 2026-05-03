@@ -5,9 +5,10 @@ class_name Player
 # Change `movement_plane_normal` to move on a different plane later.
 # Set `use_camera_relative_input` to false if you want fixed world-axis movement.
 
-const DEBUG_WEAPON_ATTACH_TRACE := false
 const MUZZLE_FLASH_SCENE := preload("res://scenes/effects/muzzle_flash.tscn")
 const EXPLOSION_AOE_SCENE := preload("res://scenes/effects/explosion_aoe.tscn")
+const WEAPON_VISUALS_SCRIPT := preload("res://scripts/components/weapon_visuals.gd")
+const COMBAT_UTILS := preload("res://scripts/utils/combat_utils.gd")
 
 signal hp_changed(current_hp_value: int)
 signal died
@@ -46,7 +47,6 @@ signal died
 @export var character_root_path: NodePath = NodePath("VisualRoot/Knight")
 @export var idle_animation_name: String = "Walking_A"
 @export var run_animation_name: String = "Running_A"
-@export var weapon_attachment_fallback_offset: Vector3 = Vector3(0.45, 0.95, -0.35)
 
 @onready var collision_shape: CollisionShape3D = $CollisionShape3D
 @onready var mesh_instance: MeshInstance3D = $MeshInstance3D
@@ -73,44 +73,16 @@ var _projectile_pool: Array[Projectile] = []
 var _nearest_enemy_this_frame: Node3D
 var _nearest_enemy_frame: int = -1
 var _current_hero_model_path: String = ""
-var _current_weapon_model_path: String = ""
 var current_weapon_id: String = "weapon_basic"
 var current_weapon_display_name: String = "Basic Gun"
+var current_weapon_special_effect: String = "none"
+var support_damage_multiplier: float = 1.0
+var weapon_visuals
+var skill_manager: Node
 var game_manager: GameManager
 var audio_manager: AudioManager
 
 func _ready() -> void:
-    game_manager = get_node("/root/GameManager") as GameManager
-    audio_manager = get_node_or_null("/root/AudioManager") as AudioManager
-    current_hp = max(max_hp, 1)
-    _base_scale = scale
-    _plane_origin = global_position
-    _plane_normal = movement_plane_normal.normalized()
-    if _plane_normal == Vector3.ZERO:
-        _plane_normal = Vector3.UP
-    _constrain_to_plane()
-    _fire_timer = max(fire_interval, 0.01)
-    _visual_base_position = visual_root.position
-    character_root = _resolve_character_root()
-    _setup_character_animation_player()
-    _setup_feedback_material()
-    _warm_projectile_pool()
-    hp_changed.emit(current_hp)
-	game_manager = get_node("/root/GameManager") as GameManager
-	current_hp = max(max_hp, 1)
-	_base_scale = scale
-	_plane_origin = global_position
-	_plane_normal = movement_plane_normal.normalized()
-	if _plane_normal == Vector3.ZERO:
-		_plane_normal = Vector3.UP
-	_constrain_to_plane()
-	_fire_timer = max(fire_interval, 0.01)
-	_visual_base_position = visual_root.position
-	character_root = _resolve_character_root()
-	_setup_character_animation_player()
-	_setup_feedback_material()
-	_warm_projectile_pool()
-	hp_changed.emit(current_hp)
 	game_manager = get_node("/root/GameManager") as GameManager
 	audio_manager = get_node_or_null("/root/AudioManager") as AudioManager
 	current_hp = max(max_hp, 1)
@@ -123,6 +95,7 @@ func _ready() -> void:
 	_fire_timer = max(fire_interval, 0.01)
 	_visual_base_position = visual_root.position
 	character_root = _resolve_character_root()
+	_setup_weapon_visuals()
 	_setup_character_animation_player()
 	_setup_feedback_material()
 	_warm_projectile_pool()
@@ -143,7 +116,6 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 	_constrain_to_plane()
-	_cache_nearest_enemy_for_frame()
 	_face_combat_target_or_movement(move_direction)
 	_animate_visual(delta, move_direction)
 
@@ -158,7 +130,10 @@ func _process(delta: float) -> void:
 
 	_skill_primary_timer = max(_skill_primary_timer - delta, 0.0)
 	if InputMap.has_action("skill_primary") and Input.is_action_just_pressed("skill_primary"):
-		activate_explosion_skill()
+		if skill_manager != null and skill_manager.has_method("has_active_skills") and skill_manager.call("has_active_skills"):
+			skill_manager.call("try_use_slot", 0)
+		else:
+			activate_explosion_skill()
 
 	if not enable_auto_fire:
 		return
@@ -213,54 +188,17 @@ func _clamp_to_play_area() -> void:
 	global_position.z = clampf(global_position.z, -play_area_radius, play_area_radius)
 
 func spawn_projectile() -> void:
-    if projectile_scene == null:
-        return
-
-    _cache_nearest_enemy_for_frame()
-    var target_enemy := _nearest_enemy_this_frame
-    if target_enemy == null:
-        return
-    _face_direction(target_enemy.global_position - global_position)
-    _trigger_shoot_feedback()
-    _spawn_muzzle_flash()
-    if audio_manager != null:
-        audio_manager.play_sfx_event(&"shoot")
-
-    var projectile_container := get_node_or_null(projectile_container_path) as Node3D
-    if projectile_container == null:
-        return
-
-    var base_direction := target_enemy.global_position - shoot_point.global_position
-    _spawn_muzzle_flash(base_direction)
-    _request_camera_shake(0.08, 0.08)
-    var shot_count := clampi(projectile_count, 1, 5)
-    var angle_step := 0.0
-    if shot_count > 1:
-        angle_step = deg_to_rad(spread_angle_degrees) / float(shot_count - 1)
-    var start_angle := -deg_to_rad(spread_angle_degrees) * 0.5
-
-    for shot_index in range(shot_count):
-        var projectile := _acquire_projectile(projectile_container)
-        if projectile == null:
-            continue
-        projectile.global_transform = shoot_point.global_transform
-        projectile.damage = projectile_damage
-        projectile.speed = projectile_speed
-        projectile.weapon_id = current_weapon_id
-        projectile.knockback_strength = _get_projectile_knockback_strength()
-        var shot_direction := base_direction
-        if shot_count > 1:
-            shot_direction = base_direction.rotated(_plane_normal, start_angle + angle_step * shot_index)
-        projectile.setup(shot_direction, weapon_range)
 	if projectile_scene == null:
 		return
 
-	_cache_nearest_enemy_for_frame()
+	_cache_nearest_enemy_for_frame(true)
 	var target_enemy := _nearest_enemy_this_frame
 	if target_enemy == null:
 		return
 	_face_direction(target_enemy.global_position - global_position)
 	_trigger_shoot_feedback()
+	if audio_manager != null:
+		audio_manager.play_sfx_event(&"shoot")
 
 	var projectile_container := get_node_or_null(projectile_container_path) as Node3D
 	if projectile_container == null:
@@ -280,9 +218,10 @@ func spawn_projectile() -> void:
 		if projectile == null:
 			continue
 		projectile.global_transform = shoot_point.global_transform
-		projectile.damage = projectile_damage
+		projectile.damage = _get_modified_projectile_damage()
 		projectile.speed = projectile_speed
 		projectile.weapon_id = current_weapon_id
+		projectile.special_effect = current_weapon_special_effect
 		projectile.knockback_strength = _get_projectile_knockback_strength()
 		var shot_direction := base_direction
 		if shot_count > 1:
@@ -312,43 +251,8 @@ func activate_explosion_skill() -> bool:
 	_request_camera_shake(0.16, 0.16)
 	return true
 
-	if projectile_scene == null:
-		return
-
-	_cache_nearest_enemy_for_frame()
-	var target_enemy := _nearest_enemy_this_frame
-	if target_enemy == null:
-		return
-	_face_direction(target_enemy.global_position - global_position)
-	_trigger_shoot_feedback()
-	_spawn_muzzle_flash()
-	if audio_manager != null:
-		audio_manager.play_sfx_event(&"shoot")
-
-	var projectile_container := get_node_or_null(projectile_container_path) as Node3D
-	if projectile_container == null:
-		return
-
-	var base_direction := target_enemy.global_position - shoot_point.global_position
-	var shot_count := clampi(projectile_count, 1, 5)
-	var angle_step := 0.0
-	if shot_count > 1:
-		angle_step = deg_to_rad(spread_angle_degrees) / float(shot_count - 1)
-	var start_angle := -deg_to_rad(spread_angle_degrees) * 0.5
-
-	for shot_index in range(shot_count):
-		var projectile := _acquire_projectile(projectile_container)
-		if projectile == null:
-			continue
-		projectile.global_transform = shoot_point.global_transform
-		projectile.damage = projectile_damage
-		projectile.speed = projectile_speed
-		var shot_direction := base_direction
-		if shot_count > 1:
-			shot_direction = base_direction.rotated(_plane_normal, start_angle + angle_step * shot_index)
-		projectile.setup(shot_direction, weapon_range)
-
 func _face_combat_target_or_movement(move_direction: Vector3) -> void:
+	_cache_nearest_enemy_for_frame(true)
 	var target_enemy := _nearest_enemy_this_frame
 	if target_enemy != null:
 		_face_direction(target_enemy.global_position - global_position)
@@ -364,7 +268,14 @@ func take_damage(amount: int) -> void:
 		return
 
 	_damage_cooldown_timer = damage_cooldown
-	current_hp -= max(amount, 0)
+	var resolved_amount: int = max(amount, 0)
+	if skill_manager != null and skill_manager.has_method("resolve_incoming_damage"):
+		resolved_amount = int(skill_manager.call("resolve_incoming_damage", resolved_amount))
+	if resolved_amount <= 0:
+		_damage_cooldown_timer = damage_cooldown
+		return
+
+	current_hp -= resolved_amount
 	current_hp = max(current_hp, 0)
 	_play_damage_feedback()
 	hp_changed.emit(current_hp)
@@ -393,9 +304,16 @@ func restore_hp(amount: int) -> void:
 	current_hp = min(current_hp + max(amount, 0), max_hp)
 	hp_changed.emit(current_hp)
 
+func _get_modified_projectile_damage() -> int:
+	var base_damage := maxi(roundi(float(projectile_damage) * maxf(support_damage_multiplier, 0.1)), 1)
+	if skill_manager != null and skill_manager.has_method("get_modified_projectile_damage"):
+		return int(skill_manager.call("get_modified_projectile_damage", base_damage))
+	return base_damage
+
 func apply_weapon_definition(weapon_definition: Dictionary, attach_visual: bool = true, preview_mode: bool = false) -> void:
 	current_weapon_id = str(weapon_definition.get("id", current_weapon_id))
 	current_weapon_display_name = str(weapon_definition.get("display_name", weapon_definition.get("name", current_weapon_display_name)))
+	current_weapon_special_effect = str(weapon_definition.get("special_effect", "none"))
 	fire_interval = float(weapon_definition.get("fire_rate", weapon_definition.get("fire_interval", fire_interval)))
 	projectile_damage = int(weapon_definition.get("damage", weapon_definition.get("projectile_damage", projectile_damage)))
 	projectile_speed = float(weapon_definition.get("projectile_speed", projectile_speed))
@@ -404,7 +322,10 @@ func apply_weapon_definition(weapon_definition: Dictionary, attach_visual: bool 
 	weapon_range = max(float(weapon_definition.get("range", weapon_range)), 1.0)
 	enable_auto_fire = true
 	if attach_visual:
-		_attach_weapon_visual(weapon_definition, preview_mode)
+		if preview_mode:
+			attach_preview_weapon_visual(weapon_definition)
+		else:
+			attach_gameplay_weapon_visual(weapon_definition)
 
 func apply_hero_definition(hero_definition: Dictionary) -> void:
 	if hero_definition.has("max_hp_bonus"):
@@ -443,356 +364,32 @@ func apply_hero_definition(hero_definition: Dictionary) -> void:
 	_animation_player = null
 	_current_animation = ""
 	_current_hero_model_path = model_scene_path
-	_current_weapon_model_path = ""
 	set_meta("hero_id", hero_id)
 	set_meta("model_path", model_scene_path)
 	set_meta("model_fallback_used", bool(hero_definition.get("model_fallback_used", false)))
+	if weapon_visuals != null:
+		weapon_visuals.set_roots(visual_root, character_root)
+		weapon_visuals.clear()
 	_setup_character_animation_player()
 
-func _attach_weapon_visual(weapon_definition: Dictionary, preview_mode: bool = false) -> bool:
-	var weapon_id := str(weapon_definition.get("id", current_weapon_id))
-	var model_scene_path := str(weapon_definition.get("model_scene_path", "")).strip_edges()
-	var trace := {
-		"selected_hero_id": str(get_meta("hero_id", "")),
-		"selected_weapon_id": weapon_id,
-		"resolved_weapon_definition": JSON.stringify(weapon_definition),
-		"weapon_model_path": model_scene_path,
-		"weapon_scene_loaded": false,
-		"hero_instance_path": str(get_path()),
-		"found_weapon_socket_path": "",
-		"final_attached_weapon_node_path": "",
-	}
-	if model_scene_path.is_empty():
-		_remove_existing_weapon_visuals()
-		if not preview_mode:
-			push_warning("Player weapon %s has no model_scene_path; gameplay continues without weapon visual." % weapon_id)
-			_log_weapon_attach_trace(trace)
-			return false
-		push_warning("Player weapon %s has no model_scene_path; attaching visible preview placeholder." % weapon_id)
-		var placeholder_socket := _get_or_create_visible_weapon_socket()
-		var placeholder_weapon := _create_placeholder_weapon_visual(weapon_id)
-		placeholder_socket.add_child(placeholder_weapon)
-		placeholder_weapon.position = Vector3.ZERO
-		placeholder_weapon.rotation_degrees = _dictionary_vector3(weapon_definition, "attachment_rotation_degrees", Vector3(0.0, 90.0, 0.0))
-		placeholder_weapon.scale = _nonzero_vector3(_dictionary_vector3(weapon_definition, "attachment_scale", Vector3(0.18, 0.18, 0.18)), Vector3(0.18, 0.18, 0.18))
-		placeholder_weapon.set_meta("weapon_model_path", "")
-		placeholder_weapon.set_meta("attached_socket_path", str(placeholder_socket.get_path()))
-		_configure_weapon_preview_node(placeholder_weapon)
-		_ensure_weapon_visible(placeholder_weapon)
-		_current_weapon_model_path = ""
-		set_meta("weapon_id", weapon_id)
-		set_meta("weapon_model_path", "")
-		trace["found_weapon_socket_path"] = str(placeholder_socket.get_path())
-		trace["final_attached_weapon_node_path"] = str(placeholder_weapon.get_path())
-		_log_weapon_attach_trace(trace)
-		_assert_attached_weapon_visible(placeholder_weapon, weapon_id)
-		return true
-
-	var existing_weapon := _find_existing_weapon_visual()
-	if existing_weapon != null and str(existing_weapon.get_meta("weapon_id", "")) == weapon_id and str(existing_weapon.get_meta("weapon_model_path", existing_weapon.get_meta("model_path", ""))) == model_scene_path:
-		set_meta("weapon_id", weapon_id)
-		set_meta("weapon_model_path", model_scene_path)
-		trace["weapon_scene_loaded"] = true
-		trace["found_weapon_socket_path"] = str(existing_weapon.get_meta("attached_socket_path", ""))
-		trace["final_attached_weapon_node_path"] = str(existing_weapon.get_path())
-		_log_weapon_attach_trace(trace)
-		_assert_attached_weapon_visible(existing_weapon, weapon_id)
-		return true
-
-	_remove_existing_weapon_visuals()
-	var weapon_scene := load(model_scene_path) as PackedScene
-	trace["weapon_scene_loaded"] = weapon_scene != null
-	if weapon_scene == null:
-		if not preview_mode:
-			push_warning("Player weapon %s could not load model %s; gameplay continues without weapon visual." % [weapon_id, model_scene_path])
-			_current_weapon_model_path = ""
-			set_meta("weapon_id", weapon_id)
-			set_meta("weapon_model_path", model_scene_path)
-			_log_weapon_attach_trace(trace)
-			return false
-		push_warning("Player weapon %s could not load model %s; attaching visible preview placeholder." % [weapon_id, model_scene_path])
-		var missing_socket := _get_or_create_visible_weapon_socket()
-		var missing_weapon := _create_placeholder_weapon_visual(weapon_id)
-		missing_socket.add_child(missing_weapon)
-		missing_weapon.position = Vector3.ZERO
-		missing_weapon.rotation_degrees = _dictionary_vector3(weapon_definition, "attachment_rotation_degrees", Vector3(0.0, 90.0, 0.0))
-		missing_weapon.scale = _nonzero_vector3(_dictionary_vector3(weapon_definition, "attachment_scale", Vector3(0.18, 0.18, 0.18)), Vector3(0.18, 0.18, 0.18))
-		missing_weapon.set_meta("weapon_model_path", model_scene_path)
-		missing_weapon.set_meta("attached_socket_path", str(missing_socket.get_path()))
-		_configure_weapon_preview_node(missing_weapon)
-		_ensure_weapon_visible(missing_weapon)
-		_current_weapon_model_path = model_scene_path
-		set_meta("weapon_id", weapon_id)
-		set_meta("weapon_model_path", model_scene_path)
-		trace["found_weapon_socket_path"] = str(missing_socket.get_path())
-		trace["final_attached_weapon_node_path"] = str(missing_weapon.get_path())
-		_log_weapon_attach_trace(trace)
-		_assert_attached_weapon_visible(missing_weapon, weapon_id)
-		return true
-
-	var weapon_model := weapon_scene.instantiate() as Node3D
-	if weapon_model == null:
-		if not preview_mode:
-			push_warning("Player weapon %s model %s did not instantiate as Node3D; gameplay continues without weapon visual." % [weapon_id, model_scene_path])
-			_current_weapon_model_path = ""
-			set_meta("weapon_id", weapon_id)
-			set_meta("weapon_model_path", model_scene_path)
-			_log_weapon_attach_trace(trace)
-			return false
-		push_warning("Player weapon %s model %s did not instantiate as Node3D; attaching visible preview placeholder." % [weapon_id, model_scene_path])
-		weapon_model = _create_placeholder_weapon_visual(weapon_id)
-
-	weapon_model.name = "EquippedWeaponPreview"
-	weapon_model.set_meta("model_kind", "weapon")
-	weapon_model.set_meta("weapon_id", weapon_id)
-	weapon_model.set_meta("model_path", model_scene_path)
-	weapon_model.set_meta("weapon_model_path", model_scene_path)
-	weapon_model.set_meta("source_scene_path", model_scene_path)
-
-	var attachment_bone := str(weapon_definition.get("attachment_bone", "handslot.r")).strip_edges()
-	var attachment_result := _get_or_create_weapon_attachment_parent(attachment_bone)
-	var attachment_parent := attachment_result.get("node", null) as Node3D
-	if attachment_parent == null:
-		if not preview_mode:
-			push_warning("Player weapon %s could not find attachment '%s'; gameplay continues without weapon visual." % [weapon_id, attachment_bone])
-			weapon_model.free()
-			_current_weapon_model_path = ""
-			set_meta("weapon_id", weapon_id)
-			set_meta("weapon_model_path", model_scene_path)
-			_log_weapon_attach_trace(trace)
-			return false
-		attachment_parent = _get_or_create_visible_weapon_socket()
-		attachment_result["path"] = str(attachment_parent.get_path())
-		attachment_result["fallback"] = true
-		push_warning("Player weapon %s could not find attachment '%s'; using visible preview WeaponSocket fallback." % [weapon_id, attachment_bone])
-
-	attachment_parent.add_child(weapon_model)
-	var used_attachment_fallback := bool(attachment_result.get("fallback", false))
-	weapon_model.position = _dictionary_vector3(weapon_definition, "attachment_position", Vector3.ZERO)
-	if used_attachment_fallback:
-		weapon_model.position = Vector3.ZERO
-	weapon_model.rotation_degrees = _dictionary_vector3(weapon_definition, "attachment_rotation_degrees", Vector3(0.0, 90.0, 0.0))
-	weapon_model.scale = _nonzero_vector3(_dictionary_vector3(weapon_definition, "attachment_scale", Vector3(0.18, 0.18, 0.18)), Vector3(0.18, 0.18, 0.18))
-	weapon_model.visible = true
-	weapon_model.set_meta("attached_socket_path", str(attachment_result.get("path", attachment_parent.get_path())))
-	_configure_weapon_preview_node(weapon_model)
-	_ensure_weapon_visible(weapon_model)
-
-	_current_weapon_model_path = model_scene_path
-	set_meta("weapon_id", weapon_id)
-	set_meta("weapon_model_path", model_scene_path)
-	trace["found_weapon_socket_path"] = str(attachment_result.get("path", attachment_parent.get_path()))
-	trace["final_attached_weapon_node_path"] = str(weapon_model.get_path())
-	_log_weapon_attach_trace(trace)
-	_assert_attached_weapon_visible(weapon_model, weapon_id)
-	return true
+func _setup_weapon_visuals() -> void:
+	weapon_visuals = get_node_or_null("WeaponVisuals")
+	if weapon_visuals == null:
+		weapon_visuals = Node.new()
+		weapon_visuals.set_script(WEAPON_VISUALS_SCRIPT)
+		weapon_visuals.name = "WeaponVisuals"
+		add_child(weapon_visuals)
+	weapon_visuals.setup(self, visual_root, character_root)
 
 func attach_gameplay_weapon_visual(weapon_definition: Dictionary) -> bool:
-	return _attach_weapon_visual(weapon_definition, false)
+	if weapon_visuals == null:
+		_setup_weapon_visuals()
+	return weapon_visuals.attach_weapon(weapon_definition, false)
 
 func attach_preview_weapon_visual(weapon_definition: Dictionary) -> bool:
-	return _attach_weapon_visual(weapon_definition, true)
-
-func _get_or_create_weapon_attachment_parent(attachment_bone: String) -> Dictionary:
-	var candidates: Array[String] = []
-	if not attachment_bone.is_empty():
-		candidates.append(attachment_bone)
-	candidates.append_array(["WeaponSocket", "RightHandSocket", "weapon_socket", "handslot.r", "hand.r", "Hand.R", "hand_r", "Hand_R", "right_hand", "RightHand"])
-
-	var search_root := character_root if character_root != null else visual_root
-	if search_root != null:
-		for candidate in candidates:
-			var socket := _find_node3d_by_name(search_root, candidate)
-			if socket != null:
-				return {"node": socket, "path": str(socket.get_path()), "fallback": false}
-
-	var skeleton := _find_skeleton(search_root)
-	if skeleton != null:
-		var matched_bone := _find_matching_bone_name(skeleton, candidates)
-		if not matched_bone.is_empty():
-			var bone_candidates: Array[String] = [matched_bone]
-			bone_candidates.append_array(candidates)
-			candidates = bone_candidates
-		for candidate in candidates:
-			var bone_index := skeleton.find_bone(candidate)
-			if bone_index >= 0:
-				var attachment := skeleton.get_node_or_null("EquippedWeaponAttachment") as BoneAttachment3D
-				if attachment == null:
-					attachment = BoneAttachment3D.new()
-					attachment.name = "EquippedWeaponAttachment"
-					skeleton.add_child(attachment)
-				attachment.bone_name = candidate
-				return {"node": attachment, "path": "%s:%s" % [str(attachment.get_path()), candidate], "fallback": false}
-	return {"node": null, "path": "", "fallback": false}
-
-func _get_or_create_visible_weapon_socket() -> Node3D:
-	var parent := visual_root if visual_root != null else self
-	var socket := parent.get_node_or_null("WeaponSocket") as Node3D
-	if socket == null:
-		socket = Marker3D.new()
-		socket.name = "WeaponSocket"
-		parent.add_child(socket)
-	socket.position = weapon_attachment_fallback_offset
-	socket.rotation_degrees = Vector3.ZERO
-	socket.scale = Vector3.ONE
-	socket.visible = true
-	return socket
-
-func _find_matching_bone_name(skeleton: Skeleton3D, candidates: Array[String]) -> String:
-	for candidate in candidates:
-		var normalized_candidate := _normalize_attachment_name(candidate)
-		for bone_index in range(skeleton.get_bone_count()):
-			var bone_name := skeleton.get_bone_name(bone_index)
-			if _normalize_attachment_name(bone_name) == normalized_candidate:
-				return bone_name
-	for bone_index in range(skeleton.get_bone_count()):
-		var lower_bone := skeleton.get_bone_name(bone_index).to_lower()
-		if lower_bone.contains("right") and lower_bone.contains("hand"):
-			return skeleton.get_bone_name(bone_index)
-		if lower_bone.contains("hand") and (lower_bone.ends_with("_r") or lower_bone.ends_with(".r") or lower_bone.ends_with(" r")):
-			return skeleton.get_bone_name(bone_index)
-	return ""
-
-func _normalize_attachment_name(value: String) -> String:
-	return value.to_lower().replace("_", "").replace(".", "").replace(" ", "").replace("-", "")
-
-func _find_node3d_by_name(root: Node, node_name: String) -> Node3D:
-	if root is Node3D and root.name == node_name:
-		return root as Node3D
-	for child in root.get_children():
-		var found := _find_node3d_by_name(child, node_name)
-		if found != null:
-			return found
-	return null
-
-func _find_skeleton(root: Node) -> Skeleton3D:
-	if root == null:
-		return null
-	if root is Skeleton3D:
-		return root as Skeleton3D
-	for child in root.get_children():
-		var found := _find_skeleton(child)
-		if found != null:
-			return found
-	return null
-
-func _find_existing_weapon_visual() -> Node3D:
-	return _find_weapon_visual(self)
-
-func _find_weapon_visual(root: Node) -> Node3D:
-	if root is Node3D and (root.name == "EquippedWeaponPreview" or root.name == "EquippedWeapon" or str(root.get_meta("model_kind", "")) == "weapon"):
-		return root as Node3D
-	for child in root.get_children():
-		var found := _find_weapon_visual(child)
-		if found != null:
-			return found
-	return null
-
-func _remove_existing_weapon_visuals() -> void:
-	var existing := _find_existing_weapon_visual()
-	while existing != null:
-		var parent := existing.get_parent()
-		if parent != null:
-			parent.remove_child(existing)
-		existing.free()
-		existing = _find_existing_weapon_visual()
-
-func _configure_weapon_preview_node(node: Node) -> void:
-	node.set_process(false)
-	node.set_physics_process(false)
-	if node.has_method("set_process_input"):
-		node.set_process_input(false)
-	for child in node.get_children():
-		_configure_weapon_preview_node(child)
-
-func _create_placeholder_weapon_visual(weapon_id: String) -> Node3D:
-	var root := Node3D.new()
-	root.name = "EquippedWeaponPreview"
-	root.set_meta("model_kind", "weapon")
-	root.set_meta("weapon_id", weapon_id)
-	root.set_meta("model_path", "")
-	root.set_meta("source_scene_path", "placeholder://weapon")
-	var mesh_instance := MeshInstance3D.new()
-	mesh_instance.name = "VisibleWeaponPlaceholder"
-	var box := BoxMesh.new()
-	box.size = Vector3(0.16, 0.12, 0.75)
-	mesh_instance.mesh = box
-	mesh_instance.position = Vector3(0.0, 0.0, -0.25)
-	var material := StandardMaterial3D.new()
-	material.albedo_color = Color(0.95, 0.75, 0.2, 1.0)
-	material.metallic = 0.25
-	material.roughness = 0.45
-	mesh_instance.material_override = material
-	root.add_child(mesh_instance)
-	return root
-
-func _ensure_weapon_visible(node: Node) -> int:
-	var visible_mesh_count := 0
-	if node is Node3D:
-		var node3d := node as Node3D
-		node3d.visible = true
-		node3d.scale = _nonzero_vector3(node3d.scale, Vector3.ONE)
-	if node is MeshInstance3D:
-		var mesh_instance := node as MeshInstance3D
-		mesh_instance.visible = true
-		if mesh_instance.mesh != null:
-			visible_mesh_count += 1
-	for child in node.get_children():
-		visible_mesh_count += _ensure_weapon_visible(child)
-	return visible_mesh_count
-
-func _nonzero_vector3(value: Vector3, fallback: Vector3) -> Vector3:
-	if is_zero_approx(value.x) or is_zero_approx(value.y) or is_zero_approx(value.z):
-		return fallback
-	return value
-
-func _assert_attached_weapon_visible(weapon_node: Node3D, weapon_id: String) -> void:
-	if weapon_node == null:
-		push_warning("Weapon attach assertion failed: EquippedWeaponPreview node is missing for %s." % weapon_id)
-		return
-	if weapon_node.name != "EquippedWeaponPreview":
-		push_warning("Weapon attach assertion failed: attached weapon is named %s, expected EquippedWeaponPreview." % weapon_node.name)
-	if str(weapon_node.get_meta("weapon_id", "")) != weapon_id:
-		push_warning("Weapon attach assertion failed: weapon metadata mismatch for %s." % weapon_id)
-	var visible_mesh_count := _count_visible_weapon_meshes(weapon_node)
-	if visible_mesh_count == 0:
-		push_warning("Weapon attach assertion failed: EquippedWeaponPreview for %s has no visible MeshInstance3D children." % weapon_id)
-	elif DEBUG_WEAPON_ATTACH_TRACE:
-		print("Weapon attach assertion passed: weapon_id=%s visible_mesh_count=%d node=%s" % [weapon_id, visible_mesh_count, str(weapon_node.get_path())])
-
-func _count_visible_weapon_meshes(node: Node) -> int:
-	var count := 0
-	if node is MeshInstance3D:
-		var mesh_instance := node as MeshInstance3D
-		if mesh_instance.visible and mesh_instance.mesh != null:
-			count += 1
-	for child in node.get_children():
-		count += _count_visible_weapon_meshes(child)
-	return count
-
-func _log_weapon_attach_trace(trace: Dictionary) -> void:
-	if not DEBUG_WEAPON_ATTACH_TRACE:
-		return
-	print("Weapon attach debug: selected_hero_id=%s selected_weapon_id=%s weapon_model_path=%s scene_loaded=%s hero_instance_path=%s socket_path=%s attached_weapon_path=%s resolved_weapon_definition=%s" % [
-		str(trace.get("selected_hero_id", "")),
-		str(trace.get("selected_weapon_id", "")),
-		str(trace.get("weapon_model_path", "")),
-		str(trace.get("weapon_scene_loaded", false)),
-		str(trace.get("hero_instance_path", "")),
-		str(trace.get("found_weapon_socket_path", "")),
-		str(trace.get("final_attached_weapon_node_path", "")),
-		str(trace.get("resolved_weapon_definition", "")),
-	])
-
-func _dictionary_vector3(source: Dictionary, key: String, fallback: Vector3) -> Vector3:
-	var value: Variant = source.get(key, fallback)
-	if value is Vector3:
-		return value as Vector3
-	if typeof(value) == TYPE_ARRAY:
-		var values: Array = value
-		if values.size() >= 3:
-			return Vector3(float(values[0]), float(values[1]), float(values[2]))
-	return fallback
+	if weapon_visuals == null:
+		_setup_weapon_visuals()
+	return weapon_visuals.attach_weapon(weapon_definition, true)
 
 func receive_experience(amount: int) -> void:
 
@@ -804,25 +401,11 @@ func _find_nearest_enemy(require_weapon_range: bool = true) -> Node3D:
 	if enemy_container == null:
 		return null
 
-	var nearest_enemy: Node3D
-	var nearest_distance := INF
-	for child in enemy_container.get_children():
-		if child is not Enemy:
-			continue
-		var enemy := child as Enemy
-		if enemy.current_hp <= 0:
-			continue
-		var distance := global_position.distance_squared_to(enemy.global_position)
-		if require_weapon_range and weapon_range > 0.0 and distance > weapon_range * weapon_range:
-			continue
-		if distance < nearest_distance:
-			nearest_distance = distance
-			nearest_enemy = enemy
-	return nearest_enemy
+	return COMBAT_UTILS.find_nearest_enemy(global_position, enemy_container.get_children(), weapon_range if require_weapon_range else -1.0)
 
-func _cache_nearest_enemy_for_frame() -> void:
+func _cache_nearest_enemy_for_frame(force_refresh: bool = false) -> void:
 	var frame := Engine.get_physics_frames()
-	if _nearest_enemy_frame == frame:
+	if not force_refresh and _nearest_enemy_frame == frame:
 		return
 	_nearest_enemy_this_frame = _find_nearest_enemy()
 	_nearest_enemy_frame = frame
@@ -870,8 +453,11 @@ func _move_projectile_to_container(projectile: Projectile, projectile_container:
 		current_parent.remove_child(projectile)
 	projectile_container.add_child(projectile)
 
-func _on_projectile_recycle_requested(projectile: Projectile) -> void:
-	call_deferred("_pool_projectile", projectile)
+func _on_projectile_recycle_requested(projectile: Projectile, defer_pool: bool = false) -> void:
+	if defer_pool:
+		call_deferred("_pool_projectile", projectile)
+		return
+	_pool_projectile(projectile)
 
 func _pool_projectile(projectile: Projectile) -> void:
 	if not is_instance_valid(projectile):
@@ -947,6 +533,8 @@ func _request_camera_shake(amount: float, duration: float) -> void:
 func _get_projectile_knockback_strength() -> float:
 	if current_weapon_id == "weapon_heavy":
 		return 2.6
+	if current_weapon_special_effect == "stagger":
+		return 1.4
 	return 0.0
 
 func _setup_character_animation_player() -> void:
@@ -1047,57 +635,6 @@ func _play_damage_feedback() -> void:
 	_feedback_tween.chain().tween_property(self, "scale", _base_scale, 0.07)
 
 func _set_damage_flash(strength: float) -> void:
-    if _feedback_material == null:
-        return
-    _feedback_material.albedo_color = _base_color.lerp(Color(1.0, 0.35, 0.35, 1.0), strength)
-
-
-func _spawn_muzzle_flash() -> void:
-    if shoot_point == null:
-        return
-    var flash := MeshInstance3D.new()
-    var mesh := SphereMesh.new()
-    mesh.radius = 0.12
-    mesh.height = 0.24
-    flash.mesh = mesh
-    var material := StandardMaterial3D.new()
-    material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-    material.emission_enabled = true
-    material.emission = Color(1.0, 0.85, 0.35, 1.0)
-    material.emission_energy_multiplier = 2.0
-    material.albedo_color = Color(1.0, 0.9, 0.5, 1.0)
-    flash.material_override = material
-    shoot_point.add_child(flash)
-    var tween := create_tween()
-    tween.tween_property(flash, "scale", Vector3(0.05, 0.05, 0.05), 0.06)
-    tween.finished.connect(flash.queue_free)
-<<<<<<< ours
 	if _feedback_material == null:
 		return
 	_feedback_material.albedo_color = _base_color.lerp(Color(1.0, 0.35, 0.35, 1.0), strength)
-	if _feedback_material == null:
-		return
-	_feedback_material.albedo_color = _base_color.lerp(Color(1.0, 0.35, 0.35, 1.0), strength)
-
-
-func _spawn_muzzle_flash() -> void:
-	if shoot_point == null:
-		return
-	var flash := MeshInstance3D.new()
-	var mesh := SphereMesh.new()
-	mesh.radius = 0.12
-	mesh.height = 0.24
-	flash.mesh = mesh
-	var material := StandardMaterial3D.new()
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.emission_enabled = true
-	material.emission = Color(1.0, 0.85, 0.35, 1.0)
-	material.emission_energy_multiplier = 2.0
-	material.albedo_color = Color(1.0, 0.9, 0.5, 1.0)
-	flash.material_override = material
-	shoot_point.add_child(flash)
-	var tween := create_tween()
-	tween.tween_property(flash, "scale", Vector3(0.05, 0.05, 0.05), 0.06)
-	tween.finished.connect(flash.queue_free)
-=======
->>>>>>> theirs

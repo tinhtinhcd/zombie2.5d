@@ -44,6 +44,7 @@ var _pet_buttons: Dictionary = {}
 var _pet_card_nodes: Dictionary = {}
 var _left_button: Button
 var _right_button: Button
+var _evolve_button: Button
 
 func setup(status_label: Label, start_button: Button, drone_button: Button, sprite_button: Button, wisp_button: Button, game_manager: GameManager, home_state = null) -> void:
 	_status_label = status_label
@@ -60,6 +61,7 @@ func setup(status_label: Label, start_button: Button, drone_button: Button, spri
 	}
 	_cache_card_nodes()
 	_install_carousel_controls()
+	_install_evolve_button()
 
 func refresh(selected_pet_id: String) -> void:
 	if _status_label == null or _game_manager == null:
@@ -74,15 +76,20 @@ func refresh(selected_pet_id: String) -> void:
 		_start_button.disabled = not centered_unlocked
 		_start_button.text = "Confirm" if centered_unlocked else "Locked"
 		HOME_UI_STYLE.apply_button_state(_start_button, "selected" if centered_unlocked else "locked")
+	_refresh_evolve_button(centered_pet_id, centered_unlocked)
 	_update_carousel_order()
 
 	var presentation: Dictionary = PET_PRESENTATION.get(centered_pet_id, {})
-	_status_label.text = "%s  Lv.%d  Bonus %d\n%s | %s" % [
+	var stage := _game_manager.get_pet_evolution_stage(centered_pet_id)
+	var evolution := _game_manager.get_pet_evolution(centered_pet_id)
+	_status_label.text = "%s  Stage %d  Shards %d\n%s | %s | %s +%.0f%%" % [
 		str(presentation.get("name", _game_manager.get_display_name(_game_manager.get_pet_definition(centered_pet_id), "Pet"))),
-		int(presentation.get("level", 1)),
-		int(presentation.get("power", 1)),
+		stage,
+		_game_manager.pet_evolution_shards,
 		str(presentation.get("role", "Companion")),
 		str(presentation.get("bonus", "Assist")),
+		str(evolution.get("buff_type", "buff")).replace("_", " "),
+		float(evolution.get("base_buff_value", 0.0)) * 100.0,
 	]
 
 func _get_select_button_text(item_id: String, selected_id: String, unlocked: bool) -> String:
@@ -131,6 +138,28 @@ func _install_carousel_controls() -> void:
 		_pet_cards.add_child(_right_button)
 	_right_button.pressed.connect(_on_right_pressed)
 	HOME_UI_STYLE.apply_button_state(_right_button, "secondary")
+
+func _install_evolve_button() -> void:
+	if _start_button == null:
+		return
+	_evolve_button = _start_button.get_parent().get_node_or_null("EvolveButton") as Button
+	if _evolve_button == null:
+		_evolve_button = Button.new()
+		_evolve_button.name = "EvolveButton"
+		_evolve_button.custom_minimum_size = _start_button.custom_minimum_size
+		_evolve_button.text = "Evolve"
+		_start_button.get_parent().add_child(_evolve_button)
+		_start_button.get_parent().move_child(_evolve_button, max(_start_button.get_index(), 0))
+	_evolve_button.pressed.connect(_on_evolve_pressed)
+
+func _refresh_evolve_button(pet_id: String, unlocked: bool) -> void:
+	if _evolve_button == null:
+		return
+	var stage := _game_manager.get_pet_evolution_stage(pet_id)
+	var cost := _game_manager.get_pet_next_evolution_cost(pet_id)
+	_evolve_button.text = "Evolve %d" % cost if stage < 3 else "Max Stage"
+	_evolve_button.disabled = not unlocked or stage >= 3 or _game_manager.pet_evolution_shards < cost
+	HOME_UI_STYLE.apply_button_state(_evolve_button, "selected" if not _evolve_button.disabled else "locked")
 
 func _update_carousel_order() -> void:
 	if _pet_cards == null:
@@ -185,6 +214,11 @@ func _on_left_pressed() -> void:
 
 func _on_right_pressed() -> void:
 	_focus_index(selected_pet_index + 1)
+
+func _on_evolve_pressed() -> void:
+	var pet_id: String = str(PET_IDS[selected_pet_index])
+	if _game_manager.evolve_pet(pet_id):
+		refresh(pet_id)
 
 func _focus_index(index: int) -> void:
 	var wrapped_index := (index + PET_IDS.size()) % PET_IDS.size()

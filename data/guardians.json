@@ -1,0 +1,197 @@
+{
+  "guard_bruiser": {
+    "display_name": "Bruiser Guard",
+    "type": "melee",
+    "role": "frontline_control",
+    "follow_distance": 1.8,
+    "scan_interval": 0.2,
+    "skills": [
+      {
+        "name": "Slam",
+        "cooldown": 5.0,
+        "damage": 2,
+        "range": 2.5,
+        "shape": "circle",
+        "trigger_condition": "2+ enemies within 2.5m",
+        "effect": "knockback"
+      },
+      {
+        "name": "Cleave",
+        "cooldown": 2.5,
+        "damage": 1,
+        "range": 1.5,
+        "shape": "short_cone",
+        "trigger_condition": "enemy in front",
+        "effect": "cone_damage"
+      },
+      {
+        "name": "Emergency Heal",
+        "cooldown": 14.0,
+        "damage": 0,
+        "range": 4.0,
+        "shape": "single_target",
+        "trigger_condition": "player_hp_below_40_percent",
+        "effect": "heal:2"
+      }
+    ],
+    "model_scene_path": "res://scenes/entities/shooter_guard.tscn",
+    "rarity": "common",
+    "unlock_condition": "starter_guard_unlock"
+  },
+  "guard_shooter": {
+    "display_name": "Shooter Guard",
+    "type": "ranged",
+    "role": "single_target_damage",
+    "follow_distance": 2.4,
+    "scan_interval": 0.2,
+    "skills": [
+      {
+        "name": "Cover Fire",
+        "cooldown": 1.0,
+        "damage": 1,
+        "range": 18.0,
+        "shape": "line",
+        "trigger_condition": "enemy_in_range",
+        "effect": "projectile"
+      },
+      {
+        "name": "Focus Shot",
+        "cooldown": 6.0,
+        "damage": 3,
+        "range": 20.0,
+        "shape": "line",
+        "trigger_condition": "highest_hp_enemy_in_range",
+        "effect": "pierce"
+      },
+      {
+        "name": "Reload Drill",
+        "cooldown": 12.0,
+        "damage": 0,
+        "range": 6.0,
+        "shape": "aura",
+        "trigger_condition": "player_firing",
+        "effect": "fire_rate_buff:1.15:4.0"
+      }
+    ],
+    "model_scene_path": "res://scenes/entities/shooter_guard.tscn",
+    "rarity": "common",
+    "unlock_condition": "hire_upgrade"
+  },
+  "guard_medic": {
+    "display_name": "Medic Guard",
+    "type": "support",
+    "role": "healing",
+    "follow_distance": 2.0,
+    "scan_interval": 0.35,
+    "skills": [
+      {
+        "name": "Patch Up",
+        "cooldown": 10.0,
+        "damage": 0,
+        "range": 4.0,
+        "shape": "single_target",
+        "trigger_condition": "player_hp_below_60_percent",
+        "effect": "heal:2"
+      },
+      {
+        "name": "Adrenaline",
+        "cooldown": 14.0,
+        "damage": 0,
+        "range": 5.0,
+        "shape": "aura",
+        "trigger_condition": "player_surrounded",
+        "effect": "move_speed_buff:1.2:4.0"
+      },
+      {
+        "name": "Disinfect",
+        "cooldown": 7.0,
+        "damage": 1,
+        "range": 3.0,
+        "shape": "circle",
+        "trigger_condition": "3+ enemies nearby",
+        "effect": "slow"
+      }
+    ],
+    "model_scene_path": "res://scenes/entities/shooter_guard.tscn",
+    "rarity": "rare",
+    "unlock_condition": "level_2_clear"
+  },
+  "guard_engineer": {
+    "display_name": "Engineer Guard",
+    "type": "utility",
+    "role": "area_denial",
+    "follow_distance": 2.2,
+    "scan_interval": 0.3,
+    "skills": [
+      {
+        "name": "Mini Turret",
+        "cooldown": 16.0,
+        "damage": 1,
+        "range": 12.0,
+        "shape": "deployable",
+        "trigger_condition": "wave_started",
+        "effect": "temporary_turret"
+      },
+      {
+        "name": "Zap Mine",
+        "cooldown": 8.0,
+        "damage": 2,
+        "range": 2.5,
+        "shape": "trap",
+        "trigger_condition": "enemy_pathing_close",
+        "effect": "stun"
+      },
+      {
+        "name": "Armor Patch",
+        "cooldown": 15.0,
+        "damage": 0,
+        "range": 4.0,
+        "shape": "single_target",
+        "trigger_condition": "player_recently_damaged",
+        "effect": "temporary_damage_reduction"
+      }
+    ],
+    "model_scene_path": "res://scenes/entities/shooter_guard.tscn",
+    "rarity": "epic",
+    "unlock_condition": "collect_50_scrap"
+  },
+  "guard_sentinel": {
+    "display_name": "Sentinel Guard",
+    "type": "tank",
+    "role": "boss_control",
+    "follow_distance": 2.6,
+    "scan_interval": 0.25,
+    "skills": [
+      {
+        "name": "Taunt",
+        "cooldown": 10.0,
+        "damage": 0,
+        "range": 5.0,
+        "shape": "circle",
+        "trigger_condition": "player_hp_below_50_percent",
+        "effect": "redirect_enemies"
+      },
+      {
+        "name": "Shield Wall",
+        "cooldown": 18.0,
+        "damage": 0,
+        "range": 3.0,
+        "shape": "arc",
+        "trigger_condition": "projectiles_or_boss_nearby",
+        "effect": "damage_reduction_aura"
+      },
+      {
+        "name": "Boss Breaker",
+        "cooldown": 12.0,
+        "damage": 4,
+        "range": 2.0,
+        "shape": "single_target",
+        "trigger_condition": "boss_in_range",
+        "effect": "stagger"
+      }
+    ],
+    "model_scene_path": "res://scenes/entities/shooter_guard.tscn",
+    "rarity": "legendary",
+    "unlock_condition": "defeat_first_boss"
+  }
+}

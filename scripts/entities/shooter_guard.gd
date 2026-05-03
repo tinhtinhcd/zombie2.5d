@@ -1,6 +1,8 @@
 extends Node3D
 class_name ShooterGuard
 
+const COMBAT_UTILS := preload("res://scripts/utils/combat_utils.gd")
+
 @export var target_path: NodePath = NodePath("../Player")
 @export var enemy_container_path: NodePath = NodePath("../EnemyContainer")
 @export var projectile_container_path: NodePath = NodePath("../ProjectileContainer")
@@ -41,7 +43,7 @@ func _process(delta: float) -> void:
 	if _attack_timer > 0.0:
 		return
 
-	if _cached_enemy == null or not is_instance_valid(_cached_enemy) or _cached_enemy.current_hp <= 0:
+	if _cached_enemy == null or not is_instance_valid(_cached_enemy) or _cached_enemy.is_dead():
 		return
 	if attack_range > 0.0 and global_position.distance_squared_to(_cached_enemy.global_position) > attack_range * attack_range:
 		_cached_enemy = null
@@ -68,19 +70,4 @@ func _find_nearest_enemy() -> Enemy:
 	var enemy_container := get_node_or_null(enemy_container_path) as Node3D
 	if enemy_container == null:
 		return null
-	var nearest_enemy: Enemy
-	var nearest_distance := INF
-	var range_squared := attack_range * attack_range
-	for child in enemy_container.get_children():
-		if child is not Enemy:
-			continue
-		var enemy := child as Enemy
-		if enemy.current_hp <= 0:
-			continue
-		var distance := global_position.distance_squared_to(enemy.global_position)
-		if attack_range > 0.0 and distance > range_squared:
-			continue
-		if distance < nearest_distance:
-			nearest_distance = distance
-			nearest_enemy = enemy
-	return nearest_enemy
+	return COMBAT_UTILS.find_nearest_enemy(global_position, enemy_container.get_children(), attack_range)

@@ -11,6 +11,13 @@ const COLOR_SELECTED_DARK := Color(0.025, 0.09, 0.105, 1.0)
 const COLOR_TEAL := Color(0.42, 0.9, 0.95, 1.0)
 const COLOR_LOCKED := Color(0.075, 0.09, 0.095, 0.95)
 const COLOR_LOCKED_BORDER := Color(0.18, 0.26, 0.28, 0.9)
+const RARITY_COLORS := {
+	"common": Color(0.61, 0.64, 0.69, 1.0),
+	"uncommon": Color(0.13, 0.77, 0.37, 1.0),
+	"rare": Color(0.23, 0.51, 0.96, 1.0),
+	"epic": Color(0.66, 0.33, 0.97, 1.0),
+	"legendary": Color(0.98, 0.45, 0.09, 1.0),
+}
 
 const WENREXA_BACKGROUND_PATH := "res://assets/wenrexa_ui_sci_fi_01/common/Background.jpg"
 const WENREXA_BTN_DEFAULT_PATH := "res://assets/wenrexa_ui_sci_fi_01/common/BtnDefault.png"
@@ -124,6 +131,22 @@ static func apply_compact_button_state(button: Button, state: String = "default"
 	button.add_theme_color_override("font_hover_color", font)
 	button.add_theme_color_override("font_pressed_color", font)
 	button.add_theme_color_override("font_disabled_color", Color(0.45, 0.52, 0.54, 1.0))
+	button.add_theme_font_size_override("font_size", 12)
+	button.alignment = HORIZONTAL_ALIGNMENT_CENTER
+
+static func apply_compact_button_rarity(button: Button, rarity: String, is_selected: bool = false) -> void:
+	if button == null:
+		return
+	var rarity_color: Color = RARITY_COLORS.get(rarity.to_lower(), RARITY_COLORS["common"])
+	var fill := Color(0.045, 0.085, 0.095, 0.92).lerp(rarity_color, 0.12)
+	var border := rarity_color if is_selected else rarity_color.darkened(0.18)
+	button.add_theme_stylebox_override("normal", _make_compact_button_style(fill, border))
+	button.add_theme_stylebox_override("hover", _make_compact_button_style(fill.lightened(0.08), rarity_color))
+	button.add_theme_stylebox_override("focus", _make_compact_button_style(fill.lightened(0.08), rarity_color))
+	button.add_theme_stylebox_override("pressed", _make_compact_button_style(fill.lightened(0.13), rarity_color))
+	button.add_theme_color_override("font_color", COLOR_TEXT)
+	button.add_theme_color_override("font_hover_color", COLOR_TEXT)
+	button.add_theme_color_override("font_pressed_color", COLOR_TEXT)
 	button.add_theme_font_size_override("font_size", 12)
 	button.alignment = HORIZONTAL_ALIGNMENT_CENTER
 

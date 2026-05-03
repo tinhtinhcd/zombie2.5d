@@ -1,0 +1,26 @@
+{
+  "pet_charm_damage": {
+    "display_name": "Power Charm",
+    "pet_id": "any",
+    "modifier_type": "buff_multiplier_bonus",
+    "modifier_value": 0.15,
+    "rarity": "common",
+    "description": "Slightly improves the equipped pet's buff."
+  },
+  "pet_charm_swift": {
+    "display_name": "Swift Charm",
+    "pet_id": "pet_sprite",
+    "modifier_type": "buff_multiplier_bonus",
+    "modifier_value": 0.2,
+    "rarity": "rare",
+    "description": "Improves Sprite movement support."
+  },
+  "pet_charm_focus": {
+    "display_name": "Focus Charm",
+    "pet_id": "pet_orb",
+    "modifier_type": "buff_multiplier_bonus",
+    "modifier_value": 0.25,
+    "rarity": "epic",
+    "description": "Improves Orb cooldown support."
+  }
+}

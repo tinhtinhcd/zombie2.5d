@@ -1,0 +1,52 @@
+{
+  "pet_drone": {
+    "pet_id": "pet_drone",
+    "buff_type": "damage_multiplier",
+    "base_buff_value": 0.1,
+    "stages": [
+      {"stage": 1, "shard_cost": 0, "buff_multiplier": 1.0, "visual_change": "starter_frame"},
+      {"stage": 2, "shard_cost": 25, "buff_multiplier": 1.5, "visual_change": "blue_core"},
+      {"stage": 3, "shard_cost": 60, "buff_multiplier": 2.0, "visual_change": "twin_rotors"}
+    ]
+  },
+  "pet_sprite": {
+    "pet_id": "pet_sprite",
+    "buff_type": "move_speed_multiplier",
+    "base_buff_value": 0.08,
+    "stages": [
+      {"stage": 1, "shard_cost": 0, "buff_multiplier": 1.0, "visual_change": "starter_glow"},
+      {"stage": 2, "shard_cost": 25, "buff_multiplier": 1.5, "visual_change": "brighter_trail"},
+      {"stage": 3, "shard_cost": 60, "buff_multiplier": 2.0, "visual_change": "wide_aura"}
+    ]
+  },
+  "pet_wisp": {
+    "pet_id": "pet_wisp",
+    "buff_type": "xp_gain_multiplier",
+    "base_buff_value": 0.1,
+    "stages": [
+      {"stage": 1, "shard_cost": 0, "buff_multiplier": 1.0, "visual_change": "starter_orbit"},
+      {"stage": 2, "shard_cost": 25, "buff_multiplier": 1.5, "visual_change": "double_orbit"},
+      {"stage": 3, "shard_cost": 60, "buff_multiplier": 2.0, "visual_change": "triple_orbit"}
+    ]
+  },
+  "pet_beetle": {
+    "pet_id": "pet_beetle",
+    "buff_type": "max_hp_multiplier",
+    "base_buff_value": 0.08,
+    "stages": [
+      {"stage": 1, "shard_cost": 0, "buff_multiplier": 1.0, "visual_change": "starter_shell"},
+      {"stage": 2, "shard_cost": 25, "buff_multiplier": 1.5, "visual_change": "armored_shell"},
+      {"stage": 3, "shard_cost": 60, "buff_multiplier": 2.0, "visual_change": "spiked_shell"}
+    ]
+  },
+  "pet_orb": {
+    "pet_id": "pet_orb",
+    "buff_type": "cooldown_reduction",
+    "base_buff_value": 0.06,
+    "stages": [
+      {"stage": 1, "shard_cost": 0, "buff_multiplier": 1.0, "visual_change": "starter_orb"},
+      {"stage": 2, "shard_cost": 25, "buff_multiplier": 1.5, "visual_change": "split_orb"},
+      {"stage": 3, "shard_cost": 60, "buff_multiplier": 2.0, "visual_change": "halo_orb"}
+    ]
+  }
+}
