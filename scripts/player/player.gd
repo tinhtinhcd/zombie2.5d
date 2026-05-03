@@ -69,9 +69,11 @@ var _current_weapon_model_path: String = ""
 var current_weapon_id: String = "weapon_basic"
 var current_weapon_display_name: String = "Basic Gun"
 var game_manager: GameManager
+var audio_manager: AudioManager
 
 func _ready() -> void:
     game_manager = get_node("/root/GameManager") as GameManager
+    audio_manager = get_node_or_null("/root/AudioManager") as AudioManager
     current_hp = max(max_hp, 1)
     _base_scale = scale
     _plane_origin = global_position
@@ -177,6 +179,9 @@ func spawn_projectile() -> void:
         return
     _face_direction(target_enemy.global_position - global_position)
     _trigger_shoot_feedback()
+    _spawn_muzzle_flash()
+    if audio_manager != null:
+        audio_manager.play_sfx_event(&"shoot")
 
     var projectile_container := get_node_or_null(projectile_container_path) as Node3D
     if projectile_container == null:
@@ -868,3 +873,24 @@ func _set_damage_flash(strength: float) -> void:
     if _feedback_material == null:
         return
     _feedback_material.albedo_color = _base_color.lerp(Color(1.0, 0.35, 0.35, 1.0), strength)
+
+
+func _spawn_muzzle_flash() -> void:
+    if shoot_point == null:
+        return
+    var flash := MeshInstance3D.new()
+    var mesh := SphereMesh.new()
+    mesh.radius = 0.12
+    mesh.height = 0.24
+    flash.mesh = mesh
+    var material := StandardMaterial3D.new()
+    material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+    material.emission_enabled = true
+    material.emission = Color(1.0, 0.85, 0.35, 1.0)
+    material.emission_energy_multiplier = 2.0
+    material.albedo_color = Color(1.0, 0.9, 0.5, 1.0)
+    flash.material_override = material
+    shoot_point.add_child(flash)
+    var tween := create_tween()
+    tween.tween_property(flash, "scale", Vector3(0.05, 0.05, 0.05), 0.06)
+    tween.finished.connect(flash.queue_free)
