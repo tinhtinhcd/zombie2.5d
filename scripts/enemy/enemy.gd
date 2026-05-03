@@ -161,6 +161,8 @@ func die() -> void:
 	if audio_manager != null:
 		audio_manager.play_sfx_event(&"enemy_death")
 	_spawn_death_effect()
+	if audio_manager != null:
+		audio_manager.play_sfx_event(&"enemy_death")
 	_play_death_feedback()
 	_spawn_death_effect()
 

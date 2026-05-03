@@ -337,7 +337,32 @@ func _run() -> void:
 		push_error("Smoke test failed: GameManager autoload is missing.")
 		quit(1)
 		return
+<<<<<<< ours
 	if not _assert_testing_unlocks(game_manager):
+=======
+	var hp_probe := Player.new()
+	hp_probe.max_hp = 10
+	hp_probe.current_hp = 10
+	hp_probe.increase_max_hp(4)
+	if hp_probe.max_hp != 14 or hp_probe.current_hp != 14:
+		push_error("Smoke test failed: knight max_hp_bonus was not applied exactly once.")
+		quit(1)
+		return
+	var mage_probe := Player.new()
+	mage_probe.max_hp = 10
+	mage_probe.current_hp = 10
+	mage_probe.increase_max_hp(-2)
+	if mage_probe.max_hp != 8 or mage_probe.current_hp != 8:
+		push_error("Smoke test failed: mage negative max_hp_bonus was not applied exactly once.")
+		quit(1)
+		return
+	var low_hp_probe := Player.new()
+	low_hp_probe.max_hp = 1
+	low_hp_probe.current_hp = 1
+	low_hp_probe.increase_max_hp(-4)
+	if low_hp_probe.max_hp < 1 or low_hp_probe.current_hp < 0:
+		push_error("Smoke test failed: max_hp clamping dropped below safe minimum.")
+>>>>>>> theirs
 		quit(1)
 		return
 	game.call("_toggle_pause_menu")
