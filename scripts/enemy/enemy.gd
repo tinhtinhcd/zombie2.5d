@@ -52,9 +52,11 @@ var _knockback_velocity: Vector3 = Vector3.ZERO
 var _animation_player: AnimationPlayer
 var _current_animation: String = ""
 var game_manager: GameManager
+var audio_manager: AudioManager
 
 func _ready() -> void:
 	game_manager = get_node("/root/GameManager") as GameManager
+	audio_manager = get_node_or_null("/root/AudioManager") as AudioManager
 	add_to_group("enemies")
 	apply_enemy_type(enemy_type)
 	_base_scale = scale
@@ -135,6 +137,7 @@ func take_damage(amount: int, hit_position: Vector3 = Vector3.ZERO, hit_directio
 	current_hp -= max(amount, 0)
 	_apply_knockback(hit_position, hit_direction, knockback_strength)
 	_play_hit_feedback()
+	_play_enemy_hit_flash()
 	if enemy_type == &"boss" and game_manager != null:
 		game_manager.update_boss_health(current_hp, max_hp, true)
 	if current_hp <= 0:
@@ -155,8 +158,14 @@ func die() -> void:
 		if enemy_type == &"boss":
 			game_manager.update_boss_health(0, max_hp, false)
 	_spawn_xp_pickup()
+<<<<<<< ours
 	_spawn_death_effect()
+=======
+	if audio_manager != null:
+		audio_manager.play_sfx_event(&"enemy_death")
+>>>>>>> theirs
 	_play_death_feedback()
+	_spawn_death_effect()
 
 func _get_move_direction_to_target() -> Vector3:
 	if target == null or not is_instance_valid(target):
@@ -375,3 +384,30 @@ func _spawn_xp_pickup() -> void:
 		xp_pickup.xp_amount = game_manager.get_scaled_xp_drop(xp_drop_amount)
 	else:
 		xp_pickup.xp_amount = xp_drop_amount
+
+func _play_enemy_hit_flash() -> void:
+	if _feedback_material == null:
+		return
+	_feedback_material.emission_enabled = true
+	_feedback_material.emission = Color(1.0, 1.0, 1.0, 1.0)
+	_feedback_material.emission_energy_multiplier = 0.8
+
+func _spawn_death_effect() -> void:
+	var puff := MeshInstance3D.new()
+	var mesh := SphereMesh.new()
+	mesh.radius = 0.4
+	mesh.height = 0.8
+	puff.mesh = mesh
+	var mat := StandardMaterial3D.new()
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.emission_enabled = true
+	mat.emission = Color(1.0, 0.35, 0.25, 1.0)
+	mat.emission_energy_multiplier = 1.6
+	puff.material_override = mat
+	get_tree().current_scene.add_child(puff)
+	puff.global_position = global_position
+	var tween := create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(puff, "scale", Vector3(1.4, 0.2, 1.4), 0.18)
+	tween.tween_property(puff, "modulate:a", 0.0, 0.18)
+	tween.finished.connect(puff.queue_free)
