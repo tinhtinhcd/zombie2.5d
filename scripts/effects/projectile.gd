@@ -88,7 +88,28 @@ func _on_body_entered(body: Node) -> void:
 
     _has_hit = true
     _spawn_hit_spark()
-<<<<<<< ours
+    if audio_manager != null:
+        audio_manager.play_sfx_event(&"hit")
+    body.take_damage(damage)
+    recycle(true)
+
+func _spawn_hit_spark() -> void:
+    var spark := MeshInstance3D.new()
+    var mesh := SphereMesh.new()
+    mesh.radius = 0.16
+    mesh.height = 0.2
+    spark.mesh = mesh
+    var mat := StandardMaterial3D.new()
+    mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+    mat.emission_enabled = true
+    mat.emission = Color(1.0, 0.7, 0.25, 1.0)
+    mat.emission_energy_multiplier = 2.3
+    spark.material_override = mat
+    get_tree().current_scene.add_child(spark)
+    spark.global_position = global_position
+    var tween := create_tween()
+    tween.tween_property(spark, "scale", Vector3(0.05, 0.05, 0.05), 0.08)
+    tween.finished.connect(spark.queue_free)
     body.take_damage(damage, global_position, direction, knockback_strength)
     recycle(true)
 
@@ -116,7 +137,6 @@ func _orient_node_to_direction(node: Node3D, world_direction: Vector3) -> void:
     if absf(normalized_direction.dot(up_axis)) > 0.96:
         up_axis = Vector3.RIGHT
     node.look_at(node.global_position + normalized_direction, up_axis)
-=======
     if audio_manager != null:
         audio_manager.play_sfx_event(&"hit")
     body.take_damage(damage)
@@ -139,4 +159,3 @@ func _spawn_hit_spark() -> void:
     var tween := create_tween()
     tween.tween_property(spark, "scale", Vector3(0.05, 0.05, 0.05), 0.08)
     tween.finished.connect(spark.queue_free)
->>>>>>> theirs

@@ -158,12 +158,11 @@ func die() -> void:
 		if enemy_type == &"boss":
 			game_manager.update_boss_health(0, max_hp, false)
 	_spawn_xp_pickup()
-<<<<<<< ours
-	_spawn_death_effect()
-=======
 	if audio_manager != null:
 		audio_manager.play_sfx_event(&"enemy_death")
->>>>>>> theirs
+	_spawn_death_effect()
+	if audio_manager != null:
+		audio_manager.play_sfx_event(&"enemy_death")
 	_play_death_feedback()
 	_spawn_death_effect()
 
