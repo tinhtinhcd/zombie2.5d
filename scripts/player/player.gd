@@ -97,22 +97,22 @@ func _ready() -> void:
 	_warm_projectile_pool()
 	hp_changed.emit(current_hp)
 =======
-    game_manager = get_node("/root/GameManager") as GameManager
-    audio_manager = get_node_or_null("/root/AudioManager") as AudioManager
-    current_hp = max(max_hp, 1)
-    _base_scale = scale
-    _plane_origin = global_position
-    _plane_normal = movement_plane_normal.normalized()
-    if _plane_normal == Vector3.ZERO:
-        _plane_normal = Vector3.UP
-    _constrain_to_plane()
-    _fire_timer = max(fire_interval, 0.01)
-    _visual_base_position = visual_root.position
-    character_root = _resolve_character_root()
-    _setup_character_animation_player()
-    _setup_feedback_material()
-    _warm_projectile_pool()
-    hp_changed.emit(current_hp)
+	game_manager = get_node("/root/GameManager") as GameManager
+	audio_manager = get_node_or_null("/root/AudioManager") as AudioManager
+	current_hp = max(max_hp, 1)
+	_base_scale = scale
+	_plane_origin = global_position
+	_plane_normal = movement_plane_normal.normalized()
+	if _plane_normal == Vector3.ZERO:
+		_plane_normal = Vector3.UP
+	_constrain_to_plane()
+	_fire_timer = max(fire_interval, 0.01)
+	_visual_base_position = visual_root.position
+	character_root = _resolve_character_root()
+	_setup_character_animation_player()
+	_setup_feedback_material()
+	_warm_projectile_pool()
+	hp_changed.emit(current_hp)
 >>>>>>> theirs
 
 func _physics_process(delta: float) -> void:
@@ -261,41 +261,41 @@ func activate_explosion_skill() -> bool:
 	_request_camera_shake(0.16, 0.16)
 	return true
 =======
-    if projectile_scene == null:
-        return
+	if projectile_scene == null:
+		return
 
-    _cache_nearest_enemy_for_frame()
-    var target_enemy := _nearest_enemy_this_frame
-    if target_enemy == null:
-        return
-    _face_direction(target_enemy.global_position - global_position)
-    _trigger_shoot_feedback()
-    _spawn_muzzle_flash()
-    if audio_manager != null:
-        audio_manager.play_sfx_event(&"shoot")
+	_cache_nearest_enemy_for_frame()
+	var target_enemy := _nearest_enemy_this_frame
+	if target_enemy == null:
+		return
+	_face_direction(target_enemy.global_position - global_position)
+	_trigger_shoot_feedback()
+	_spawn_muzzle_flash()
+	if audio_manager != null:
+		audio_manager.play_sfx_event(&"shoot")
 
-    var projectile_container := get_node_or_null(projectile_container_path) as Node3D
-    if projectile_container == null:
-        return
+	var projectile_container := get_node_or_null(projectile_container_path) as Node3D
+	if projectile_container == null:
+		return
 
-    var base_direction := target_enemy.global_position - shoot_point.global_position
-    var shot_count := clampi(projectile_count, 1, 5)
-    var angle_step := 0.0
-    if shot_count > 1:
-        angle_step = deg_to_rad(spread_angle_degrees) / float(shot_count - 1)
-    var start_angle := -deg_to_rad(spread_angle_degrees) * 0.5
+	var base_direction := target_enemy.global_position - shoot_point.global_position
+	var shot_count := clampi(projectile_count, 1, 5)
+	var angle_step := 0.0
+	if shot_count > 1:
+		angle_step = deg_to_rad(spread_angle_degrees) / float(shot_count - 1)
+	var start_angle := -deg_to_rad(spread_angle_degrees) * 0.5
 
-    for shot_index in range(shot_count):
-        var projectile := _acquire_projectile(projectile_container)
-        if projectile == null:
-            continue
-        projectile.global_transform = shoot_point.global_transform
-        projectile.damage = projectile_damage
-        projectile.speed = projectile_speed
-        var shot_direction := base_direction
-        if shot_count > 1:
-            shot_direction = base_direction.rotated(_plane_normal, start_angle + angle_step * shot_index)
-        projectile.setup(shot_direction, weapon_range)
+	for shot_index in range(shot_count):
+		var projectile := _acquire_projectile(projectile_container)
+		if projectile == null:
+			continue
+		projectile.global_transform = shoot_point.global_transform
+		projectile.damage = projectile_damage
+		projectile.speed = projectile_speed
+		var shot_direction := base_direction
+		if shot_count > 1:
+			shot_direction = base_direction.rotated(_plane_normal, start_angle + angle_step * shot_index)
+		projectile.setup(shot_direction, weapon_range)
 >>>>>>> theirs
 
 func _face_combat_target_or_movement(move_direction: Vector3) -> void:
@@ -1002,28 +1002,28 @@ func _set_damage_flash(strength: float) -> void:
 		return
 	_feedback_material.albedo_color = _base_color.lerp(Color(1.0, 0.35, 0.35, 1.0), strength)
 =======
-    if _feedback_material == null:
-        return
-    _feedback_material.albedo_color = _base_color.lerp(Color(1.0, 0.35, 0.35, 1.0), strength)
+	if _feedback_material == null:
+		return
+	_feedback_material.albedo_color = _base_color.lerp(Color(1.0, 0.35, 0.35, 1.0), strength)
 
 
 func _spawn_muzzle_flash() -> void:
-    if shoot_point == null:
-        return
-    var flash := MeshInstance3D.new()
-    var mesh := SphereMesh.new()
-    mesh.radius = 0.12
-    mesh.height = 0.24
-    flash.mesh = mesh
-    var material := StandardMaterial3D.new()
-    material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-    material.emission_enabled = true
-    material.emission = Color(1.0, 0.85, 0.35, 1.0)
-    material.emission_energy_multiplier = 2.0
-    material.albedo_color = Color(1.0, 0.9, 0.5, 1.0)
-    flash.material_override = material
-    shoot_point.add_child(flash)
-    var tween := create_tween()
-    tween.tween_property(flash, "scale", Vector3(0.05, 0.05, 0.05), 0.06)
-    tween.finished.connect(flash.queue_free)
+	if shoot_point == null:
+		return
+	var flash := MeshInstance3D.new()
+	var mesh := SphereMesh.new()
+	mesh.radius = 0.12
+	mesh.height = 0.24
+	flash.mesh = mesh
+	var material := StandardMaterial3D.new()
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.emission_enabled = true
+	material.emission = Color(1.0, 0.85, 0.35, 1.0)
+	material.emission_energy_multiplier = 2.0
+	material.albedo_color = Color(1.0, 0.9, 0.5, 1.0)
+	flash.material_override = material
+	shoot_point.add_child(flash)
+	var tween := create_tween()
+	tween.tween_property(flash, "scale", Vector3(0.05, 0.05, 0.05), 0.06)
+	tween.finished.connect(flash.queue_free)
 >>>>>>> theirs
