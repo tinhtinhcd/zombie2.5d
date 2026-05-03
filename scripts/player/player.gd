@@ -6,6 +6,8 @@ class_name Player
 # Set `use_camera_relative_input` to false if you want fixed world-axis movement.
 
 const DEBUG_WEAPON_ATTACH_TRACE := false
+const MUZZLE_FLASH_SCENE := preload("res://scenes/effects/muzzle_flash.tscn")
+const EXPLOSION_AOE_SCENE := preload("res://scenes/effects/explosion_aoe.tscn")
 
 signal hp_changed(current_hp_value: int)
 signal died
@@ -18,6 +20,7 @@ signal died
 @export var projectile_scene: PackedScene
 @export var projectile_container_path: NodePath = NodePath("../ProjectileContainer")
 @export var enemy_container_path: NodePath = NodePath("../EnemyContainer")
+@export var effect_container_path: NodePath = NodePath("../EffectContainer")
 @export var max_hp: int = 10
 @export var projectile_damage: int = 1
 @export var projectile_speed: float = 14.0
@@ -35,6 +38,10 @@ signal died
 @export var shoot_recoil_amount: float = 0.08
 @export var shoot_recoil_roll_amount: float = 0.025
 @export var shoot_recoil_duration: float = 0.16
+@export var skill_primary_cooldown: float = 7.0
+@export var explosion_skill_radius: float = 4.5
+@export var explosion_skill_damage: int = 3
+@export var explosion_skill_knockback: float = 2.2
 @export var movement_animation_scene: PackedScene
 @export var character_root_path: NodePath = NodePath("VisualRoot/Knight")
 @export var idle_animation_name: String = "Walking_A"
@@ -59,6 +66,7 @@ var _feedback_tween: Tween
 var _visual_base_position: Vector3 = Vector3.ZERO
 var _visual_anim_time: float = 0.0
 var _shoot_recoil_timer: float = 0.0
+var _skill_primary_timer: float = 0.0
 var _animation_player: AnimationPlayer
 var _current_animation: String = ""
 var _projectile_pool: Array[Projectile] = []
@@ -114,10 +122,14 @@ func get_input_vector() -> Vector2:
     return Input.get_vector("move_left", "move_right", "move_up", "move_down")
 
 func _process(delta: float) -> void:
-    if not enable_auto_fire:
+    if game_manager != null and not game_manager.is_gameplay_active:
         return
 
-    if game_manager != null and not game_manager.is_gameplay_active:
+    _skill_primary_timer = max(_skill_primary_timer - delta, 0.0)
+    if InputMap.has_action("skill_primary") and Input.is_action_just_pressed("skill_primary"):
+        activate_explosion_skill()
+
+    if not enable_auto_fire:
         return
 
     _fire_timer -= delta
@@ -188,6 +200,8 @@ func spawn_projectile() -> void:
         return
 
     var base_direction := target_enemy.global_position - shoot_point.global_position
+    _spawn_muzzle_flash(base_direction)
+    _request_camera_shake(0.08, 0.08)
     var shot_count := clampi(projectile_count, 1, 5)
     var angle_step := 0.0
     if shot_count > 1:
@@ -201,10 +215,35 @@ func spawn_projectile() -> void:
         projectile.global_transform = shoot_point.global_transform
         projectile.damage = projectile_damage
         projectile.speed = projectile_speed
+        projectile.weapon_id = current_weapon_id
+        projectile.knockback_strength = _get_projectile_knockback_strength()
         var shot_direction := base_direction
         if shot_count > 1:
             shot_direction = base_direction.rotated(_plane_normal, start_angle + angle_step * shot_index)
         projectile.setup(shot_direction, weapon_range)
+
+func activate_explosion_skill() -> bool:
+    if _skill_primary_timer > 0.0:
+        return false
+
+    var target_enemy := _find_nearest_enemy(false)
+    var skill_position := global_position
+    if target_enemy != null:
+        var target_offset := target_enemy.global_position - global_position
+        if target_offset.length() <= max(weapon_range, explosion_skill_radius):
+            skill_position = target_enemy.global_position
+    var explosion := EXPLOSION_AOE_SCENE.instantiate() as Node3D
+    if explosion == null:
+        return false
+    var effect_container := _get_effect_container()
+    effect_container.add_child(explosion)
+    if explosion.has_method("setup"):
+        explosion.call("setup", skill_position, explosion_skill_radius, max(explosion_skill_damage + projectile_damage - 1, 1), explosion_skill_knockback)
+    else:
+        explosion.global_position = skill_position
+    _skill_primary_timer = max(skill_primary_cooldown, 0.1)
+    _request_camera_shake(0.16, 0.16)
+    return true
 
 func _face_combat_target_or_movement(move_direction: Vector3) -> void:
     var target_enemy := _nearest_enemy_this_frame
@@ -668,6 +707,8 @@ func _find_nearest_enemy(require_weapon_range: bool = true) -> Node3D:
         if child is not Enemy:
             continue
         var enemy := child as Enemy
+        if enemy.current_hp <= 0:
+            continue
         var distance := global_position.distance_squared_to(enemy.global_position)
         if require_weapon_range and weapon_range > 0.0 and distance > weapon_range * weapon_range:
             continue
@@ -771,6 +812,39 @@ func _animate_visual(delta: float, move_direction: Vector3) -> void:
 
 func _trigger_shoot_feedback() -> void:
     _shoot_recoil_timer = max(shoot_recoil_duration, 0.0)
+
+func _spawn_muzzle_flash(world_direction: Vector3) -> void:
+    var flash := MUZZLE_FLASH_SCENE.instantiate() as Node3D
+    if flash == null:
+        return
+    _get_effect_container().add_child(flash)
+    flash.global_position = shoot_point.global_position
+    _orient_node_to_direction(flash, world_direction)
+
+func _get_effect_container() -> Node3D:
+    var effect_container := get_node_or_null(effect_container_path) as Node3D
+    if effect_container != null:
+        return effect_container
+    if get_parent() is Node3D:
+        return get_parent() as Node3D
+    return self
+
+func _orient_node_to_direction(node: Node3D, world_direction: Vector3) -> void:
+    if node == null or world_direction.is_zero_approx():
+        return
+    var direction := world_direction.normalized()
+    var up_axis := Vector3.UP
+    if absf(direction.dot(up_axis)) > 0.96:
+        up_axis = Vector3.RIGHT
+    node.look_at(node.global_position + direction, up_axis)
+
+func _request_camera_shake(amount: float, duration: float) -> void:
+    get_tree().call_group("camera_rigs", "shake", amount, duration)
+
+func _get_projectile_knockback_strength() -> float:
+    if current_weapon_id == "weapon_heavy":
+        return 2.6
+    return 0.0
 
 func _setup_character_animation_player() -> void:
     var source_scene := movement_animation_scene

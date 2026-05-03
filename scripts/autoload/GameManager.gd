@@ -9,6 +9,7 @@ const WAVE_CLEAR_CURRENCY_REWARD := 2
 const LEVEL_CLEAR_CURRENCY_REWARD := 10
 const BOSS_CLEAR_CURRENCY_REWARD := 15
 const DEBUG_GAMEPLAY_TRACE := false
+const TEST_UNLOCK_ALL_FEATURES := true
 
 signal score_changed(new_score: int)
 signal xp_changed(new_xp: int)
@@ -249,22 +250,28 @@ func apply_permanent_upgrades(player: Player) -> void:
 
 func set_selected_loadout(hero_id: String, weapon_id: String, pet_id: String) -> void:
     _ensure_progression_loaded()
-    if _game_data.has_hero(hero_id) and unlocked_heroes.has(hero_id):
+    if _game_data.has_hero(hero_id) and is_hero_unlocked(hero_id):
         selected_hero_id = hero_id
-    if _game_data.has_weapon(weapon_id) and unlocked_weapons.has(weapon_id):
+    if _game_data.has_weapon(weapon_id) and is_weapon_unlocked(weapon_id):
         selected_weapon_id = weapon_id
-    if _game_data.has_pet(pet_id) and unlocked_pets.has(pet_id):
+    if _game_data.has_pet(pet_id) and is_pet_unlocked(pet_id):
         selected_pet_id = pet_id
     _save_progression()
     loadout_changed.emit()
 
 func is_hero_unlocked(hero_id: String) -> bool:
+    if TEST_UNLOCK_ALL_FEATURES and _game_data.has_hero(hero_id):
+        return true
     return unlocked_heroes.has(hero_id)
 
 func is_weapon_unlocked(weapon_id: String) -> bool:
+    if TEST_UNLOCK_ALL_FEATURES and _game_data.has_weapon(weapon_id):
+        return true
     return unlocked_weapons.has(weapon_id)
 
 func is_pet_unlocked(pet_id: String) -> bool:
+    if TEST_UNLOCK_ALL_FEATURES and _game_data.has_pet(pet_id):
+        return true
     return unlocked_pets.has(pet_id)
 
 func get_selected_hero_definition() -> Dictionary:
@@ -522,6 +529,8 @@ func _ensure_progression_loaded() -> void:
         var inventory_value: Variant = save_data.get("inventory", {})
         if typeof(inventory_value) == TYPE_DICTIONARY:
             inventory = inventory_value
+    if TEST_UNLOCK_ALL_FEATURES:
+        _apply_testing_unlocks()
     _validate_selected_loadout()
     _progression_loaded = true
     highest_unlocked_level_changed.emit(highest_unlocked_level)
@@ -585,16 +594,30 @@ func _validate_selected_loadout() -> void:
     _ensure_unlocked_contains(unlocked_weapons, "weapon_basic")
     _ensure_unlocked_contains(unlocked_pets, "pet_drone")
 
-    if not _game_data.has_hero(selected_hero_id) or not unlocked_heroes.has(selected_hero_id):
+    if not _game_data.has_hero(selected_hero_id) or not is_hero_unlocked(selected_hero_id):
         selected_hero_id = "hero_knight"
-    if not _game_data.has_weapon(selected_weapon_id) or not unlocked_weapons.has(selected_weapon_id):
+    if not _game_data.has_weapon(selected_weapon_id) or not is_weapon_unlocked(selected_weapon_id):
         selected_weapon_id = "weapon_basic"
-    if not _game_data.has_pet(selected_pet_id) or not unlocked_pets.has(selected_pet_id):
+    if not _game_data.has_pet(selected_pet_id) or not is_pet_unlocked(selected_pet_id):
         selected_pet_id = "pet_drone"
 
 func _ensure_unlocked_contains(items: Array, item_id: String) -> void:
     if not items.has(item_id):
         items.append(item_id)
+
+func _apply_testing_unlocks() -> void:
+    _ensure_levels_loaded()
+    if not _levels.is_empty():
+        highest_unlocked_level = _levels.size()
+    _append_missing_ids(unlocked_heroes, _game_data.get_hero_ids())
+    _append_missing_ids(unlocked_weapons, _game_data.get_weapon_ids())
+    _append_missing_ids(unlocked_pets, _game_data.get_pet_ids())
+
+func _append_missing_ids(items: Array, ids: Array) -> void:
+    for id_value in ids:
+        var item_id := str(id_value)
+        if not items.has(item_id):
+            items.append(item_id)
 
 func _get_upgrade_options() -> Array:
     var options: Array = _game_data.get_upgrade_options()
