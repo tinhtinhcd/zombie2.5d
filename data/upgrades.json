@@ -38,5 +38,10 @@
     "id": "projectile_count",
     "title": "Extra Shot",
     "description": "Add one projectile to the current weapon, up to five."
+  },
+  {
+    "id": "hire_shooter_guard",
+    "title": "Hire Shooter Guard",
+    "description": "Hire a shooter guard to fight for this run."
   }
 ]

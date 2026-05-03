@@ -332,6 +332,36 @@ func _run() -> void:
 		push_error("Smoke test failed: GameManager autoload is missing.")
 		quit(1)
 		return
+	var selected_hero_definition := game_manager.get_selected_hero_definition()
+	var expected_player_max_hp := maxi(10 + int(selected_hero_definition.get("max_hp_bonus", 0)), 1)
+	if player.max_hp != expected_player_max_hp:
+		push_error("Smoke test failed: selected hero max_hp_bonus appears duplicated or missing. expected=%d actual=%d" % [expected_player_max_hp, player.max_hp])
+		quit(1)
+		return
+	var hp_probe := Player.new()
+	hp_probe.max_hp = 10
+	hp_probe.current_hp = 10
+	hp_probe.increase_max_hp(4)
+	if hp_probe.max_hp != 14 or hp_probe.current_hp != 14:
+		push_error("Smoke test failed: knight max_hp_bonus was not applied exactly once.")
+		quit(1)
+		return
+	var mage_probe := Player.new()
+	mage_probe.max_hp = 10
+	mage_probe.current_hp = 10
+	mage_probe.increase_max_hp(-2)
+	if mage_probe.max_hp != 8 or mage_probe.current_hp != 8:
+		push_error("Smoke test failed: mage negative max_hp_bonus was not applied exactly once.")
+		quit(1)
+		return
+	var low_hp_probe := Player.new()
+	low_hp_probe.max_hp = 1
+	low_hp_probe.current_hp = 1
+	low_hp_probe.increase_max_hp(-4)
+	if low_hp_probe.max_hp < 1 or low_hp_probe.current_hp < 0:
+		push_error("Smoke test failed: max_hp clamping dropped below safe minimum.")
+		quit(1)
+		return
 	game.call("_toggle_pause_menu")
 	var pause_menu := game.get_node("GameOverlayLayer/PauseMenu")
 	if not paused or game_manager.is_gameplay_active or not bool(pause_menu.visible):

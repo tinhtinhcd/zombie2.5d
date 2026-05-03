@@ -9,6 +9,7 @@ const WAVE_CLEAR_CURRENCY_REWARD := 2
 const LEVEL_CLEAR_CURRENCY_REWARD := 10
 const BOSS_CLEAR_CURRENCY_REWARD := 15
 const DEBUG_GAMEPLAY_TRACE := false
+const TEST_UNLOCK_ALL_FEATURES := false
 
 signal score_changed(new_score: int)
 signal xp_changed(new_xp: int)
@@ -28,6 +29,7 @@ signal inventory_changed(inventory: Dictionary)
 signal mission_progress_changed(summary: String)
 signal player_level_changed(level: int, current_xp: int, required_xp: int)
 signal boss_health_changed(current_hp: int, max_hp: int, visible: bool)
+signal guard_hire_requested(guard_id: StringName)
 
 var score: int = 0
 var xp: int = 0
@@ -63,6 +65,7 @@ var _progression_loaded: bool = false
 var _progression_save_dirty: bool = false
 var _progression_save_timer: float = 0.0
 var _game_data: RefCounted = GameDataScript.new()
+var audio_manager: AudioManager
 
 func _ready() -> void:
     process_mode = Node.PROCESS_MODE_ALWAYS
@@ -70,6 +73,7 @@ func _ready() -> void:
     # the gameplay scene starts, so we avoid duplicate signal emissions.
     _ensure_levels_loaded()
     _ensure_progression_loaded()
+    audio_manager = get_node_or_null("/root/AudioManager") as AudioManager
 
 func _process(delta: float) -> void:
     if not _progression_save_dirty:
@@ -176,6 +180,8 @@ func trigger_game_over() -> void:
     is_game_over = true
     _update_gameplay_active()
     game_over_changed.emit(is_game_over)
+    if audio_manager != null:
+        audio_manager.play_sfx_event(&"game_over")
     flush_progression_save()
 
 func trigger_victory() -> void:
@@ -187,6 +193,8 @@ func trigger_victory() -> void:
     is_victory = true
     _update_gameplay_active()
     victory_changed.emit(is_victory)
+    if audio_manager != null:
+        audio_manager.play_sfx_event(&"victory")
     flush_progression_save()
 
     var scene_router := get_node_or_null("/root/SceneRouter") as SceneRouter
@@ -351,9 +359,6 @@ func apply_selected_loadout(player: Player) -> void:
             str(player.get_path()),
         ])
 
-    var hp_bonus := int(hero_definition.get("max_hp_bonus", 0))
-    if hp_bonus != 0:
-        player.increase_max_hp(hp_bonus)
     player.move_speed = max(player.move_speed + float(hero_definition.get("move_speed_bonus", 0.0)), 1.0)
     player.projectile_damage += int(hero_definition.get("projectile_damage_bonus", 0))
     player.hp_changed.emit(player.current_hp)
@@ -619,6 +624,15 @@ func _apply_upgrade(player: Player, upgrade_id: StringName) -> void:
             player.increase_weapon_range(4.0)
         &"projectile_count":
             player.increase_projectile_count(1)
+        &"hire_shooter_guard":
+            request_hire_guard(&"guard_shooter")
+
+func request_hire_guard(guard_id: StringName) -> void:
+    guard_hire_requested.emit(guard_id)
+
+func hire_guard_after_ad_success(guard_id: StringName) -> void:
+    # TODO: Replace this placeholder with rewarded ad completion callback integration.
+    request_hire_guard(guard_id)
 
 func _reset_missions() -> void:
     mission_stats = {"kills": 0, "xp": 0, "wave": 0}

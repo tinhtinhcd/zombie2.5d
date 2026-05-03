@@ -1,15 +1,17 @@
 extends Node3D
-class_name PetCompanion
+class_name ShooterGuard
 
 @export var target_path: NodePath = NodePath("../Player")
 @export var enemy_container_path: NodePath = NodePath("../EnemyContainer")
-@export var follow_offset: Vector3 = Vector3(-1.2, 0.7, 0.8)
-@export var follow_speed: float = 8.0
-@export var attack_interval: float = 1.2
+@export var projectile_container_path: NodePath = NodePath("../ProjectileContainer")
+@export var projectile_scene: PackedScene
+@export var follow_offset: Vector3 = Vector3(1.4, 0.6, 0.9)
+@export var follow_speed: float = 7.0
+@export var attack_interval: float = 1.0
 @export var damage: int = 1
 @export var attack_range: float = 16.0
 @export var target_scan_interval: float = 0.2
-@export var enable_active_attack: bool = false
+@export var projectile_speed: float = 14.0
 
 var _target: Node3D
 var _attack_timer: float = 0.0
@@ -18,8 +20,10 @@ var _cached_enemy: Enemy
 var game_manager: GameManager
 
 func _ready() -> void:
-	game_manager = get_node("/root/GameManager") as GameManager
+	game_manager = get_node_or_null("/root/GameManager") as GameManager
 	_target = get_node_or_null(target_path) as Node3D
+	if projectile_scene == null:
+		projectile_scene = load("res://scenes/effects/projectile.tscn") as PackedScene
 
 func _process(delta: float) -> void:
 	if _target != null:
@@ -27,8 +31,6 @@ func _process(delta: float) -> void:
 		global_position = global_position.lerp(desired_position, min(delta * follow_speed, 1.0))
 
 	if game_manager != null and not game_manager.is_gameplay_active:
-		return
-	if not enable_active_attack:
 		return
 
 	_attack_timer -= delta
@@ -39,27 +41,33 @@ func _process(delta: float) -> void:
 	if _attack_timer > 0.0:
 		return
 
-	var enemy := _cached_enemy
-	if enemy == null or not is_instance_valid(enemy):
+	if _cached_enemy == null or not is_instance_valid(_cached_enemy) or _cached_enemy.current_hp <= 0:
 		return
-	if attack_range > 0.0 and global_position.distance_squared_to(enemy.global_position) > attack_range * attack_range:
+	if attack_range > 0.0 and global_position.distance_squared_to(_cached_enemy.global_position) > attack_range * attack_range:
 		_cached_enemy = null
 		return
-
-	enemy.take_damage(damage)
+	_shoot_at(_cached_enemy)
 	_attack_timer = max(attack_interval, 0.2)
 
-func apply_pet_definition(definition: Dictionary) -> void:
-	damage = int(definition.get("damage", damage))
-	attack_interval = float(definition.get("attack_interval", attack_interval))
-	attack_range = float(definition.get("attack_range", attack_range))
-	_cached_enemy = null
+func _shoot_at(enemy: Enemy) -> void:
+	if projectile_scene == null:
+		return
+	var projectile_container := get_node_or_null(projectile_container_path) as Node3D
+	if projectile_container == null:
+		return
+	var projectile := projectile_scene.instantiate() as Projectile
+	if projectile == null:
+		return
+	projectile_container.add_child(projectile)
+	projectile.global_position = global_position
+	projectile.damage = damage
+	projectile.speed = projectile_speed
+	projectile.setup(enemy.global_position - global_position, attack_range)
 
 func _find_nearest_enemy() -> Enemy:
 	var enemy_container := get_node_or_null(enemy_container_path) as Node3D
 	if enemy_container == null:
 		return null
-
 	var nearest_enemy: Enemy
 	var nearest_distance := INF
 	var range_squared := attack_range * attack_range

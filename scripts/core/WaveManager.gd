@@ -83,6 +83,8 @@ func _recycle_far_enemies() -> void:
         if child is not Node3D:
             continue
         var enemy := child as Node3D
+        if enemy is Enemy and (enemy as Enemy).is_dead():
+            continue
         if enemy.global_position.distance_squared_to(_spawner.player_target.global_position) > recycle_distance_squared:
             _spawner.recycle_enemy(enemy)
 

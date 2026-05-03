@@ -16,9 +16,11 @@ var _time_alive: float = 0.0
 var _origin: Vector3 = Vector3.ZERO
 var _has_hit: bool = false
 var _is_recycling: bool = false
+var audio_manager: AudioManager
 
 func _ready() -> void:
     _origin = global_position
+    audio_manager = get_node_or_null("/root/AudioManager") as AudioManager
     body_entered.connect(_on_body_entered)
 
 func setup(move_direction: Vector3, travel_distance: float = -1.0) -> void:
@@ -79,5 +81,26 @@ func _on_body_entered(body: Node) -> void:
         return
 
     _has_hit = true
+    _spawn_hit_spark()
+    if audio_manager != null:
+        audio_manager.play_sfx_event(&"hit")
     body.take_damage(damage)
     recycle(true)
+
+func _spawn_hit_spark() -> void:
+    var spark := MeshInstance3D.new()
+    var mesh := SphereMesh.new()
+    mesh.radius = 0.16
+    mesh.height = 0.2
+    spark.mesh = mesh
+    var mat := StandardMaterial3D.new()
+    mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+    mat.emission_enabled = true
+    mat.emission = Color(1.0, 0.7, 0.25, 1.0)
+    mat.emission_energy_multiplier = 2.3
+    spark.material_override = mat
+    get_tree().current_scene.add_child(spark)
+    spark.global_position = global_position
+    var tween := create_tween()
+    tween.tween_property(spark, "scale", Vector3(0.05, 0.05, 0.05), 0.08)
+    tween.finished.connect(spark.queue_free)
