@@ -9,6 +9,12 @@ const DEBUG_GAMEPLAY_TRACE := false
 @onready var settings_screen: SettingsScreen = $GameOverlayLayer/SettingsScreen
 @onready var game_manager: GameManager = get_node("/root/GameManager") as GameManager
 @onready var scene_router: SceneRouter = get_node("/root/SceneRouter") as SceneRouter
+@onready var guard_container: Node3D = $GuardContainer
+
+const SHOOTER_GUARD_SCENE := preload("res://scenes/entities/shooter_guard.tscn")
+const GUARD_SHOOTER_ID := &"guard_shooter"
+const MAX_GUARDS := 1
+var _active_guards: Dictionary = {}
 
 func _ready() -> void:
     process_mode = Node.PROCESS_MODE_ALWAYS
@@ -27,6 +33,7 @@ func _ready() -> void:
     _trace_gameplay_scene_state("after_loadout")
     if pet_companion != null:
         pet_companion.apply_pet_definition(game_manager.get_selected_pet_definition())
+        pet_companion.enable_active_attack = false
     pause_menu.visible = false
     hud.pause_requested.connect(_toggle_pause_menu)
     hud.restart_requested.connect(_restart_game)
@@ -38,6 +45,7 @@ func _ready() -> void:
     settings_screen.back_requested.connect(_hide_settings_menu)
     player.hp_changed.connect(hud.set_hp)
     player.died.connect(_on_player_died)
+    game_manager.guard_hire_requested.connect(_on_guard_hire_requested)
     hud.set_hp(player.current_hp)
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -152,6 +160,35 @@ func _restart_game() -> void:
 
 func _on_upgrade_selected(upgrade_id: StringName) -> void:
     game_manager.select_upgrade(player, upgrade_id)
+
+func _on_guard_hire_requested(guard_id: StringName) -> void:
+    spawn_guard(guard_id)
+
+func spawn_guard(guard_id: StringName) -> bool:
+    if guard_container == null:
+        push_warning("Guard spawn failed: GuardContainer is missing.")
+        return false
+    if _active_guards.size() >= MAX_GUARDS and not _active_guards.has(String(guard_id)):
+        return false
+    if _active_guards.has(String(guard_id)):
+        var existing_guard := _active_guards[String(guard_id)] as Node3D
+        if existing_guard != null and is_instance_valid(existing_guard):
+            return true
+        _active_guards.erase(String(guard_id))
+
+    if guard_id != GUARD_SHOOTER_ID:
+        push_warning("Unknown guard id requested: %s" % String(guard_id))
+        return false
+
+    var guard := SHOOTER_GUARD_SCENE.instantiate() as ShooterGuard
+    if guard == null:
+        push_warning("Shooter guard scene failed to instantiate.")
+        return false
+    guard.name = "ShooterGuard"
+    guard.global_position = player.global_position + Vector3(1.4, 0.6, 0.9)
+    guard_container.add_child(guard)
+    _active_guards[String(guard_id)] = guard
+    return true
 
 func _go_home() -> void:
     game_manager.resume_game()

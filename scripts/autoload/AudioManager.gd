@@ -37,11 +37,15 @@ func play_sfx(sfx_path: String) -> void:
 	player.stream = stream
 	add_child(player)
 	_sfx_players.append(player)
+<<<<<<< ours
 	player.finished.connect(func() -> void:
 		if _sfx_players.has(player):
 			_sfx_players.erase(player)
 		player.queue_free()
 	)
+=======
+	player.finished.connect(_on_sfx_finished.bind(player))
+>>>>>>> theirs
 	player.play()
 
 func play_sfx_event(event_name: StringName) -> void:
@@ -50,3 +54,11 @@ func play_sfx_event(event_name: StringName) -> void:
 		push_warning("AudioManager received unknown SFX event: %s" % String(event_name))
 		return
 	play_sfx(sfx_path)
+<<<<<<< ours
+=======
+
+func _on_sfx_finished(player: AudioStreamPlayer) -> void:
+	if _sfx_players.has(player):
+		_sfx_players.erase(player)
+	player.queue_free()
+>>>>>>> theirs

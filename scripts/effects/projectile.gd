@@ -90,6 +90,7 @@ func _on_body_entered(body: Node) -> void:
     _spawn_hit_spark()
     if audio_manager != null:
         audio_manager.play_sfx_event(&"hit")
+<<<<<<< ours
     body.take_damage(damage)
     recycle(true)
 
@@ -139,6 +140,8 @@ func _orient_node_to_direction(node: Node3D, world_direction: Vector3) -> void:
     node.look_at(node.global_position + normalized_direction, up_axis)
     if audio_manager != null:
         audio_manager.play_sfx_event(&"hit")
+=======
+>>>>>>> theirs
     body.take_damage(damage)
     recycle(true)
 

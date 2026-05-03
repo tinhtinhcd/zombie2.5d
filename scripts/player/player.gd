@@ -1071,6 +1071,7 @@ func _spawn_muzzle_flash() -> void:
     var tween := create_tween()
     tween.tween_property(flash, "scale", Vector3(0.05, 0.05, 0.05), 0.06)
     tween.finished.connect(flash.queue_free)
+<<<<<<< ours
 	if _feedback_material == null:
 		return
 	_feedback_material.albedo_color = _base_color.lerp(Color(1.0, 0.35, 0.35, 1.0), strength)
@@ -1098,3 +1099,5 @@ func _spawn_muzzle_flash() -> void:
 	var tween := create_tween()
 	tween.tween_property(flash, "scale", Vector3(0.05, 0.05, 0.05), 0.06)
 	tween.finished.connect(flash.queue_free)
+=======
+>>>>>>> theirs

@@ -72,6 +72,11 @@ const FALLBACK_UPGRADES := [
         "title": "Sprint",
         "description": "Increase movement speed.",
     },
+    {
+        "id": "hire_shooter_guard",
+        "title": "Hire Shooter Guard",
+        "description": "Hire a shooter guard to fight for this run.",
+    },
 ]
 
 const FALLBACK_MISSIONS := [

@@ -29,6 +29,7 @@ signal inventory_changed(inventory: Dictionary)
 signal mission_progress_changed(summary: String)
 signal player_level_changed(level: int, current_xp: int, required_xp: int)
 signal boss_health_changed(current_hp: int, max_hp: int, visible: bool)
+signal guard_hire_requested(guard_id: StringName)
 
 var score: int = 0
 var xp: int = 0
@@ -645,6 +646,15 @@ func _apply_upgrade(player: Player, upgrade_id: StringName) -> void:
             player.increase_weapon_range(4.0)
         &"projectile_count":
             player.increase_projectile_count(1)
+        &"hire_shooter_guard":
+            request_hire_guard(&"guard_shooter")
+
+func request_hire_guard(guard_id: StringName) -> void:
+    guard_hire_requested.emit(guard_id)
+
+func hire_guard_after_ad_success(guard_id: StringName) -> void:
+    # TODO: Replace this placeholder with rewarded ad completion callback integration.
+    request_hire_guard(guard_id)
 
 func _reset_missions() -> void:
     mission_stats = {"kills": 0, "xp": 0, "wave": 0}

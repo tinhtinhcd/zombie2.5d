@@ -29,7 +29,11 @@ position = Vector3(-1.2, 0.7, 0.8)
 
 [node name="ProjectileContainer" type="Node3D" parent="."]
 
+<<<<<<< ours
 [node name="EffectContainer" type="Node3D" parent="."]
+=======
+[node name="GuardContainer" type="Node3D" parent="."]
+>>>>>>> theirs
 
 [node name="PickupContainer" type="Node3D" parent="."]
 

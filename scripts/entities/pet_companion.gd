@@ -12,8 +12,13 @@ const SHOCKWAVE_SCENE := preload("res://scenes/effects/shockwave.tscn")
 @export var attack_interval: float = 1.2
 @export var damage: int = 1
 @export var attack_range: float = 16.0
+<<<<<<< ours
 @export var shockwave_interval: float = 5.0
 @export var shockwave_radius: float = 3.0
+=======
+@export var target_scan_interval: float = 0.2
+@export var enable_active_attack: bool = false
+>>>>>>> theirs
 
 var _target: Node3D
 var _attack_timer: float = 0.0
@@ -30,6 +35,8 @@ func _process(delta: float) -> void:
 		global_position = global_position.lerp(desired_position, min(delta * follow_speed, 1.0))
 
 	if game_manager != null and not game_manager.is_gameplay_active:
+		return
+	if not enable_active_attack:
 		return
 
 	_attack_timer -= delta
@@ -67,6 +74,8 @@ func _find_nearest_enemy() -> Enemy:
 		if child is not Enemy:
 			continue
 		var enemy := child as Enemy
+		if enemy.current_hp <= 0:
+			continue
 		var distance := global_position.distance_squared_to(enemy.global_position)
 		if attack_range > 0.0 and distance > range_squared:
 			continue

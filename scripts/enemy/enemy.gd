@@ -160,9 +160,12 @@ func die() -> void:
 	_spawn_xp_pickup()
 	if audio_manager != null:
 		audio_manager.play_sfx_event(&"enemy_death")
+<<<<<<< ours
 	_spawn_death_effect()
 	if audio_manager != null:
 		audio_manager.play_sfx_event(&"enemy_death")
+=======
+>>>>>>> theirs
 	_play_death_feedback()
 	_spawn_death_effect()
 

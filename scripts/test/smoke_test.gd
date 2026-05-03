@@ -338,8 +338,17 @@ func _run() -> void:
 		quit(1)
 		return
 <<<<<<< ours
+<<<<<<< ours
 	if not _assert_testing_unlocks(game_manager):
 =======
+=======
+	var selected_hero_definition := game_manager.get_selected_hero_definition()
+	var expected_player_max_hp := maxi(10 + int(selected_hero_definition.get("max_hp_bonus", 0)), 1)
+	if player.max_hp != expected_player_max_hp:
+		push_error("Smoke test failed: selected hero max_hp_bonus appears duplicated or missing. expected=%d actual=%d" % [expected_player_max_hp, player.max_hp])
+		quit(1)
+		return
+>>>>>>> theirs
 	var hp_probe := Player.new()
 	hp_probe.max_hp = 10
 	hp_probe.current_hp = 10
@@ -362,6 +371,9 @@ func _run() -> void:
 	low_hp_probe.increase_max_hp(-4)
 	if low_hp_probe.max_hp < 1 or low_hp_probe.current_hp < 0:
 		push_error("Smoke test failed: max_hp clamping dropped below safe minimum.")
+<<<<<<< ours
+>>>>>>> theirs
+=======
 >>>>>>> theirs
 		quit(1)
 		return
