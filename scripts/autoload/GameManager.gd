@@ -75,10 +75,12 @@ var daily_quest_progress: Dictionary = {}
 var selected_hero_id: String = "hero_knight"
 var selected_weapon_id: String = "weapon_basic"
 var selected_pet_id: String = "pet_drone"
+var selected_guard_id: String = "guard_shooter"
 var unlocked_heroes: Array = ["hero_knight"]
 var unlocked_weapons: Array = ["weapon_basic"]
 var weapon_levels: Dictionary = {}
 var unlocked_pets: Array = ["pet_drone"]
+var unlocked_guards: Array = ["guard_shooter"]
 var pet_evolution_stages: Dictionary = {}
 var pet_evolution_shards: int = 0
 var pet_accessories: Dictionary = {}
@@ -295,6 +297,15 @@ func set_selected_loadout(hero_id: String, weapon_id: String, pet_id: String) ->
 	_save_progression()
 	loadout_changed.emit()
 
+func set_selected_guard(guard_id: String) -> bool:
+	_ensure_progression_loaded()
+	if not _game_data.has_guardian(guard_id) or not is_guardian_unlocked(guard_id):
+		return false
+	selected_guard_id = guard_id
+	_save_progression()
+	loadout_changed.emit()
+	return true
+
 func is_hero_unlocked(hero_id: String) -> bool:
 	if TEST_UNLOCK_ALL_FEATURES and _game_data.has_hero(hero_id):
 		return true
@@ -310,6 +321,24 @@ func is_pet_unlocked(pet_id: String) -> bool:
 		return true
 	return unlocked_pets.has(pet_id)
 
+func is_guardian_unlocked(guardian_id: String) -> bool:
+	if TEST_UNLOCK_ALL_FEATURES and _game_data.has_guardian(guardian_id):
+		return true
+	if unlocked_guards.has(guardian_id):
+		return true
+	var guardian := get_guardian(guardian_id)
+	var unlock_condition := str(guardian.get("unlock_condition", ""))
+	match unlock_condition:
+		"", "starter_guard_unlock", "hire_upgrade":
+			return true
+		"level_2_clear":
+			return highest_unlocked_level >= 3
+		"collect_50_scrap":
+			return int(inventory.get("scrap", 0)) >= 50
+		"defeat_first_boss":
+			return highest_unlocked_level >= 2
+	return false
+
 func get_selected_hero_definition() -> Dictionary:
 	return get_hero_definition(selected_hero_id)
 
@@ -318,6 +347,9 @@ func get_selected_weapon_definition() -> Dictionary:
 
 func get_selected_pet_definition() -> Dictionary:
 	return get_pet_definition(selected_pet_id)
+
+func get_selected_guardian() -> Dictionary:
+	return get_guardian(selected_guard_id)
 
 func get_hero_definition(hero_id: String) -> Dictionary:
 	return _game_data.get_hero_definition(hero_id)
@@ -337,6 +369,9 @@ func get_skills_for_hero(hero_id: String) -> Array:
 
 func get_guardian(guardian_id: String) -> Dictionary:
 	return _game_data.get_guardian(guardian_id)
+
+func get_guardian_ids() -> Array:
+	return _game_data.get_guardian_ids()
 
 func get_pet_evolution(pet_id: String) -> Dictionary:
 	return _game_data.get_pet_evolution(pet_id)
@@ -752,6 +787,7 @@ func _ensure_progression_loaded() -> void:
 		selected_hero_id = str(save_data.get("selected_hero_id", selected_hero_id))
 		selected_weapon_id = str(save_data.get("selected_weapon_id", selected_weapon_id))
 		selected_pet_id = str(save_data.get("selected_pet_id", selected_pet_id))
+		selected_guard_id = str(save_data.get("selected_guard_id", selected_guard_id))
 		var permanent_upgrades_value: Variant = save_data.get("permanent_upgrades", {})
 		if typeof(permanent_upgrades_value) == TYPE_DICTIONARY:
 			permanent_upgrades = permanent_upgrades_value
@@ -767,6 +803,9 @@ func _ensure_progression_loaded() -> void:
 		var unlocked_pets_value: Variant = save_data.get("unlocked_pets", unlocked_pets)
 		if typeof(unlocked_pets_value) == TYPE_ARRAY:
 			unlocked_pets = unlocked_pets_value
+		var unlocked_guards_value: Variant = save_data.get("unlocked_guards", unlocked_guards)
+		if typeof(unlocked_guards_value) == TYPE_ARRAY:
+			unlocked_guards = unlocked_guards_value
 		var pet_evolution_stages_value: Variant = save_data.get("pet_evolution_stages", {})
 		if typeof(pet_evolution_stages_value) == TYPE_DICTIONARY:
 			pet_evolution_stages = pet_evolution_stages_value
@@ -835,10 +874,12 @@ func _get_progression_save_data() -> Dictionary:
 		"selected_hero_id": selected_hero_id,
 		"selected_weapon_id": selected_weapon_id,
 		"selected_pet_id": selected_pet_id,
+		"selected_guard_id": selected_guard_id,
 		"unlocked_heroes": unlocked_heroes,
 		"unlocked_weapons": unlocked_weapons,
 		"weapon_levels": weapon_levels,
 		"unlocked_pets": unlocked_pets,
+		"unlocked_guards": unlocked_guards,
 		"pet_evolution_stages": pet_evolution_stages,
 		"pet_evolution_shards": pet_evolution_shards,
 		"pet_accessories": pet_accessories,
@@ -860,6 +901,7 @@ func _validate_selected_loadout() -> void:
 	_ensure_unlocked_contains(unlocked_heroes, "hero_knight")
 	_ensure_unlocked_contains(unlocked_weapons, "weapon_basic")
 	_ensure_unlocked_contains(unlocked_pets, "pet_drone")
+	_ensure_unlocked_contains(unlocked_guards, "guard_shooter")
 
 	if not _game_data.has_hero(selected_hero_id) or not is_hero_unlocked(selected_hero_id):
 		selected_hero_id = "hero_knight"
@@ -867,6 +909,8 @@ func _validate_selected_loadout() -> void:
 		selected_weapon_id = "weapon_basic"
 	if not _game_data.has_pet(selected_pet_id) or not is_pet_unlocked(selected_pet_id):
 		selected_pet_id = "pet_drone"
+	if not _game_data.has_guardian(selected_guard_id) or not is_guardian_unlocked(selected_guard_id):
+		selected_guard_id = "guard_shooter"
 
 func _ensure_unlocked_contains(items: Array, item_id: String) -> void:
 	if not items.has(item_id):
@@ -879,6 +923,7 @@ func _apply_testing_unlocks() -> void:
 	_append_missing_ids(unlocked_heroes, _game_data.get_hero_ids())
 	_append_missing_ids(unlocked_weapons, _game_data.get_weapon_ids())
 	_append_missing_ids(unlocked_pets, _game_data.get_pet_ids())
+	_append_missing_ids(unlocked_guards, _game_data.get_guardian_ids())
 
 func _append_missing_ids(items: Array, ids: Array) -> void:
 	for id_value in ids:

@@ -129,11 +129,14 @@ func _try_reload_drill() -> bool:
 	if _cached_enemy == null or not is_instance_valid(_cached_enemy) or _cached_enemy.is_dead():
 		return false
 	var player := _target as Player
+	if bool(player.get_meta("reload_drill_active", false)):
+		return false
 	var effect := str(skill.get("effect", "fire_rate_buff:1.15:4.0"))
 	var multiplier := _effect_float(effect, 1, 1.15)
 	var duration := _effect_float(effect, 2, 4.0)
 	var original_fire_interval := player.fire_interval
-	player.fire_interval = maxf(original_fire_interval / maxf(multiplier, 0.1), 0.08)
+	player.set_meta("reload_drill_active", true)
+	player.fire_interval = maxf(original_fire_interval / maxf(multiplier, 0.1), 0.12)
 	_restore_player_fire_interval(player, original_fire_interval, duration)
 	_start_cooldown("Reload Drill", float(skill.get("cooldown", 12.0)))
 	return true
@@ -202,9 +205,16 @@ func _effect_float(effect: String, slice_index: int, fallback: float) -> float:
 	return float(effect.get_slice(":", slice_index))
 
 func _restore_player_fire_interval(player: Player, value: float, duration: float) -> void:
-	var tree := get_tree()
-	if tree == null:
+	if player == null:
 		return
-	await tree.create_timer(maxf(duration, 0.05), false).timeout
-	if is_instance_valid(player):
-		player.fire_interval = value
+	var timer := Timer.new()
+	timer.one_shot = true
+	timer.wait_time = maxf(duration, 0.05)
+	player.add_child(timer)
+	timer.timeout.connect(func() -> void:
+		if is_instance_valid(player):
+			player.fire_interval = value
+			player.set_meta("reload_drill_active", false)
+		timer.queue_free()
+	)
+	timer.start()

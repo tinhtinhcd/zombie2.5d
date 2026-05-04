@@ -8,6 +8,7 @@ const SAVE_VERSION := 1
 const DEFAULT_HERO_ID := "hero_knight"
 const DEFAULT_WEAPON_ID := "weapon_basic"
 const DEFAULT_PET_ID := "pet_drone"
+const DEFAULT_GUARD_ID := "guard_shooter"
 const DEFAULT_SAVE_DATA := {
 	"version": SAVE_VERSION,
 	"highest_unlocked_level": 1,
@@ -27,10 +28,12 @@ const DEFAULT_SAVE_DATA := {
 	"selected_hero_id": DEFAULT_HERO_ID,
 	"selected_weapon_id": DEFAULT_WEAPON_ID,
 	"selected_pet_id": DEFAULT_PET_ID,
+	"selected_guard_id": DEFAULT_GUARD_ID,
 	"unlocked_heroes": [DEFAULT_HERO_ID],
 	"unlocked_weapons": [DEFAULT_WEAPON_ID],
 	"weapon_levels": {},
 	"unlocked_pets": [DEFAULT_PET_ID],
+	"unlocked_guards": [DEFAULT_GUARD_ID],
 	"pet_evolution_stages": {},
 	"pet_evolution_shards": 0,
 	"pet_accessories": {},
@@ -134,6 +137,7 @@ func _merge_with_defaults(source: Dictionary) -> Dictionary:
 	merged["selected_hero_id"] = str(source.get("selected_hero_id", DEFAULT_HERO_ID))
 	merged["selected_weapon_id"] = str(source.get("selected_weapon_id", DEFAULT_WEAPON_ID))
 	merged["selected_pet_id"] = str(source.get("selected_pet_id", DEFAULT_PET_ID))
+	merged["selected_guard_id"] = str(source.get("selected_guard_id", DEFAULT_GUARD_ID))
 
 	var unlocked_heroes_value: Variant = source.get("unlocked_heroes", DEFAULT_SAVE_DATA["unlocked_heroes"])
 	if typeof(unlocked_heroes_value) == TYPE_ARRAY:
@@ -154,6 +158,11 @@ func _merge_with_defaults(source: Dictionary) -> Dictionary:
 	if typeof(unlocked_pets_value) == TYPE_ARRAY:
 		merged["unlocked_pets"] = unlocked_pets_value.duplicate(true)
 	_ensure_array_contains(merged["unlocked_pets"], DEFAULT_PET_ID)
+
+	var unlocked_guards_value: Variant = source.get("unlocked_guards", DEFAULT_SAVE_DATA["unlocked_guards"])
+	if typeof(unlocked_guards_value) == TYPE_ARRAY:
+		merged["unlocked_guards"] = unlocked_guards_value.duplicate(true)
+	_ensure_array_contains(merged["unlocked_guards"], DEFAULT_GUARD_ID)
 
 	var pet_evolution_stages_value: Variant = source.get("pet_evolution_stages", {})
 	if typeof(pet_evolution_stages_value) == TYPE_DICTIONARY:
@@ -194,3 +203,7 @@ func _validate_selected_loadout(save_data: Dictionary) -> void:
 	var unlocked_pets_value: Array = save_data.get("unlocked_pets", [])
 	if not unlocked_pets_value.has(save_data.get("selected_pet_id", "")):
 		save_data["selected_pet_id"] = DEFAULT_PET_ID
+
+	var unlocked_guards_value: Array = save_data.get("unlocked_guards", [])
+	if not unlocked_guards_value.has(save_data.get("selected_guard_id", "")):
+		save_data["selected_guard_id"] = DEFAULT_GUARD_ID

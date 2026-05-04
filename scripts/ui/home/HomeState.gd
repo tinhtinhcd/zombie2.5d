@@ -4,12 +4,13 @@ class_name HomeState
 signal hero_changed(hero_id: String)
 signal weapon_changed(weapon_id: String)
 signal pet_changed(pet_id: String)
+signal guard_changed(guard_id: String)
 signal equipment_slot_changed(slot_id: String)
 signal equipment_changed(slot_id: String, item: Dictionary)
 signal equipment_summary_changed(summary: String)
 signal inventory_summary_changed(summary: String)
 
-const EQUIPMENT_SLOTS := ["weapon", "armor", "helmet", "boots", "accessory", "pet_gear"]
+const EQUIPMENT_SLOTS := ["weapon", "armor", "helmet", "boots", "accessory", "pet_gear", "guard"]
 const MOCK_INVENTORY_ITEMS := [
 	{
 		"id": "training_blade",
@@ -61,6 +62,7 @@ const MOCK_INVENTORY_ITEMS := [
 var selected_hero_id: String = "hero_knight"
 var selected_weapon_id: String = "weapon_basic"
 var selected_pet_id: String = "pet_drone"
+var selected_guard_id: String = "guard_shooter"
 var selected_equipment_slot: String = "weapon"
 var inventory_items: Array = MOCK_INVENTORY_ITEMS.duplicate(true)
 var equipped_items: Dictionary = {
@@ -70,18 +72,22 @@ var equipped_items: Dictionary = {
 	"boots": {},
 	"accessory": {},
 	"pet_gear": {},
+	"guard": {},
 }
-var equipped_items_summary: String = "Weapon: Empty\nArmor: Empty\nHelmet: Locked\nBoots: Locked\nAccessory: Empty\nPet Gear: Locked"
+var equipped_items_summary: String = "Weapon: Empty\nArmor: Empty\nHelmet: Locked\nBoots: Locked\nAccessory: Empty\nPet Gear: Locked\nGuard: Shooter"
 var inventory_summary: String = "Inventory depth stays intentionally light."
 
-func sync_loadout(hero_id: String, weapon_id: String, pet_id: String, emit_changes: bool = false) -> void:
+func sync_loadout(hero_id: String, weapon_id: String, pet_id: String, emit_changes: bool = false, guard_id: String = "") -> void:
 	selected_hero_id = hero_id
 	selected_weapon_id = weapon_id
 	selected_pet_id = pet_id
+	if not guard_id.is_empty():
+		selected_guard_id = guard_id
 	if emit_changes:
 		hero_changed.emit(selected_hero_id)
 		weapon_changed.emit(selected_weapon_id)
 		pet_changed.emit(selected_pet_id)
+		guard_changed.emit(selected_guard_id)
 
 func set_selected_hero(hero_id: String) -> void:
 	if selected_hero_id == hero_id:
@@ -100,6 +106,12 @@ func set_selected_pet(pet_id: String) -> void:
 		return
 	selected_pet_id = pet_id
 	pet_changed.emit(selected_pet_id)
+
+func set_selected_guard(guard_id: String) -> void:
+	if selected_guard_id == guard_id:
+		return
+	selected_guard_id = guard_id
+	guard_changed.emit(selected_guard_id)
 
 func set_selected_equipment_slot(slot_id: String) -> void:
 	if not EQUIPMENT_SLOTS.has(slot_id):
@@ -178,13 +190,14 @@ func _refresh_inventory_summary() -> void:
 	set_inventory_summary("Choose an item for %s. Mock inventory data is temporary." % slot_label)
 
 func _format_equipped_items_summary() -> String:
-	return "Weapon: %s\nArmor: %s\nHelmet: %s\nBoots: %s\nAccessory: %s\nPet Gear: %s" % [
+	return "Weapon: %s\nArmor: %s\nHelmet: %s\nBoots: %s\nAccessory: %s\nPet Gear: %s\nGuard: %s" % [
 		_get_equipped_item_name("weapon"),
 		_get_equipped_item_name("armor"),
 		_get_equipped_item_name("helmet"),
 		_get_equipped_item_name("boots"),
 		_get_equipped_item_name("accessory"),
 		_get_equipped_item_name("pet_gear"),
+		_get_equipped_item_name("guard"),
 	]
 
 func _get_equipped_item_name(slot_id: String) -> String:

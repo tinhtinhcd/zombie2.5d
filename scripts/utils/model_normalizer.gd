@@ -86,10 +86,7 @@ static func _normalize_mesh_materials(mesh_instance: MeshInstance3D, entity_type
 		var reason := _diagnose_material(material)
 		if reason.is_empty():
 			continue
-		var fallback_material := _create_fallback_material(entity_type, model_id)
-		mesh_instance.set_surface_override_material(surface_index, fallback_material)
-		if mesh_instance.material_override == null:
-			mesh_instance.material_override = fallback_material
+		mesh_instance.set_surface_override_material(surface_index, _create_fallback_material(entity_type, model_id))
 		fallback_count += 1
 		push_warning("Model material fallback: type=%s id=%s path=%s mesh=%s surface=%d reason=%s" % [entity_type, model_id, model_path, mesh_instance.name, surface_index, reason])
 	return fallback_count

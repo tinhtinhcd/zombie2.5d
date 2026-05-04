@@ -15,6 +15,7 @@ const SLOT_DEFINITIONS := [
 	{"slot_id": "boots", "display_name": "Boots", "short_label": "BOOTS", "accepted_item_type": "boots", "can_change": false},
 	{"slot_id": "accessory", "display_name": "Accessory", "short_label": "ACC", "accepted_item_type": "accessory", "can_change": true},
 	{"slot_id": "pet_gear", "display_name": "Pet Gear", "short_label": "PET", "accepted_item_type": "pet_gear", "can_change": false},
+	{"slot_id": "guard", "display_name": "Guard", "short_label": "GRD", "accepted_item_type": "guard", "can_change": true},
 ]
 
 var _summary_label: Label
@@ -240,6 +241,22 @@ func _get_display_item_for_slot(slot_id: String, selected_weapon_id: String) -> 
 			"stats": {"pet": "active"},
 			"description": "Pet gear mods are not available yet.",
 		}
+	if slot_id == "guard" and _game_manager != null:
+		var guard_id: String = _home_state.selected_guard_id if _home_state != null else _game_manager.selected_guard_id
+		var guard_definition := _game_manager.get_guardian(guard_id)
+		var skills: Array = guard_definition.get("skills", [])
+		var skill_name := "Assist"
+		if not skills.is_empty() and typeof(skills[0]) == TYPE_DICTIONARY:
+			skill_name = str((skills[0] as Dictionary).get("name", skill_name))
+		return {
+			"name": _game_manager.get_display_name(guard_definition, "Guard"),
+			"rarity": str(guard_definition.get("rarity", "common")).capitalize(),
+			"stats": {
+				"role": str(guard_definition.get("role", "support")).replace("_", " "),
+				"skill": skill_name,
+			},
+			"description": "Selected support guard for the next run.",
+		}
 	return {
 		"name": "Empty",
 		"rarity": "locked" if not bool(_get_slot_definition(slot_id).get("can_change", false)) else "empty",
@@ -282,6 +299,8 @@ func _is_category_selected(category_id: String) -> bool:
 			return selected_slot == "accessory"
 		"pet":
 			return selected_slot == "pet_gear"
+		"guard":
+			return selected_slot == "guard"
 		"all":
 			return false
 	return false

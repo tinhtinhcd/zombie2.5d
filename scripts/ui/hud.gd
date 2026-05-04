@@ -51,6 +51,8 @@ var _upgrade_option_ids: Array = []
 var _elapsed_time: float = 0.0
 var game_manager: GameManager
 var skill_hud: HBoxContainer
+var guard_panel: PanelContainer
+var guard_label: Label
 var _original_minimum_sizes: Dictionary = {}
 
 func _ready() -> void:
@@ -71,6 +73,7 @@ func _ready() -> void:
 	upgrade_panel.visible = false
 	boss_panel.visible = false
 	_setup_skill_hud()
+	_setup_guard_indicator()
 	_apply_responsive_layout()
 
 	if game_manager != null:
@@ -92,6 +95,21 @@ func _ready() -> void:
 		_on_wave_changed(game_manager.current_wave)
 		_on_boss_wave_changed(game_manager.is_boss_wave)
 		_on_mission_progress_changed(game_manager.get_mission_summary())
+
+func set_active_guard(guard_id: String, display_name: String = "") -> void:
+	if guard_label == null:
+		_setup_guard_indicator()
+	if guard_label == null:
+		return
+	var resolved_name := display_name
+	if resolved_name.is_empty() and game_manager != null:
+		resolved_name = game_manager.get_display_name(game_manager.get_guardian(guard_id), "Guard")
+	if resolved_name.is_empty():
+		resolved_name = "Guard"
+	guard_label.text = "Guard: %s" % resolved_name
+	guard_label.tooltip_text = guard_id
+	if guard_panel != null:
+		guard_panel.visible = not guard_id.is_empty()
 
 func _process(delta: float) -> void:
 	if game_manager != null and game_manager.is_gameplay_active:
@@ -121,6 +139,33 @@ func _setup_skill_hud() -> void:
 		var status_panel_index := root_layout.get_children().find(boss_panel)
 		if status_panel_index >= 0:
 			root_layout.move_child(skill_hud, status_panel_index + 1)
+
+func _setup_guard_indicator() -> void:
+	if guard_panel != null:
+		return
+	guard_panel = root_layout.get_node_or_null("GuardPanel") as PanelContainer
+	if guard_panel == null:
+		guard_panel = PanelContainer.new()
+		guard_panel.name = "GuardPanel"
+		guard_panel.custom_minimum_size = Vector2(0.0, 28.0)
+		root_layout.add_child(guard_panel)
+		var skill_index := root_layout.get_children().find(skill_hud)
+		if skill_index >= 0:
+			root_layout.move_child(guard_panel, skill_index + 1)
+	guard_label = guard_panel.get_node_or_null("Margin/GuardLabel") as Label
+	if guard_label == null:
+		var margin := MarginContainer.new()
+		margin.name = "Margin"
+		margin.add_theme_constant_override("margin_left", 8)
+		margin.add_theme_constant_override("margin_top", 4)
+		margin.add_theme_constant_override("margin_right", 8)
+		margin.add_theme_constant_override("margin_bottom", 4)
+		guard_panel.add_child(margin)
+		guard_label = Label.new()
+		guard_label.name = "GuardLabel"
+		guard_label.text = "Guard: None"
+		guard_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		margin.add_child(guard_label)
 
 func _on_score_changed(value: int) -> void:
 	kills_label.text = "Kills: %d" % value

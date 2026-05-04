@@ -11,12 +11,16 @@ const VIEWPORT_NAME := "PreviewViewport"
 const WORLD_NAME := "PreviewWorld"
 const PLAYER_NAME := "Player"
 const PET_NAME := "PetCompanion"
+const GUARD_NAME := "GuardCompanion"
 const PREVIEW_PLAYER_SCALE := Vector3(0.58, 0.58, 0.58)
 const PREVIEW_PLAYER_POSITION := Vector3(0.0, -0.62, 0.0)
 const PREVIEW_PLAYER_ROTATION := Vector3(0.0, 0.0, 0.0)
 const PREVIEW_PET_SCALE := Vector3(1.85, 1.85, 1.85)
 const PREVIEW_PET_POSITION := Vector3(0.0, 0.18, 0.0)
 const PREVIEW_PET_ROTATION := Vector3(0.0, 0.0, 0.0)
+const PREVIEW_GUARD_SCALE := Vector3(1.35, 1.35, 1.35)
+const PREVIEW_GUARD_POSITION := Vector3(0.0, -0.08, 0.0)
+const PREVIEW_GUARD_ROTATION := Vector3(0.0, 0.0, 0.0)
 const DEBUG_PREVIEW_TRACE := false
 
 const WALK_FALLBACKS: Array[String] = [
@@ -135,6 +139,56 @@ static func show_pet_preview(slot: Control, pet_id: String, pet_definition: Dict
 	_start_named_animation(pet, "Idle", 0.45, false)
 	return pet
 
+static func show_guard_preview(slot: Control, guard_id: String, guard_definition: Dictionary = {}) -> Node3D:
+	if slot == null:
+		return null
+
+	var container := _get_or_create_container(slot)
+	if container == null:
+		return null
+	var viewport := container.get_node_or_null(VIEWPORT_NAME) as SubViewport
+	var world_root: Node3D = null
+	if viewport != null:
+		world_root = viewport.get_node_or_null(WORLD_NAME) as Node3D
+	if viewport == null or world_root == null:
+		return null
+
+	var model_path := str(guard_definition.get("model_scene_path", "res://scenes/entities/shooter_guard.tscn")).strip_edges()
+	if model_path.is_empty():
+		model_path = "res://scenes/entities/shooter_guard.tscn"
+	var guard := world_root.get_node_or_null(GUARD_NAME) as Node3D
+	if guard == null or str(guard.get_meta("guard_id", "")) != guard_id or str(guard.get_meta("model_path", "")) != model_path:
+		_clear_preview_models(world_root)
+		var guard_scene := load(model_path) as PackedScene
+		if guard_scene == null:
+			push_warning("Guard preview '%s' could not load resolved model scene: %s" % [guard_id, model_path])
+			return null
+		guard = guard_scene.instantiate() as Node3D
+		if guard == null:
+			push_warning("Guard preview '%s' could not instantiate scene: %s" % [guard_id, model_path])
+			return null
+		guard.name = GUARD_NAME
+		guard.set_meta("guard_id", guard_id)
+		guard.set_meta("model_kind", "guard")
+		guard.set_meta("source_scene_path", model_path)
+		guard.set_meta("model_path", model_path)
+		guard.set_meta("model_fallback_used", bool(guard_definition.get("model_fallback_used", false)))
+		guard.position = PREVIEW_GUARD_POSITION
+		guard.rotation_degrees = PREVIEW_GUARD_ROTATION
+		guard.scale = PREVIEW_GUARD_SCALE
+		if _has_property(guard, "guardian_id"):
+			guard.set("guardian_id", guard_id)
+		world_root.add_child(guard)
+		_configure_preview_node(guard)
+		_warn_if_duplicate_preview_models(world_root)
+		if DEBUG_PREVIEW_TRACE:
+			print("Guard preview spawn: requested_id=%s resolved_model_path=%s fallback_used=%s" % [guard_id, model_path, str(guard.get_meta("model_fallback_used", false))])
+		_validate_visible_model(guard, "Guard preview '%s'" % guard_id)
+		MODEL_NORMALIZER.normalize(guard, "guard", guard_id, model_path)
+
+	_start_named_animation(guard, "Idle", 0.45, false)
+	return guard
+
 static func clear_preview(slot: Control) -> void:
 	if slot == null:
 		return
@@ -207,7 +261,8 @@ static func _add_preview_light(world_root: Node3D) -> void:
 	var world_environment := WorldEnvironment.new()
 	world_environment.name = "PreviewWorldEnvironment"
 	var environment := Environment.new()
-	environment.background_mode = Environment.BG_CLEAR_COLOR
+	environment.background_mode = Environment.BG_COLOR
+	environment.background_color = Color(0.0, 0.0, 0.0, 0.0)
 	environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	environment.ambient_light_color = Color.WHITE
 	environment.ambient_light_energy = 0.35
@@ -277,6 +332,14 @@ static func _find_animation_player(root: Node) -> AnimationPlayer:
 		if found != null:
 			return found
 	return null
+
+static func _has_property(node: Object, property_name: String) -> bool:
+	if node == null:
+		return false
+	for property in node.get_property_list():
+		if str(property.get("name", "")) == property_name:
+			return true
+	return false
 
 static func _validate_full_hero_model(player: Node3D, hero_id: String) -> void:
 	var parts := {

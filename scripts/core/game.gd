@@ -35,6 +35,7 @@ func _ready() -> void:
 	game_manager.apply_permanent_upgrades(player)
 	_setup_skill_manager()
 	_spawn_selected_pet_companion()
+	call_deferred("spawn_guard", StringName(game_manager.selected_guard_id))
 	_apply_map_radius_from_player()
 	_trace_gameplay_scene_state("after_loadout")
 	if pet_companion != null:
@@ -214,9 +215,11 @@ func spawn_guard(guard_id: StringName) -> bool:
 	if _active_guards.has(String(guard_id)):
 		var existing_guard := _active_guards[String(guard_id)] as Node3D
 		if existing_guard != null and is_instance_valid(existing_guard):
+			_refresh_guard_hud(String(guard_id))
 			return true
 		_active_guards.erase(String(guard_id))
 
+	var guard_definition := game_manager.get_guardian(String(guard_id))
 	var guard_scene: PackedScene
 	match guard_id:
 		GUARD_SHOOTER_ID:
@@ -224,21 +227,42 @@ func spawn_guard(guard_id: StringName) -> bool:
 		GUARD_BRUISER_ID:
 			guard_scene = BRUISER_GUARD_SCENE
 		_:
-			push_warning("Unknown guard id requested: %s" % String(guard_id))
-			return false
+			var guard_scene_path := str(guard_definition.get("model_scene_path", "")).strip_edges()
+			if guard_scene_path.is_empty():
+				guard_scene_path = "res://scenes/entities/shooter_guard.tscn"
+			guard_scene = load(guard_scene_path) as PackedScene
+			if guard_scene == null:
+				push_warning("Unknown guard id requested and model_scene_path failed to load: %s (%s)" % [String(guard_id), guard_scene_path])
+				return false
 
 	var guard := guard_scene.instantiate() as Node3D
 	if guard == null:
 		push_warning("Guard scene failed to instantiate for id: %s" % String(guard_id))
 		return false
-	guard.name = "ShooterGuard" if guard_id == GUARD_SHOOTER_ID else "BruiserGuard"
-	var guard_definition := game_manager.get_guardian(String(guard_id))
+	guard.name = "%sRuntime" % String(guard_id).replace("_", "")
+	if _has_node_property(guard, "guardian_id"):
+		guard.set("guardian_id", String(guard_id))
 	var guard_model_path := str(guard_definition.get("model_scene_path", ""))
 	MODEL_NORMALIZER.normalize(guard, "guard", String(guard_id), guard_model_path)
 	guard_container.add_child(guard)
 	guard.global_position = player.global_position + Vector3(1.4, 0.6, 0.9)
 	_active_guards[String(guard_id)] = guard
+	_refresh_guard_hud(String(guard_id))
 	return true
+
+func _refresh_guard_hud(guard_id: String) -> void:
+	if hud == null or not hud.has_method("set_active_guard"):
+		return
+	var guard_definition := game_manager.get_guardian(guard_id)
+	hud.call("set_active_guard", guard_id, game_manager.get_display_name(guard_definition, "Guard"))
+
+func _has_node_property(node: Object, property_name: String) -> bool:
+	if node == null:
+		return false
+	for property in node.get_property_list():
+		if str(property.get("name", "")) == property_name:
+			return true
+	return false
 
 func _go_home() -> void:
 	game_manager.resume_game()
