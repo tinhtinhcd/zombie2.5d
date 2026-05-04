@@ -23,6 +23,7 @@ var incoming_damage_reduction: int = 0
 var dodge_chance: float = 0.0
 var projectile_damage_multiplier: float = 1.0
 var temporary_damage_multiplier: float = 1.0
+var deployable_damage_multiplier: float = 1.0
 
 var _temporary_damage_timer: float = 0.0
 var _rng := RandomNumberGenerator.new()
@@ -42,6 +43,7 @@ func load_skills(requested_hero_id: String) -> void:
 	dodge_chance = 0.0
 	projectile_damage_multiplier = 1.0
 	temporary_damage_multiplier = 1.0
+	deployable_damage_multiplier = 1.0
 	_temporary_damage_timer = 0.0
 
 	if game_manager == null:
@@ -192,12 +194,16 @@ func _apply_passive(skill: Dictionary) -> void:
 			dodge_chance = maxf(dodge_chance, 0.12)
 		"skill_mage_arcane_amplify":
 			projectile_damage_multiplier = maxf(projectile_damage_multiplier, 1.15)
+		"skill_engineer_field_turret":
+			deployable_damage_multiplier = maxf(deployable_damage_multiplier, 1.1)
 		"skill_medic_field_training":
 			if player != null:
 				player.healing_received_multiplier = maxf(player.healing_received_multiplier, 1.2)
 		_:
 			if effect.begins_with("projectile_damage_multiplier:"):
 				projectile_damage_multiplier = maxf(projectile_damage_multiplier, float(effect.get_slice(":", 1)))
+			elif effect.begins_with("deployable_damage_multiplier:"):
+				deployable_damage_multiplier = maxf(deployable_damage_multiplier, float(effect.get_slice(":", 1)))
 			elif effect.begins_with("healing_received_multiplier:") and player != null:
 				player.healing_received_multiplier = maxf(player.healing_received_multiplier, float(effect.get_slice(":", 1)))
 

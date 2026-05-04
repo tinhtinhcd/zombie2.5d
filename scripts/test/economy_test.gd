@@ -13,6 +13,12 @@ func _run() -> void:
 
 	game_manager.gold = 0
 	game_manager.soft_currency = 0
+	game_manager.xp = 0
+	game_manager.current_level_xp = 0
+	game_manager.xp_to_next_level = 999
+	game_manager.run_xp_gain_multiplier = 1.0
+	game_manager.run_gold_bonus_multiplier = 1.0
+	game_manager.mission_stats = {"kills": 0, "xp": 0, "wave": 0}
 	game_manager.gems = 0
 	game_manager.shards = {}
 	game_manager.energy = GameManager.ENERGY_MAX
@@ -23,6 +29,24 @@ func _run() -> void:
 	game_manager.add_currency("shard:pet_drone", 3)
 	if game_manager.gold != 12 or game_manager.soft_currency != 12 or game_manager.gems != 2 or int(game_manager.shards.get("pet_drone", 0)) != 3:
 		push_error("Economy test failed: currency additions did not update wallet.")
+		quit(1)
+		return
+	game_manager.is_gameplay_active = true
+	game_manager.set_run_reward_multiplier("gold_bonus_multiplier", 1.5)
+	game_manager.add_run_gold_reward(10)
+	if game_manager.gold != 27:
+		push_error("Economy test failed: run gold multiplier did not apply.")
+		quit(1)
+		return
+	game_manager.add_currency("gold", 10)
+	if game_manager.gold != 37:
+		push_error("Economy test failed: normal gold grant should not use run multiplier.")
+		quit(1)
+		return
+	game_manager.set_run_reward_multiplier("xp_gain_multiplier", 1.5)
+	game_manager.add_xp(4)
+	if game_manager.xp != 6 or int(game_manager.mission_stats.get("xp", 0)) != 6:
+		push_error("Economy test failed: run XP multiplier did not apply.")
 		quit(1)
 		return
 	if game_manager.spend_currency("gems", 3):

@@ -1,32 +1,22 @@
 {
   "pet_drone": {
     "display_name": "Drone",
-    "model_scene_path": "res://scenes/entities/pet_companion.tscn",
-    "damage": 1,
-    "attack_interval": 1.2
+    "model_scene_path": "res://scenes/entities/pet_companion.tscn"
   },
   "pet_sprite": {
     "display_name": "Sprite",
-    "model_scene_path": "res://scenes/entities/pet_sprite.tscn",
-    "damage": 1,
-    "attack_interval": 0.9
+    "model_scene_path": "res://scenes/entities/pet_sprite.tscn"
   },
   "pet_wisp": {
     "display_name": "Wisp",
-    "model_scene_path": "res://scenes/entities/pet_wisp.tscn",
-    "damage": 2,
-    "attack_interval": 1.6
+    "model_scene_path": "res://scenes/entities/pet_wisp.tscn"
   },
   "pet_beetle": {
     "display_name": "Beetle",
-    "model_scene_path": "res://scenes/entities/pet_companion.tscn",
-    "damage": 1,
-    "attack_interval": 1.4
+    "model_scene_path": "res://scenes/entities/pet_companion.tscn"
   },
   "pet_orb": {
     "display_name": "Orb",
-    "model_scene_path": "res://scenes/entities/pet_wisp.tscn",
-    "damage": 1,
-    "attack_interval": 1.1
+    "model_scene_path": "res://scenes/entities/pet_wisp.tscn"
   }
 }

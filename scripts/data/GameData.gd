@@ -78,8 +78,6 @@ const FALLBACK_PETS := {
 	"pet_drone": {
 		"display_name": "Drone",
 		"model_scene_path": "res://scenes/entities/pet_companion.tscn",
-		"damage": 1,
-		"attack_interval": 1.2,
 	},
 }
 
@@ -532,11 +530,8 @@ func _validate_pets() -> void:
 		pet["id"] = pet_id
 		_ensure_string_field(pet, "display_name", str(defaults.get("display_name", _display_name_from_id(pet_id))), "pets.json", pet_id)
 		_ensure_model_scene_path(pet, "pets.json", pet_id, str(defaults.get("model_scene_path", FALLBACK_PETS[DEFAULT_PET_ID]["model_scene_path"])))
-		_ensure_number_field(pet, "damage", defaults.get("damage", 1), "pets.json", pet_id)
-		_ensure_number_field(pet, "attack_interval", defaults.get("attack_interval", 1.0), "pets.json", pet_id)
-		if float(pet.get("attack_interval", 1.0)) <= 0.0:
-			_warn("pets.json entry \"%s\" invalid attack_interval; using 1.0." % pet_id)
-			pet["attack_interval"] = 1.0
+		pet.erase("damage")
+		pet.erase("attack_interval")
 		pets[pet_id_variant] = pet
 
 func _validate_skills() -> void:
@@ -892,8 +887,6 @@ func _default_pet_entry(pet_id: String) -> Dictionary:
 	return {
 		"display_name": _display_name_from_id(pet_id),
 		"model_scene_path": str(FALLBACK_PETS[DEFAULT_PET_ID]["model_scene_path"]),
-		"damage": 1,
-		"attack_interval": 1.0,
 	}
 
 func _default_guardian_entry(guardian_id: String) -> Dictionary:

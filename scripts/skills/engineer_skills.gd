@@ -9,7 +9,7 @@ static func execute(skill: Dictionary, player: Player, manager: Node) -> bool:
 		"skill_engineer_overclock":
 			return _overclock(skill, player)
 		"skill_engineer_deploy_sentry":
-			return _deploy_sentry(skill, player)
+			return _deploy_sentry(skill, player, manager)
 		"skill_engineer_turbo_boost":
 			return _turbo_boost(skill, player)
 		_:
@@ -23,15 +23,15 @@ static func _overclock(skill: Dictionary, player: Player) -> bool:
 	_restore_fire_interval(player, original_fire_interval, duration)
 	return true
 
-static func _deploy_sentry(skill: Dictionary, player: Player) -> bool:
+static func _deploy_sentry(skill: Dictionary, player: Player, manager: Node) -> bool:
 	var game_root := player.get_parent()
 	if game_root == null:
 		return false
 	var spawn_parent := game_root.get_node_or_null("GuardContainer") as Node3D
-	var path_prefix := "../"
+	var path_prefix := "../../"
 	if spawn_parent == null:
 		spawn_parent = game_root as Node3D
-		path_prefix = ""
+		path_prefix = "../"
 	if spawn_parent == null:
 		return false
 
@@ -43,6 +43,7 @@ static func _deploy_sentry(skill: Dictionary, player: Player) -> bool:
 	if sentry == null:
 		return false
 	sentry.name = "EngineerSentry"
+	sentry.guardian_id = ""
 	sentry.target_path = NodePath(path_prefix + "Player")
 	sentry.enemy_container_path = NodePath(path_prefix + "EnemyContainer")
 	sentry.projectile_container_path = NodePath(path_prefix + "ProjectileContainer")
@@ -50,7 +51,8 @@ static func _deploy_sentry(skill: Dictionary, player: Player) -> bool:
 	sentry.follow_offset = Vector3.ZERO
 	sentry.attack_interval = 0.45
 	sentry.attack_range = maxf(player.weapon_range, 14.0)
-	sentry.damage = maxi(int(skill.get("damage", 1)), 1)
+	var damage_multiplier := float(manager.get("deployable_damage_multiplier")) if manager != null else 1.0
+	sentry.damage = maxi(roundi(float(maxi(int(skill.get("damage", 1)), 1)) * maxf(damage_multiplier, 0.1)), 1)
 	sentry.set_meta("skill_id", str(skill.get("id", "")))
 	spawn_parent.add_child(sentry)
 	sentry.global_position = player.global_position + Vector3(1.5, 0.6, 0.8)

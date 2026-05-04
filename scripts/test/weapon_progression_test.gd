@@ -16,6 +16,21 @@ func _run() -> void:
 	game_manager.soft_currency = 999
 
 	var base_heavy := game_manager.get_weapon_definition("weapon_heavy")
+	var weapon_ids := game_manager.get_weapon_ids()
+	if weapon_ids.size() < 6 or not weapon_ids.has("weapon_chain") or not weapon_ids.has("weapon_bouncer"):
+		push_error("Weapon progression test failed: GDD weapon roster is incomplete.")
+		quit(1)
+		return
+	var chain_gun := game_manager.get_weapon_definition("weapon_chain")
+	var bouncer := game_manager.get_weapon_definition("weapon_bouncer")
+	if not is_equal_approx(float(chain_gun.get("fire_rate", 0.0)), 0.15) or str(chain_gun.get("special_effect", "")) != "ramping_damage":
+		push_error("Weapon progression test failed: Chain Gun stats/effect did not load.")
+		quit(1)
+		return
+	if str(bouncer.get("special_effect", "")) != "multi_bounce":
+		push_error("Weapon progression test failed: Bouncer bounce effect did not load.")
+		quit(1)
+		return
 	if str(base_heavy.get("rarity", "")) != "epic":
 		push_error("Weapon progression test failed: weapon rarity did not load.")
 		quit(1)

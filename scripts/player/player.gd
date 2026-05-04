@@ -9,6 +9,7 @@ const MUZZLE_FLASH_SCENE := preload("res://scenes/effects/muzzle_flash.tscn")
 const EXPLOSION_AOE_SCENE := preload("res://scenes/effects/explosion_aoe.tscn")
 const WEAPON_VISUALS_SCRIPT := preload("res://scripts/components/weapon_visuals.gd")
 const COMBAT_UTILS := preload("res://scripts/utils/combat_utils.gd")
+const MODEL_NORMALIZER := preload("res://scripts/utils/model_normalizer.gd")
 
 signal hp_changed(current_hp_value: int)
 signal died
@@ -73,6 +74,8 @@ var _projectile_pool: Array[Projectile] = []
 var _nearest_enemy_this_frame: Node3D
 var _nearest_enemy_frame: int = -1
 var _current_hero_model_path: String = ""
+var _chain_fire_stacks: int = 0
+var _chain_fire_decay_timer: float = 0.0
 var current_weapon_id: String = "weapon_basic"
 var current_weapon_display_name: String = "Basic Gun"
 var current_weapon_special_effect: String = "none"
@@ -130,6 +133,9 @@ func _process(delta: float) -> void:
 		return
 
 	_skill_primary_timer = max(_skill_primary_timer - delta, 0.0)
+	_chain_fire_decay_timer = maxf(_chain_fire_decay_timer - delta, 0.0)
+	if _chain_fire_decay_timer <= 0.0:
+		_chain_fire_stacks = 0
 	if InputMap.has_action("skill_primary") and Input.is_action_just_pressed("skill_primary"):
 		if skill_manager != null and skill_manager.has_method("has_active_skills") and skill_manager.call("has_active_skills"):
 			skill_manager.call("try_use_slot", 0)
@@ -219,6 +225,9 @@ func spawn_projectile() -> void:
 		if projectile == null:
 			continue
 		projectile.global_transform = shoot_point.global_transform
+		if current_weapon_special_effect == "ramping_damage":
+			_chain_fire_stacks = mini(_chain_fire_stacks + 1, 6)
+			_chain_fire_decay_timer = maxf(fire_interval * 3.0, 0.35)
 		projectile.damage = _get_modified_projectile_damage()
 		projectile.speed = projectile_speed
 		projectile.weapon_id = current_weapon_id
@@ -309,13 +318,17 @@ func restore_hp(amount: int) -> void:
 func _get_modified_projectile_damage() -> int:
 	var base_damage := maxi(roundi(float(projectile_damage) * maxf(support_damage_multiplier, 0.1)), 1)
 	if skill_manager != null and skill_manager.has_method("get_modified_projectile_damage"):
-		return int(skill_manager.call("get_modified_projectile_damage", base_damage))
+		base_damage = int(skill_manager.call("get_modified_projectile_damage", base_damage))
+	if current_weapon_special_effect == "ramping_damage":
+		base_damage += floori(float(_chain_fire_stacks) / 2.0)
 	return base_damage
 
 func apply_weapon_definition(weapon_definition: Dictionary, attach_visual: bool = true, preview_mode: bool = false) -> void:
 	current_weapon_id = str(weapon_definition.get("id", current_weapon_id))
 	current_weapon_display_name = str(weapon_definition.get("display_name", weapon_definition.get("name", current_weapon_display_name)))
 	current_weapon_special_effect = str(weapon_definition.get("special_effect", "none"))
+	_chain_fire_stacks = 0
+	_chain_fire_decay_timer = 0.0
 	fire_interval = float(weapon_definition.get("fire_rate", weapon_definition.get("fire_interval", fire_interval)))
 	projectile_damage = int(weapon_definition.get("damage", weapon_definition.get("projectile_damage", projectile_damage)))
 	projectile_speed = float(weapon_definition.get("projectile_speed", projectile_speed))
@@ -360,6 +373,7 @@ func apply_hero_definition(hero_definition: Dictionary) -> void:
 	new_model.set_meta("hero_id", hero_id)
 	new_model.set_meta("model_path", model_scene_path)
 	visual_root.add_child(new_model)
+	MODEL_NORMALIZER.normalize(new_model, "hero", hero_id, model_scene_path)
 	visual_root.move_child(new_model, 0)
 	character_root_path = NodePath("VisualRoot/HeroModel")
 	character_root = new_model

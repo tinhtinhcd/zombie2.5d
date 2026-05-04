@@ -104,28 +104,40 @@ func _get_effective_damage() -> int:
 func _apply_special_effect(hit_enemy: Enemy) -> void:
 	match special_effect:
 		"ricochet":
-			_apply_ricochet(hit_enemy)
+			_apply_bounce(hit_enemy, 1)
+		"multi_bounce":
+			_apply_bounce(hit_enemy, 2)
 		"cluster_bomb":
 			_spawn_cluster_bomb()
 
-func _apply_ricochet(hit_enemy: Enemy) -> void:
+func _apply_bounce(hit_enemy: Enemy, max_bounces: int) -> void:
 	var enemy_container := hit_enemy.get_parent()
 	if enemy_container == null:
 		return
-	var nearest_enemy: Enemy
-	var nearest_distance := 36.0
-	for child in enemy_container.get_children():
-		if child == hit_enemy or child is not Enemy:
-			continue
-		var enemy := child as Enemy
-		if enemy.is_dead():
-			continue
-		var distance := enemy.global_position.distance_squared_to(hit_enemy.global_position)
-		if distance < nearest_distance:
-			nearest_distance = distance
-			nearest_enemy = enemy
-	if nearest_enemy != null:
-		nearest_enemy.take_damage(maxi(roundi(float(damage) * 0.5), 1), global_position, direction, 0.5)
+	var already_hit := [hit_enemy]
+	var bounce_origin := hit_enemy.global_position
+	for bounce_index in range(maxi(max_bounces, 1)):
+		var nearest_enemy: Enemy
+		var nearest_distance := 49.0
+		for child in enemy_container.get_children():
+			if child in already_hit or child is not Enemy:
+				continue
+			var enemy := child as Enemy
+			if enemy.is_dead():
+				continue
+			var distance := enemy.global_position.distance_squared_to(bounce_origin)
+			if distance < nearest_distance:
+				nearest_distance = distance
+				nearest_enemy = enemy
+		if nearest_enemy == null:
+			return
+		var bounce_damage := maxi(roundi(float(damage) * (0.65 if special_effect == "multi_bounce" else 0.5)), 1)
+		var bounce_direction := nearest_enemy.global_position - bounce_origin
+		if bounce_direction.is_zero_approx():
+			bounce_direction = direction
+		nearest_enemy.take_damage(bounce_damage, nearest_enemy.global_position, bounce_direction.normalized(), 0.5)
+		already_hit.append(nearest_enemy)
+		bounce_origin = nearest_enemy.global_position
 
 func _spawn_cluster_bomb() -> void:
 	var explosion_scene := load("res://scenes/effects/explosion_aoe.tscn") as PackedScene

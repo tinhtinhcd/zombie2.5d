@@ -87,6 +87,11 @@ func _run_hero_case(game_manager: GameManager, hero_id: String, active_skill_id:
 		game.queue_free()
 		await process_frame
 		return false
+	if hero_id == "hero_engineer" and float(skill_manager.deployable_damage_multiplier) < 1.1:
+		push_error("SkillManager test failed: Engineer Field Turret passive did not apply.")
+		game.queue_free()
+		await process_frame
+		return false
 	if hero_id == "hero_medic":
 		player.current_hp = 5
 		player.max_hp = 10

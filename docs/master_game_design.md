@@ -43,7 +43,16 @@ Define player identity and playstyle
 * Each hero has:
 
   * Base stats
-  * Unique skill (active or passive)
+  * Skill kit
+  * At least one passive or active gameplay identity hook
+
+## Current Hero Roster
+
+* Knight
+* Rogue
+* Mage
+* Engineer
+* Medic
 
 ## Data Model
 
@@ -80,6 +89,15 @@ Primary combat variation
   * Damage
   * Projectile type
   * Special effect
+
+## Current Weapon Roster
+
+* Basic Gun
+* Spread Shot
+* Rapid Blaster
+* Heavy Launcher
+* Chain Gun
+* Bouncer
 
 ## Data Model
 

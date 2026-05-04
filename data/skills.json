@@ -99,6 +99,17 @@
     "unlock_level": 4
   },
   {
+    "id": "skill_engineer_field_turret",
+    "hero_id": "hero_engineer",
+    "name": "Field Turret",
+    "type": "passive",
+    "cooldown": 0.0,
+    "damage": 0,
+    "effect": "deployable_damage_multiplier:1.1",
+    "description": "Improves Engineer deployable damage by 10%.",
+    "unlock_level": 1
+  },
+  {
     "id": "skill_engineer_deploy_sentry",
     "hero_id": "hero_engineer",
     "name": "Deploy Sentry",
@@ -107,7 +118,7 @@
     "damage": 1,
     "effect": "temporary_sentry:10.0",
     "description": "Deploys a temporary turret that shoots nearby enemies.",
-    "unlock_level": 1
+    "unlock_level": 2
   },
   {
     "id": "skill_engineer_turbo_boost",
@@ -118,7 +129,7 @@
     "damage": 0,
     "effect": "move_speed_multiplier:1.35:4.0",
     "description": "Boosts movement speed by 35% for 4 seconds.",
-    "unlock_level": 2
+    "unlock_level": 3
   },
   {
     "id": "skill_engineer_overclock",

@@ -1,4 +1,4 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/entities/shooter_guard.gd" id="1_guard"]
 
@@ -9,11 +9,15 @@ radius = 0.35
 radius = 0.35
 height = 0.7
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_guard"]
+albedo_color = Color(0.48, 0.56, 0.26, 1)
+
 [node name="ShooterGuard" type="Node3D"]
 script = ExtResource("1_guard")
 
 [node name="Body" type="MeshInstance3D" parent="."]
 mesh = SubResource("SphereMesh_guard")
+surface_material_override/0 = SubResource("StandardMaterial3D_guard")
 
 [node name="Area3D" type="Area3D" parent="."]
 

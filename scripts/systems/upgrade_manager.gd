@@ -96,7 +96,9 @@ func _apply_effect(player: Player, effect_type: String, effect_value: Variant) -
 		"xp_magnet_range":
 			player.set_meta("xp_magnet_range_bonus", float(player.get_meta("xp_magnet_range_bonus", 0.0)) + float(effect_value))
 		"gold_bonus":
-			player.set_meta("gold_bonus_multiplier", float(player.get_meta("gold_bonus_multiplier", 1.0)) + float(effect_value))
+			var gold_multiplier := float(player.get_meta("gold_bonus_multiplier", 1.0)) + float(effect_value)
+			player.set_meta("gold_bonus_multiplier", gold_multiplier)
+			game_manager.set_run_reward_multiplier("gold_bonus_multiplier", gold_multiplier)
 		"hire_guard":
 			game_manager.request_hire_guard(StringName(str(effect_value)))
 		_:

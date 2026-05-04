@@ -34,7 +34,7 @@
         "effect": "heal:2"
       }
     ],
-    "model_scene_path": "res://scenes/entities/shooter_guard.tscn",
+    "model_scene_path": "res://scenes/entities/guardians/bruiser_guard.tscn",
     "rarity": "common",
     "unlock_condition": "starter_guard_unlock"
   },

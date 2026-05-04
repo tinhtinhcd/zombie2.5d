@@ -53,6 +53,8 @@ var is_game_over: bool = false
 var is_victory: bool = false
 var is_upgrade_selection_active: bool = false
 var is_gameplay_active: bool = true
+var run_xp_gain_multiplier: float = 1.0
+var run_gold_bonus_multiplier: float = 1.0
 
 var current_level_data: LevelData
 var _levels: Array[LevelData] = []
@@ -128,6 +130,8 @@ func reset_game() -> void:
 	is_game_over = false
 	is_victory = false
 	is_upgrade_selection_active = false
+	run_xp_gain_multiplier = 1.0
+	run_gold_bonus_multiplier = 1.0
 	_upgrade_manager.reset_run()
 	load_level_by_index(1)
 	_update_gameplay_active()
@@ -161,14 +165,14 @@ func add_score(amount: int) -> void:
 	score_changed.emit(score)
 	if amount > 0:
 		mission_stats["kills"] = int(mission_stats.get("kills", 0)) + amount
-		add_currency(amount)
+		add_run_gold_reward(amount)
 		if score % 3 == 0:
 			grant_item("scrap", 1)
 		record_daily_quest_progress("kills", amount)
 		_emit_mission_progress()
 
 func add_xp(amount: int) -> void:
-	var resolved_amount: int = max(amount, 0)
+	var resolved_amount: int = maxi(roundi(float(max(amount, 0)) * maxf(run_xp_gain_multiplier, 0.0)), 0)
 	xp += resolved_amount
 	current_level_xp += resolved_amount
 	mission_stats["xp"] = int(mission_stats.get("xp", 0)) + resolved_amount
@@ -521,6 +525,21 @@ func add_currency(currency_type: Variant, amount: int = 0) -> void:
 	wallet_changed.emit(gold, gems, shards.duplicate(true))
 	_save_progression()
 
+func add_run_gold_reward(amount: int) -> void:
+	_ensure_progression_loaded()
+	_add_currency_by_type("gold", amount, true)
+	currency_changed.emit(soft_currency)
+	wallet_changed.emit(gold, gems, shards.duplicate(true))
+	_save_progression()
+
+func set_run_reward_multiplier(multiplier_type: String, multiplier: float) -> void:
+	var resolved_multiplier := maxf(multiplier, 0.0)
+	match multiplier_type:
+		"xp_gain_multiplier":
+			run_xp_gain_multiplier = maxf(run_xp_gain_multiplier, resolved_multiplier)
+		"gold_bonus_multiplier":
+			run_gold_bonus_multiplier = maxf(run_gold_bonus_multiplier, resolved_multiplier)
+
 func spend_currency(currency_type: String, amount: int) -> bool:
 	_ensure_progression_loaded()
 	var spend_amount: int = max(amount, 0)
@@ -657,7 +676,7 @@ func grant_wave_clear_reward(wave: int) -> void:
 	if is_game_over or is_victory:
 		return
 	var reward: int = max(WAVE_CLEAR_CURRENCY_REWARD + max(wave - 1, 0), 1)
-	add_currency(reward)
+	add_run_gold_reward(reward)
 
 func unlock_level(level_index: int) -> void:
 	_ensure_levels_loaded()
@@ -828,9 +847,9 @@ func _get_progression_save_data() -> Dictionary:
 	}
 
 func _grant_level_clear_rewards() -> void:
-	add_currency(max(LEVEL_CLEAR_CURRENCY_REWARD + current_level - 1, 1))
+	add_run_gold_reward(max(LEVEL_CLEAR_CURRENCY_REWARD + current_level - 1, 1))
 	if is_boss_wave:
-		add_currency(BOSS_CLEAR_CURRENCY_REWARD)
+		add_run_gold_reward(BOSS_CLEAR_CURRENCY_REWARD)
 
 func _is_final_level(level_index: int) -> bool:
 	if _levels.is_empty():
@@ -888,8 +907,10 @@ func _apply_weapon_level_to_definition(weapon: Dictionary) -> Dictionary:
 	weapon["upgrade_cost"] = get_weapon_upgrade_cost(weapon_id) if level < 10 else 0
 	return weapon
 
-func _add_currency_by_type(currency_type: String, amount: int) -> void:
+func _add_currency_by_type(currency_type: String, amount: int, apply_run_bonus: bool = false) -> void:
 	var gain: int = max(amount, 0)
+	if apply_run_bonus and currency_type == "gold":
+		gain = maxi(roundi(float(gain) * maxf(run_gold_bonus_multiplier, 0.0)), 0)
 	if gain <= 0:
 		return
 	match currency_type:

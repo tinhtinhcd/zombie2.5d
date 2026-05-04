@@ -14,6 +14,7 @@ const DEBUG_GAMEPLAY_TRACE := false
 const SHOOTER_GUARD_SCENE := preload("res://scenes/entities/shooter_guard.tscn")
 const BRUISER_GUARD_SCENE := preload("res://scenes/entities/guardians/bruiser_guard.tscn")
 const SKILL_MANAGER_SCRIPT := preload("res://scripts/components/skill_manager.gd")
+const MODEL_NORMALIZER := preload("res://scripts/utils/model_normalizer.gd")
 const GUARD_SHOOTER_ID := &"guard_shooter"
 const GUARD_BRUISER_ID := &"guard_bruiser"
 const MAX_GUARDS := 1
@@ -140,6 +141,7 @@ func _spawn_selected_pet_companion() -> void:
 	new_pet.set_meta("pet_id", pet_id)
 	new_pet.set_meta("model_path", model_path)
 	new_pet.set_meta("source_scene_path", model_path)
+	MODEL_NORMALIZER.normalize(new_pet, "pet", pet_id, model_path)
 	add_child(new_pet)
 	move_child(new_pet, min(2, get_child_count() - 1))
 	pet_companion = new_pet
@@ -161,6 +163,7 @@ func _apply_pet_buffs_to_player() -> void:
 				player.skill_primary_cooldown = maxf(player.skill_primary_cooldown * (1.0 - clampf(value, 0.0, 0.8)), 1.0)
 			"xp_gain_multiplier":
 				player.set_meta("xp_gain_multiplier", 1.0 + value)
+				game_manager.set_run_reward_multiplier("xp_gain_multiplier", 1.0 + value)
 
 func _toggle_pause_menu() -> void:
 	if game_manager.is_game_over:
@@ -229,6 +232,9 @@ func spawn_guard(guard_id: StringName) -> bool:
 		push_warning("Guard scene failed to instantiate for id: %s" % String(guard_id))
 		return false
 	guard.name = "ShooterGuard" if guard_id == GUARD_SHOOTER_ID else "BruiserGuard"
+	var guard_definition := game_manager.get_guardian(String(guard_id))
+	var guard_model_path := str(guard_definition.get("model_scene_path", ""))
+	MODEL_NORMALIZER.normalize(guard, "guard", String(guard_id), guard_model_path)
 	guard_container.add_child(guard)
 	guard.global_position = player.global_position + Vector3(1.4, 0.6, 0.9)
 	_active_guards[String(guard_id)] = guard

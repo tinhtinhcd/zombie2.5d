@@ -5,6 +5,7 @@ const PLAYER_SCENE_PATH := "res://scenes/player/player.tscn"
 const PET_SCENE_PATH := "res://scenes/entities/pet_companion.tscn"
 const ENEMY_SCENE_PATH := "res://scenes/enemy/enemy.tscn"
 const PLAYER_SCENE := preload(PLAYER_SCENE_PATH)
+const MODEL_NORMALIZER := preload("res://scripts/utils/model_normalizer.gd")
 const PREVIEW_CONTAINER_NAME := "GameplayHeroPreview"
 const VIEWPORT_NAME := "PreviewViewport"
 const WORLD_NAME := "PreviewWorld"
@@ -75,6 +76,8 @@ static func show_hero_preview(slot: Control, hero_id: String, hero_definition: D
 		if DEBUG_PREVIEW_TRACE:
 			print("Hero preview spawn: requested_id=%s resolved_model_path=%s fallback_used=%s" % [hero_id, str(player.get_meta("model_path", "")), str(player.get_meta("model_fallback_used", false))])
 		_validate_full_hero_model(player, hero_id)
+		var hero_model_root := player.get_node_or_null("VisualRoot/HeroModel") as Node3D
+		MODEL_NORMALIZER.normalize(hero_model_root if hero_model_root != null else player, "hero", hero_id, str(player.get_meta("model_path", model_path)))
 
 	if not weapon_definition.is_empty() and player.has_method("apply_weapon_definition"):
 		player.call("apply_weapon_definition", weapon_definition, true, true)
@@ -127,6 +130,7 @@ static func show_pet_preview(slot: Control, pet_id: String, pet_definition: Dict
 		if DEBUG_PREVIEW_TRACE:
 			print("Pet preview spawn: requested_id=%s resolved_model_path=%s fallback_used=%s" % [pet_id, model_path, str(pet.get_meta("model_fallback_used", false))])
 		_validate_visible_model(pet, "Pet preview '%s'" % pet_id)
+		MODEL_NORMALIZER.normalize(pet, "pet", pet_id, model_path)
 
 	_start_named_animation(pet, "Idle", 0.45, false)
 	return pet
@@ -193,6 +197,22 @@ static func _add_preview_light(world_root: Node3D) -> void:
 	fill_light.light_energy = 1.8
 	fill_light.omni_range = 4.0
 	world_root.add_child(fill_light)
+
+	var rim_light := DirectionalLight3D.new()
+	rim_light.name = "PreviewRimLight"
+	rim_light.rotation_degrees = Vector3(-28.0, 160.0, 0.0)
+	rim_light.light_energy = 1.0
+	world_root.add_child(rim_light)
+
+	var world_environment := WorldEnvironment.new()
+	world_environment.name = "PreviewWorldEnvironment"
+	var environment := Environment.new()
+	environment.background_mode = Environment.BG_CLEAR_COLOR
+	environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+	environment.ambient_light_color = Color.WHITE
+	environment.ambient_light_energy = 0.35
+	world_environment.environment = environment
+	world_root.add_child(world_environment)
 
 static func _configure_player_node(player: Node3D) -> void:
 	_configure_preview_node(player)
