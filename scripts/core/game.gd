@@ -35,7 +35,7 @@ func _ready() -> void:
 	game_manager.apply_permanent_upgrades(player)
 	_setup_skill_manager()
 	_spawn_selected_pet_companion()
-	call_deferred("spawn_guard", StringName(game_manager.selected_guard_id))
+	_spawn_selected_guard_after_warmup()
 	_apply_map_radius_from_player()
 	_trace_gameplay_scene_state("after_loadout")
 	if pet_companion != null:
@@ -206,6 +206,14 @@ func _on_upgrade_selected(upgrade_id: StringName) -> void:
 func _on_guard_hire_requested(guard_id: StringName) -> void:
 	spawn_guard(guard_id)
 
+func _spawn_selected_guard_after_warmup() -> void:
+	var selected_guard := StringName(game_manager.selected_guard_id)
+	var timer := get_tree().create_timer(1.2)
+	timer.timeout.connect(func() -> void:
+		if game_manager != null and game_manager.is_gameplay_active:
+			spawn_guard(selected_guard)
+	)
+
 func spawn_guard(guard_id: StringName) -> bool:
 	if guard_container == null:
 		push_warning("Guard spawn failed: GuardContainer is missing.")
@@ -239,13 +247,20 @@ func spawn_guard(guard_id: StringName) -> bool:
 	if guard == null:
 		push_warning("Guard scene failed to instantiate for id: %s" % String(guard_id))
 		return false
-	guard.name = "%sRuntime" % String(guard_id).replace("_", "")
+	match guard_id:
+		GUARD_SHOOTER_ID:
+			guard.name = "ShooterGuard"
+		GUARD_BRUISER_ID:
+			guard.name = "BruiserGuard"
+		_:
+			guard.name = "%sRuntime" % String(guard_id).replace("_", "")
 	if _has_node_property(guard, "guardian_id"):
 		guard.set("guardian_id", String(guard_id))
 	var guard_model_path := str(guard_definition.get("model_scene_path", ""))
 	MODEL_NORMALIZER.normalize(guard, "guard", String(guard_id), guard_model_path)
 	guard_container.add_child(guard)
 	guard.global_position = player.global_position + Vector3(1.4, 0.6, 0.9)
+	_apply_guard_spawn_warmup(guard)
 	_active_guards[String(guard_id)] = guard
 	_refresh_guard_hud(String(guard_id))
 	return true
@@ -263,6 +278,15 @@ func _has_node_property(node: Object, property_name: String) -> bool:
 		if str(property.get("name", "")) == property_name:
 			return true
 	return false
+
+func _apply_guard_spawn_warmup(guard: Node3D) -> void:
+	if guard == null:
+		return
+	if _has_node_property(guard, "_attack_timer"):
+		var attack_interval := 0.0
+		if _has_node_property(guard, "attack_interval"):
+			attack_interval = float(guard.get("attack_interval"))
+		guard.set("_attack_timer", maxf(attack_interval, 2.0))
 
 func _go_home() -> void:
 	game_manager.resume_game()

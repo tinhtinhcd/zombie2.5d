@@ -80,6 +80,9 @@ func _run() -> void:
 		return
 	game_manager.claimed_daily_reward_date = ""
 	game_manager.daily_reward_day = ""
+	game_manager.last_login_date = ""
+	game_manager.daily_quests = []
+	game_manager.daily_quest_progress = {}
 	if not game_manager.claim_daily_reward():
 		push_error("Economy test failed: daily reward did not claim.")
 		quit(1)
