@@ -1,6 +1,8 @@
 extends Area3D
 class_name BuffPickup
 
+const FLOATING_TEXT := preload("res://scripts/effects/floating_text.gd")
+
 @export var buff_type: String = "damage"
 @export var multiplier: float = 1.25
 @export var duration: float = 6.0
@@ -24,6 +26,7 @@ func _on_body_entered(body: Node) -> void:
 		return
 	_collected = true
 	_apply_buff(body as Player)
+	FLOATING_TEXT.spawn(get_parent(), global_position, "BUFF", Color(1.0, 0.69, 0.13, 1.0))
 	if audio_manager != null:
 		audio_manager.play_sfx_event(&"pickup_reward")
 	queue_free()

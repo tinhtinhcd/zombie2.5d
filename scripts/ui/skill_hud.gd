@@ -2,16 +2,18 @@ extends HBoxContainer
 class_name SkillHud
 
 const SLOT_COUNT := 3
+const SCI_FI_THEME := preload("res://scripts/ui/sci_fi_theme.gd")
 
 var skill_manager: Node
 var _skill_ids: Array[String] = []
 var _buttons: Array[Button] = []
 var _cooldowns: Dictionary = {}
 var _durations: Dictionary = {}
+var _pulse_tweens: Dictionary = {}
 
 func _ready() -> void:
-	custom_minimum_size = Vector2(0, 54)
-	add_theme_constant_override("separation", 8)
+	custom_minimum_size = Vector2(0, 82)
+	add_theme_constant_override("separation", 10)
 	_build_slots()
 	visible = false
 
@@ -34,9 +36,11 @@ func setup(manager: Node) -> void:
 func _build_slots() -> void:
 	for index in range(SLOT_COUNT):
 		var button := Button.new()
-		button.custom_minimum_size = Vector2(96, 48)
+		button.custom_minimum_size = Vector2(78, 78)
 		button.text = "-"
 		button.disabled = true
+		button.clip_text = true
+		SCI_FI_THEME.apply_button(button)
 		button.pressed.connect(_on_slot_pressed.bind(index))
 		add_child(button)
 		_buttons.append(button)
@@ -56,10 +60,12 @@ func _on_skills_loaded(skills: Array) -> void:
 			button.text = _format_ready_text(skill)
 			button.tooltip_text = str(skill.get("description", ""))
 			button.disabled = false
+			_set_ready_state(button, true)
 		else:
 			button.text = "-"
 			button.tooltip_text = ""
 			button.disabled = true
+			_set_ready_state(button, false)
 	visible = not _skill_ids.is_empty()
 
 func _on_skill_cooldown_updated(skill_id: String, remaining: float, cooldown: float) -> void:
@@ -75,13 +81,16 @@ func _refresh_slot(skill_id: String) -> void:
 	var remaining := float(_cooldowns.get(skill_id, 0.0))
 	button.disabled = remaining > 0.0
 	if remaining > 0.0:
-		button.text = "%s\n%.1fs" % [_short_name(skill_id), remaining]
+		button.text = "%s\n%.0fs" % [_short_name(skill_id), ceilf(remaining)]
+		_set_ready_state(button, false)
 	else:
 		button.text = "%s\nReady" % _short_name(skill_id)
+		_set_ready_state(button, true)
 
 func _on_slot_pressed(index: int) -> void:
 	if skill_manager == null or index < 0 or index >= _skill_ids.size():
 		return
+	_play_press_tween(_buttons[index])
 	skill_manager.try_use_skill(_skill_ids[index])
 
 func _format_ready_text(skill: Dictionary) -> String:
@@ -93,3 +102,28 @@ func _short_name(skill_id: String) -> String:
 			var text := _buttons[button_index].text
 			return text.get_slice("\n", 0)
 	return skill_id.replace("skill_", "").replace("_", " ").capitalize()
+
+func _set_ready_state(button: Button, is_ready: bool) -> void:
+	if button == null:
+		return
+	if _pulse_tweens.has(button):
+		var tween := _pulse_tweens[button] as Tween
+		if tween != null and tween.is_valid():
+			tween.kill()
+		_pulse_tweens.erase(button)
+	button.scale = Vector2.ONE
+	button.modulate = Color.WHITE if is_ready else Color(0.62, 0.68, 0.74, 0.72)
+	if not is_ready or button.disabled:
+		return
+	var pulse := button.create_tween()
+	pulse.set_loops()
+	pulse.tween_property(button, "modulate", Color(0.82, 1.0, 1.0, 1.0), 0.7)
+	pulse.tween_property(button, "modulate", Color.WHITE, 0.7)
+	_pulse_tweens[button] = pulse
+
+func _play_press_tween(button: Button) -> void:
+	if button == null:
+		return
+	var tween := button.create_tween()
+	tween.tween_property(button, "scale", Vector2(0.94, 0.94), 0.05)
+	tween.tween_property(button, "scale", Vector2.ONE, 0.08)

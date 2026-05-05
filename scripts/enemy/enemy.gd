@@ -467,7 +467,9 @@ func _process_boss_attacks(delta: float) -> void:
 func _begin_boss_attack(attack_id: String, telegraph_time: float) -> void:
 	_boss_pending_attack = attack_id
 	_boss_telegraph_timer = maxf(telegraph_time, 0.05)
-	_spawn_death_effect()
+	if game_manager != null:
+		game_manager.notify_boss_telegraph(attack_id, _boss_telegraph_timer)
+	_spawn_boss_telegraph_marker(attack_id, _boss_telegraph_timer)
 
 func _execute_boss_attack() -> void:
 	match _boss_pending_attack:
@@ -507,6 +509,55 @@ func _boss_summon() -> void:
 		minion.global_position = global_position + Vector3(1.0 + float(index), 0.0, -0.7 + float(index) * 1.4)
 		minion.prepare_spawn(target)
 	_boss_summons_used += 1
+
+func _spawn_boss_telegraph_marker(attack_id: String, duration: float) -> void:
+	var parent := get_parent()
+	if parent == null:
+		return
+	var marker := MeshInstance3D.new()
+	marker.name = "BossTelegraph_%s" % attack_id.capitalize()
+	var material := StandardMaterial3D.new()
+	material.albedo_color = Color(1.0, 0.12, 0.12, 0.34)
+	material.emission_enabled = true
+	material.emission = Color(1.0, 0.08, 0.08, 1.0)
+	material.emission_energy_multiplier = 0.45
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	match attack_id:
+		"slam":
+			var mesh := CylinderMesh.new()
+			mesh.top_radius = 3.2
+			mesh.bottom_radius = 3.2
+			mesh.height = 0.04
+			mesh.radial_segments = 48
+			marker.mesh = mesh
+			marker.position = position + Vector3(0.0, 0.035, 0.0)
+		"charge":
+			var mesh := BoxMesh.new()
+			mesh.size = Vector3(1.0, 0.04, 8.0)
+			marker.mesh = mesh
+			var direction := Vector3.FORWARD
+			if target != null and is_instance_valid(target):
+				var offset := target.global_position - global_position
+				offset.y = 0.0
+				if not offset.is_zero_approx():
+					direction = offset.normalized()
+			marker.position = position + direction * 4.0 + Vector3(0.0, 0.04, 0.0)
+			marker.rotation.y = atan2(direction.x, direction.z)
+		"summon":
+			var mesh := CylinderMesh.new()
+			mesh.top_radius = 1.0
+			mesh.bottom_radius = 1.0
+			mesh.height = 0.05
+			mesh.radial_segments = 3
+			marker.mesh = mesh
+			marker.position = position + Vector3(0.0, 0.04, 0.0)
+		_:
+			return
+	marker.material_override = material
+	parent.add_child(marker)
+	var tween := marker.create_tween()
+	tween.tween_property(marker, "scale", Vector3(1.08, 1.0, 1.08), maxf(duration, 0.05))
+	tween.tween_callback(marker.queue_free)
 
 func _get_damageable_targets_in_radius(radius: float) -> Array[Node]:
 	var targets: Array[Node] = []

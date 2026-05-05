@@ -96,6 +96,7 @@ func get_guard_follow_radius() -> float:
 	return get_combat_anchor_range()
 
 func _ready() -> void:
+	add_to_group("player")
 	game_manager = get_node("/root/GameManager") as GameManager
 	audio_manager = get_node_or_null("/root/AudioManager") as AudioManager
 	current_hp = max(max_hp, 1)

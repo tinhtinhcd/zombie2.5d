@@ -42,6 +42,7 @@ signal inventory_changed(inventory: Dictionary)
 signal mission_progress_changed(summary: String)
 signal player_level_changed(level: int, current_xp: int, required_xp: int)
 signal boss_health_changed(current_hp: int, max_hp: int, visible: bool)
+signal boss_telegraph_started(attack_id: String, duration: float)
 signal guard_hire_requested(guard_id: StringName)
 
 var score: int = 0
@@ -779,6 +780,9 @@ func get_mission_summary() -> String:
 
 func update_boss_health(current_hp: int, max_hp: int, visible: bool = true) -> void:
 	boss_health_changed.emit(max(current_hp, 0), max(max_hp, 1), visible)
+
+func notify_boss_telegraph(attack_id: String, duration: float) -> void:
+	boss_telegraph_started.emit(attack_id, maxf(duration, 0.05))
 
 func load_level_by_index(level_index: int) -> void:
 	_ensure_levels_loaded()

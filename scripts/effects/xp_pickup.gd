@@ -1,6 +1,8 @@
 extends Area3D
 class_name XPPickup
 
+const FLOATING_TEXT := preload("res://scripts/effects/floating_text.gd")
+
 # Minimal experience pickup.
 # Additional pickup types can follow the same collection pattern later.
 
@@ -28,6 +30,7 @@ func _on_body_entered(body: Node) -> void:
 
 	_collected = true
 	body.receive_experience(xp_amount)
+	FLOATING_TEXT.spawn(get_parent(), global_position, "+XP", Color(0.156863, 0.843137, 1.0, 1.0))
 	if audio_manager != null:
 		audio_manager.play_sfx_event(&"pickup_reward")
 	queue_free()

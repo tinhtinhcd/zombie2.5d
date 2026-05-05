@@ -1,109 +1,194 @@
-[gd_resource type="Theme" load_steps=8 format=3 uid="uid://bywlg117iyhki"]
+[gd_resource type="Theme" load_steps=13 format=3 uid="uid://bywlg117iyhki"]
 
 [sub_resource type="StyleBoxFlat" id="ButtonDisabled"]
-bg_color = Color(0.08, 0.09, 0.1, 0.85)
+bg_color = Color(0.0470588, 0.0705882, 0.0941176, 0.72)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color(0.18, 0.24, 0.26, 0.8)
+border_color = Color(0.141176, 0.188235, 0.235294, 0.75)
 corner_radius_top_left = 6
 corner_radius_top_right = 6
 corner_radius_bottom_right = 6
 corner_radius_bottom_left = 6
+content_margin_left = 14.0
+content_margin_top = 10.0
+content_margin_right = 14.0
+content_margin_bottom = 10.0
+
+[sub_resource type="StyleBoxFlat" id="ButtonFocus"]
+bg_color = Color(0.0705882, 0.121569, 0.164706, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.156863, 0.843137, 1, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+content_margin_left = 14.0
+content_margin_top = 10.0
+content_margin_right = 14.0
+content_margin_bottom = 10.0
 
 [sub_resource type="StyleBoxFlat" id="ButtonHover"]
-bg_color = Color(0.07, 0.13, 0.15, 1)
+bg_color = Color(0.0784314, 0.145098, 0.196078, 1)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color(0.38, 0.8, 0.86, 1)
+border_color = Color(0.156863, 0.843137, 1, 1)
 corner_radius_top_left = 6
 corner_radius_top_right = 6
 corner_radius_bottom_right = 6
 corner_radius_bottom_left = 6
+content_margin_left = 14.0
+content_margin_top = 10.0
+content_margin_right = 14.0
+content_margin_bottom = 10.0
 
 [sub_resource type="StyleBoxFlat" id="ButtonNormal"]
-bg_color = Color(0.04, 0.08, 0.09, 0.95)
+bg_color = Color(0.0705882, 0.101961, 0.141176, 0.96)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color(0.18, 0.42, 0.46, 1)
+border_color = Color(0.101961, 0.376471, 0.470588, 0.9)
 corner_radius_top_left = 6
 corner_radius_top_right = 6
 corner_radius_bottom_right = 6
 corner_radius_bottom_left = 6
+content_margin_left = 14.0
+content_margin_top = 10.0
+content_margin_right = 14.0
+content_margin_bottom = 10.0
 
 [sub_resource type="StyleBoxFlat" id="ButtonPressed"]
-bg_color = Color(0.02, 0.06, 0.07, 1)
+bg_color = Color(0.0313726, 0.0666667, 0.0941176, 1)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color(0.24, 0.62, 0.68, 1)
+border_color = Color(0.219608, 0.85098, 1, 1)
 corner_radius_top_left = 6
 corner_radius_top_right = 6
 corner_radius_bottom_right = 6
 corner_radius_bottom_left = 6
+content_margin_left = 14.0
+content_margin_top = 10.0
+content_margin_right = 14.0
+content_margin_bottom = 10.0
 
 [sub_resource type="StyleBoxFlat" id="Panel"]
-bg_color = Color(0.035, 0.07, 0.08, 0.94)
+bg_color = Color(0.0705882, 0.101961, 0.141176, 0.82)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color(0.18, 0.42, 0.46, 0.95)
+border_color = Color(0.156863, 0.843137, 1, 0.35)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="PanelSolid"]
+bg_color = Color(0.0705882, 0.101961, 0.141176, 0.96)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.156863, 0.843137, 1, 0.42)
 corner_radius_top_left = 8
 corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 
 [sub_resource type="StyleBoxFlat" id="ProgressBackground"]
-bg_color = Color(0.025, 0.045, 0.05, 0.95)
+bg_color = Color(0.0431373, 0.0588235, 0.0784314, 0.96)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color(0.14, 0.28, 0.32, 1)
+border_color = Color(0.141176, 0.188235, 0.235294, 1)
 corner_radius_top_left = 4
 corner_radius_top_right = 4
 corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
 
 [sub_resource type="StyleBoxFlat" id="ProgressFill"]
-bg_color = Color(0.22, 0.72, 0.76, 1)
+bg_color = Color(0.156863, 0.843137, 1, 1)
 corner_radius_top_left = 4
 corner_radius_top_right = 4
 corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
 
+[sub_resource type="StyleBoxFlat" id="LineEditNormal"]
+bg_color = Color(0.0431373, 0.0588235, 0.0784314, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.141176, 0.188235, 0.235294, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="TabNormal"]
+bg_color = Color(0.0431373, 0.0588235, 0.0784314, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.141176, 0.188235, 0.235294, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+
+[sub_resource type="StyleBoxFlat" id="TabSelected"]
+bg_color = Color(0.0705882, 0.101961, 0.141176, 1)
+border_width_left = 1
+border_width_top = 2
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.156863, 0.843137, 1, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+
 [resource]
-default_font_size = 16
-Button/colors/font_color = Color(0.9, 0.98, 1, 1)
-Button/colors/font_disabled_color = Color(0.45, 0.56, 0.58, 1)
-Button/colors/font_focus_color = Color(0.9, 0.98, 1, 1)
+default_font_size = 17
+Button/colors/font_color = Color(0.901961, 0.945098, 1, 1)
+Button/colors/font_disabled_color = Color(0.560784, 0.639216, 0.721569, 0.58)
+Button/colors/font_focus_color = Color(0.901961, 0.945098, 1, 1)
 Button/colors/font_hover_color = Color(1, 1, 1, 1)
-Button/colors/font_pressed_color = Color(0.9, 0.98, 1, 1)
-Button/font_sizes/font_size = 16
+Button/colors/font_pressed_color = Color(0.901961, 0.945098, 1, 1)
+Button/font_sizes/font_size = 17
 Button/styles/disabled = SubResource("ButtonDisabled")
-Button/styles/focus = SubResource("ButtonHover")
+Button/styles/focus = SubResource("ButtonFocus")
 Button/styles/hover = SubResource("ButtonHover")
 Button/styles/normal = SubResource("ButtonNormal")
 Button/styles/pressed = SubResource("ButtonPressed")
-CheckButton/colors/font_color = Color(0.9, 0.98, 1, 1)
-CheckButton/font_sizes/font_size = 16
+CheckButton/colors/font_color = Color(0.901961, 0.945098, 1, 1)
+CheckButton/colors/font_disabled_color = Color(0.560784, 0.639216, 0.721569, 0.58)
+CheckButton/font_sizes/font_size = 17
 CheckButton/styles/disabled = SubResource("ButtonDisabled")
-CheckButton/styles/focus = SubResource("ButtonHover")
+CheckButton/styles/focus = SubResource("ButtonFocus")
 CheckButton/styles/hover = SubResource("ButtonHover")
 CheckButton/styles/normal = SubResource("ButtonNormal")
 CheckButton/styles/pressed = SubResource("ButtonPressed")
-Label/colors/font_color = Color(0.9, 0.98, 1, 1)
-Label/font_sizes/font_size = 16
+Label/colors/font_color = Color(0.901961, 0.945098, 1, 1)
+Label/font_sizes/font_size = 17
+LineEdit/colors/font_color = Color(0.901961, 0.945098, 1, 1)
+LineEdit/colors/font_placeholder_color = Color(0.560784, 0.639216, 0.721569, 0.7)
+LineEdit/styles/normal = SubResource("LineEditNormal")
 PanelContainer/styles/panel = SubResource("Panel")
-PopupPanel/styles/panel = SubResource("Panel")
-ProgressBar/colors/font_color = Color(0.9, 0.98, 1, 1)
+PopupPanel/styles/panel = SubResource("PanelSolid")
+ProgressBar/colors/font_color = Color(0.901961, 0.945098, 1, 1)
 ProgressBar/font_sizes/font_size = 14
 ProgressBar/styles/background = SubResource("ProgressBackground")
 ProgressBar/styles/fill = SubResource("ProgressFill")
+TabBar/colors/font_selected_color = Color(0.901961, 0.945098, 1, 1)
+TabBar/colors/font_unselected_color = Color(0.560784, 0.639216, 0.721569, 1)
+TabBar/font_sizes/font_size = 16
+TabBar/styles/tab_selected = SubResource("TabSelected")
+TabBar/styles/tab_unselected = SubResource("TabNormal")
