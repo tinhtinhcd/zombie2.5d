@@ -2,6 +2,7 @@ extends Node3D
 class_name ShooterGuard
 
 const COMBAT_UTILS := preload("res://scripts/utils/combat_utils.gd")
+const GUARD_MOVEMENT := preload("res://scripts/utils/guard_movement.gd")
 const SHOCKWAVE_SCENE := preload("res://scenes/effects/shockwave.tscn")
 const SHOOTER_GUARD_SCENE := preload("res://scenes/entities/shooter_guard.tscn")
 
@@ -22,6 +23,8 @@ signal died
 @export var target_scan_interval: float = 0.2
 @export var projectile_speed: float = 14.0
 @export var max_hp: int = 6
+@export var preferred_combat_radius: float = 3.6
+@export var orbit_angle_degrees: float = INF
 
 var _target: Node3D
 var _attack_timer: float = 0.0
@@ -37,6 +40,9 @@ var _move_speed_timer: float = 0.0
 var _damage_reduction_timer: float = 0.0
 var _damage_reduction: int = 0
 var game_manager: GameManager
+var movement_state: String = "hold"
+var combat_max_radius: float = 0.0
+var combat_return_radius: float = 0.0
 
 func _ready() -> void:
 	game_manager = get_node_or_null("/root/GameManager") as GameManager
@@ -46,6 +52,8 @@ func _ready() -> void:
 	_base_scale = scale
 	_base_move_speed = follow_speed
 	_load_definition()
+	if is_inf(orbit_angle_degrees):
+		orbit_angle_degrees = GUARD_MOVEMENT.get_orbit_angle_degrees(guardian_id, follow_offset)
 	current_hp = max(max_hp, 1)
 	add_to_group("guards")
 	hp_changed.emit(current_hp, max_hp)
@@ -58,8 +66,7 @@ func _process(delta: float) -> void:
 	if _target == null:
 		_target = get_node_or_null(target_path) as Node3D
 	if _target != null:
-		var desired_position := _target.global_position + follow_offset
-		global_position = global_position.lerp(desired_position, min(delta * follow_speed, 1.0))
+		_update_combat_movement(delta)
 
 	if game_manager != null and not game_manager.is_gameplay_active:
 		return
@@ -94,6 +101,7 @@ func _load_definition() -> void:
 	var follow_distance := float(definition.get("follow_distance", follow_offset.length()))
 	if follow_distance > 0.0:
 		follow_offset = Vector3(1.0, 0.25, 0.7).normalized() * follow_distance
+		preferred_combat_radius = clampf(follow_distance + 1.4, 3.0, 4.5)
 	var skills_value: Variant = definition.get("skills", [])
 	if typeof(skills_value) == TYPE_ARRAY:
 		_skills = skills_value.duplicate(true)
@@ -107,6 +115,23 @@ func _load_definition() -> void:
 			attack_interval = float(skill_dictionary.get("cooldown", attack_interval))
 			damage = int(skill_dictionary.get("damage", damage))
 			attack_range = float(skill_dictionary.get("range", attack_range))
+
+func _update_combat_movement(delta: float) -> void:
+	var plan: Dictionary = GUARD_MOVEMENT.get_plan(
+		self,
+		_target,
+		_cached_enemy,
+		follow_speed,
+		delta,
+		orbit_angle_degrees,
+		preferred_combat_radius,
+		get_tree().get_nodes_in_group("guards")
+	)
+	var velocity: Vector3 = plan.get("velocity", Vector3.ZERO)
+	global_position += velocity * delta
+	movement_state = str(plan.get("state", "hold"))
+	combat_max_radius = float(plan.get("max_radius", combat_max_radius))
+	combat_return_radius = float(plan.get("return_radius", combat_return_radius))
 
 func take_damage(amount: int) -> void:
 	if _is_dead:

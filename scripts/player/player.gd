@@ -86,6 +86,15 @@ var skill_manager: Node
 var game_manager: GameManager
 var audio_manager: AudioManager
 
+func get_shot_range() -> float:
+	return maxf(weapon_range, 1.0)
+
+func get_combat_anchor_range() -> float:
+	return get_shot_range()
+
+func get_guard_follow_radius() -> float:
+	return get_combat_anchor_range()
+
 func _ready() -> void:
 	game_manager = get_node("/root/GameManager") as GameManager
 	audio_manager = get_node_or_null("/root/AudioManager") as AudioManager

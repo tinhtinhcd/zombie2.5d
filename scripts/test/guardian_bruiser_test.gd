@@ -63,16 +63,47 @@ func _run() -> void:
 		push_error("Guardian test failed: Shooter guard node missing.")
 		quit(1)
 		return
+	player.weapon_range = 8.0
+	shooter.global_position = player.global_position + Vector3(0.25, 0.6, 0.0)
+	shooter.call("_update_combat_movement", 0.35)
+	var close_distance := _flat_distance(shooter.global_position, player.global_position)
+	if close_distance <= 1.5:
+		push_error("Guardian test failed: Shooter guard stayed glued to the hero instead of orbiting.")
+		quit(1)
+		return
+	shooter.global_position = player.global_position + Vector3(player.weapon_range + 4.0, 0.6, 0.0)
+	var far_distance := _flat_distance(shooter.global_position, player.global_position)
+	shooter.call("_update_combat_movement", 0.35)
+	var returned_distance := _flat_distance(shooter.global_position, player.global_position)
+	if returned_distance >= far_distance or str(shooter.get("movement_state")) != "return":
+		push_error("Guardian test failed: Shooter guard did not enter return movement from outside shot range.")
+		quit(1)
+		return
+	for _index in range(12):
+		shooter.call("_update_combat_movement", 0.25)
+	if _flat_distance(shooter.global_position, player.global_position) > player.weapon_range + 0.1:
+		push_error("Guardian test failed: Shooter guard remained outside allowed combat radius.")
+		quit(1)
+		return
+
 	var target_enemy := ENEMY_SCENE.instantiate() as Enemy
 	if target_enemy == null:
 		push_error("Guardian test failed: no enemy available for Shooter skills.")
 		quit(1)
 		return
 	enemy_container.add_child(target_enemy)
-	shooter.global_position = player.global_position + Vector3(0.7, 0.6, 0.0)
+	shooter.global_position = player.global_position + Vector3(3.4, 0.6, 0.0)
 	target_enemy.global_position = shooter.global_position + Vector3(1.0, 0.0, 0.0)
 	target_enemy.current_hp = target_enemy.max_hp
 	shooter.set("_cached_enemy", target_enemy)
+	shooter.set("_attack_timer", 0.0)
+	shooter.set("_cooldowns", {"Cover Fire": 0.0, "Focus Shot": 5.0, "Reload Drill": 5.0})
+	await _advance_frames(4)
+	if float(shooter.get("_cooldowns").get("Cover Fire", 0.0)) <= 0.0 and float(shooter.get("_attack_timer")) <= 0.0:
+		push_error("Guardian test failed: Shooter guard could not attack while using combat movement.")
+		quit(1)
+		return
+	shooter.set("_cooldowns", {"Cover Fire": 0.0, "Focus Shot": 0.0, "Reload Drill": 0.0})
 	if not bool(shooter.call("_try_skill", _get_skill(shooter, "Cover Fire"))):
 		push_error("Guardian test failed: Shooter Cover Fire did not trigger from data.")
 		quit(1)
@@ -214,3 +245,12 @@ func _place_enemy_pair(enemy_container: Node3D, center: Vector3) -> void:
 		var enemy := enemy_container.get_child(index) as Enemy
 		enemy.global_position = center + Vector3(0.6 + float(index) * 0.25, 0.0, 0.0)
 		enemy.current_hp = enemy.max_hp
+
+func _advance_frames(count: int) -> void:
+	for _index in range(count):
+		await process_frame
+
+func _flat_distance(a: Vector3, b: Vector3) -> float:
+	a.y = 0.0
+	b.y = 0.0
+	return a.distance_to(b)

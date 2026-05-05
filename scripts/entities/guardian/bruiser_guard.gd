@@ -3,6 +3,7 @@ class_name BruiserGuard
 
 enum State { FOLLOW, EVALUATE, CAST, COOLDOWN }
 
+const GUARD_MOVEMENT := preload("res://scripts/utils/guard_movement.gd")
 const SHOCKWAVE_SCENE := preload("res://scenes/effects/shockwave.tscn")
 
 signal hp_changed(current_hp: int, max_hp: int)
@@ -13,6 +14,8 @@ signal died
 @export var effect_container_path: NodePath = NodePath("../../EffectContainer")
 @export var move_speed: float = 5.0
 @export var max_hp: int = 10
+@export var preferred_combat_radius: float = 3.4
+@export var orbit_angle_degrees: float = INF
 
 var target: Player
 var game_manager: GameManager
@@ -25,12 +28,18 @@ var _skills: Array = []
 var current_hp: int = 0
 var _is_dead: bool = false
 var _base_scale: Vector3 = Vector3.ONE
+var movement_state: String = "hold"
+var combat_max_radius: float = 0.0
+var combat_return_radius: float = 0.0
+var _cached_enemy: Enemy
 
 func _ready() -> void:
 	game_manager = get_node("/root/GameManager") as GameManager
 	target = get_node_or_null(target_path) as Player
 	_base_scale = scale
 	_load_definition()
+	if is_inf(orbit_angle_degrees):
+		orbit_angle_degrees = GUARD_MOVEMENT.get_orbit_angle_degrees("guard_bruiser", Vector3(1.4, 0.0, 1.0))
 	current_hp = max(max_hp, 1)
 	add_to_group("guards")
 	hp_changed.emit(current_hp, max_hp)
@@ -54,6 +63,7 @@ func _load_definition() -> void:
 		return
 	var definition := game_manager.get_guardian("guard_bruiser")
 	follow_distance = float(definition.get("follow_distance", follow_distance))
+	preferred_combat_radius = clampf(follow_distance + 1.4, 3.0, 4.5)
 	scan_interval = float(definition.get("scan_interval", scan_interval))
 	max_hp = int(definition.get("max_hp", max_hp))
 	var skills_value: Variant = definition.get("skills", [])
@@ -92,18 +102,25 @@ func _follow_player(delta: float) -> void:
 		target = get_node_or_null(target_path) as Player
 	if target == null:
 		return
-	var desired_offset := Vector3(1.4, 0.0, 1.0).normalized() * follow_distance
-	var desired_position := target.global_position + desired_offset
-	var offset := desired_position - global_position
-	offset.y = 0.0
-	if offset.length() <= 0.15:
-		velocity = Vector3.ZERO
-	else:
-		velocity = offset.normalized() * move_speed
+	var plan: Dictionary = GUARD_MOVEMENT.get_plan(
+		self,
+		target,
+		_cached_enemy,
+		move_speed,
+		delta,
+		orbit_angle_degrees,
+		preferred_combat_radius,
+		get_tree().get_nodes_in_group("guards")
+	)
+	velocity = plan.get("velocity", Vector3.ZERO)
+	movement_state = str(plan.get("state", "hold"))
+	combat_max_radius = float(plan.get("max_radius", combat_max_radius))
+	combat_return_radius = float(plan.get("return_radius", combat_return_radius))
 	move_and_slide()
 
 func _evaluate_skills() -> void:
 	state = State.EVALUATE
+	_cached_enemy = _find_nearest_enemy()
 	if _try_emergency_heal():
 		return
 	if _try_slam():
@@ -175,6 +192,24 @@ func _get_enemies_in_radius(radius: float) -> Array[Enemy]:
 		if enemy.global_position.distance_squared_to(global_position) <= radius_squared:
 			enemies.append(enemy)
 	return enemies
+
+func _find_nearest_enemy() -> Enemy:
+	var enemy_container := get_node_or_null(enemy_container_path) as Node3D
+	if enemy_container == null:
+		return null
+	var best_enemy: Enemy
+	var best_distance := INF
+	for child in enemy_container.get_children():
+		if child is not Enemy:
+			continue
+		var enemy := child as Enemy
+		if enemy.is_dead():
+			continue
+		var distance := global_position.distance_squared_to(enemy.global_position)
+		if distance < best_distance:
+			best_distance = distance
+			best_enemy = enemy
+	return best_enemy
 
 func _spawn_shockwave() -> void:
 	var shockwave := SHOCKWAVE_SCENE.instantiate() as Node3D
