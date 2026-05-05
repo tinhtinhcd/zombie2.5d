@@ -117,6 +117,8 @@ func _load_definition() -> void:
 			attack_range = float(skill_dictionary.get("range", attack_range))
 
 func _update_combat_movement(delta: float) -> void:
+	if _cached_enemy != null and not is_instance_valid(_cached_enemy):
+		_cached_enemy = null
 	var plan: Dictionary = GUARD_MOVEMENT.get_plan(
 		self,
 		_target,

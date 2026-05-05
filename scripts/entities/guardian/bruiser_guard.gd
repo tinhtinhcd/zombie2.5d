@@ -102,6 +102,8 @@ func _follow_player(delta: float) -> void:
 		target = get_node_or_null(target_path) as Player
 	if target == null:
 		return
+	if _cached_enemy != null and not is_instance_valid(_cached_enemy):
+		_cached_enemy = null
 	var plan: Dictionary = GUARD_MOVEMENT.get_plan(
 		self,
 		target,

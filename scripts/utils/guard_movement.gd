@@ -28,7 +28,7 @@ static func get_orbit_angle_degrees(guard_id: String, fallback_offset: Vector3) 
 static func get_plan(
 	guard: Node3D,
 	anchor: Node3D,
-	enemy: Node3D,
+	enemy: Variant,
 	move_speed: float,
 	delta: float,
 	orbit_angle_degrees: float,
@@ -51,6 +51,9 @@ static func get_plan(
 	var orbit_direction := Vector3(sin(deg_to_rad(orbit_angle_degrees)), 0.0, cos(deg_to_rad(orbit_angle_degrees))).normalized()
 	var desired_position := anchor_position + orbit_direction * desired_radius
 	var state := "hold"
+	var enemy_node: Node3D = null
+	if enemy is Node3D:
+		enemy_node = enemy as Node3D
 
 	if distance > return_radius:
 		state = "return"
@@ -60,9 +63,9 @@ static func get_plan(
 		state = "spread"
 		var away := offset.normalized() if not offset.is_zero_approx() else orbit_direction
 		desired_position = anchor_position + away * desired_radius
-	elif enemy != null and is_instance_valid(enemy):
+	elif enemy_node != null and is_instance_valid(enemy_node):
 		state = "combat"
-		var enemy_offset := enemy.global_position - anchor_position
+		var enemy_offset := enemy_node.global_position - anchor_position
 		enemy_offset.y = 0.0
 		if not enemy_offset.is_zero_approx():
 			var enemy_direction := enemy_offset.normalized()
