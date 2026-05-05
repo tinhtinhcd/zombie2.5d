@@ -52,7 +52,7 @@ static func get_plan(
 	var desired_position := anchor_position + orbit_direction * desired_radius
 	var state := "hold"
 	var enemy_node: Node3D = null
-	if enemy is Node3D:
+	if enemy != null and is_instance_valid(enemy) and enemy is Node3D:
 		enemy_node = enemy as Node3D
 
 	if distance > return_radius:

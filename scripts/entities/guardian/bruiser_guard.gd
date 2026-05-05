@@ -104,10 +104,11 @@ func _follow_player(delta: float) -> void:
 		return
 	if _cached_enemy != null and not is_instance_valid(_cached_enemy):
 		_cached_enemy = null
+	var movement_enemy: Variant = _cached_enemy if _cached_enemy != null and is_instance_valid(_cached_enemy) else null
 	var plan: Dictionary = GUARD_MOVEMENT.get_plan(
 		self,
 		target,
-		_cached_enemy,
+		movement_enemy,
 		move_speed,
 		delta,
 		orbit_angle_degrees,

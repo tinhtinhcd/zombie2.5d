@@ -119,10 +119,11 @@ func _load_definition() -> void:
 func _update_combat_movement(delta: float) -> void:
 	if _cached_enemy != null and not is_instance_valid(_cached_enemy):
 		_cached_enemy = null
+	var movement_enemy: Variant = _cached_enemy if _cached_enemy != null and is_instance_valid(_cached_enemy) else null
 	var plan: Dictionary = GUARD_MOVEMENT.get_plan(
 		self,
 		_target,
-		_cached_enemy,
+		movement_enemy,
 		follow_speed,
 		delta,
 		orbit_angle_degrees,
