@@ -10,6 +10,11 @@ const SFX_EVENTS := {
 	"victory": "res://assets/audio/sfx/victory.ogg",
 }
 
+const MUSIC_TRACKS := {
+	"menu": "res://assets/audio/music/menu_theme.ogg",
+	"gameplay": "res://assets/audio/music/gameplay_loop.ogg",
+}
+
 var current_music_path: String = ""
 var last_sfx_path: String = ""
 var sound_enabled: bool = true
@@ -27,6 +32,18 @@ func play_music(track_path: String) -> void:
 	current_music_path = track_path
 	if not music_enabled:
 		return
+	if track_path.is_empty():
+		return
+	if not ResourceLoader.exists(track_path) and not _warned_missing_paths.has(track_path):
+		push_warning("AudioManager missing music asset: %s" % track_path)
+		_warned_missing_paths[track_path] = true
+
+func play_music_track(track_name: StringName) -> void:
+	var music_path := str(MUSIC_TRACKS.get(String(track_name), ""))
+	if music_path.is_empty():
+		push_warning("AudioManager received unknown music track: %s" % String(track_name))
+		return
+	play_music(music_path)
 
 func play_sfx(sfx_path: String) -> void:
 	if not sound_enabled:

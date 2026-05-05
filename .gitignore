@@ -5,4 +5,9 @@
 *.bin
 /.godot
 /assets
+!/assets/
+/assets/*
+!/assets/audio/
+!/assets/audio/**/
+!/assets/audio/**/.gitkeep
 .DS_Store

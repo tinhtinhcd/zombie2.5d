@@ -6,22 +6,25 @@ const QUEST_POOL := [
 	{"id": "daily_runs", "label": "Complete 3 runs", "stat": "runs", "target": 3, "reward_type": "gems", "reward_amount": 1},
 	{"id": "daily_skills", "label": "Use 5 skills", "stat": "skills_used", "target": 5, "reward_type": "gold", "reward_amount": 15},
 ]
+const DAILY_QUEST_COUNT := 3
 
 var game_manager: GameManager
 
 func setup(manager: GameManager) -> void:
 	game_manager = manager
-	ensure_today()
+	if ensure_today() and game_manager.has_method("_save_progression"):
+		game_manager.call("_save_progression")
 
-func ensure_today() -> void:
+func ensure_today() -> bool:
 	if game_manager == null:
-		return
+		return false
 	var today := Time.get_date_string_from_system(false)
-	if game_manager.last_login_date == today and not game_manager.daily_quests.is_empty():
-		return
+	if game_manager.last_login_date == today and game_manager.daily_quests.size() >= DAILY_QUEST_COUNT:
+		return false
 	game_manager.last_login_date = today
-	game_manager.daily_quests = QUEST_POOL.duplicate(true)
+	game_manager.daily_quests = _generate_daily_quests()
 	game_manager.daily_quest_progress = {}
+	return true
 
 func claim_login_reward() -> Dictionary:
 	if game_manager == null:
@@ -45,7 +48,8 @@ func record_progress(stat: String, amount: int = 1) -> void:
 			continue
 		var quest_id := str((quest as Dictionary).get("id", ""))
 		var target := int((quest as Dictionary).get("target", 1))
-		var current := clampi(int(game_manager.daily_quest_progress.get(quest_id, 0)) + max(amount, 0), 0, target)
+		var previous := int(game_manager.daily_quest_progress.get(quest_id, 0))
+		var current := mini(maxi(previous, amount), target) if stat == "wave" else clampi(previous + max(amount, 0), 0, target)
 		game_manager.daily_quest_progress[quest_id] = current
 
 func get_summary() -> String:
@@ -73,3 +77,60 @@ func _get_streak_reward(streak: int) -> Dictionary:
 			return {"type": "shard:%s" % game_manager.selected_pet_id, "amount": 3}
 		_:
 			return {"type": "gems", "amount": 3}
+
+func _generate_daily_quests() -> Array:
+	var generated := []
+	var missions := []
+	if game_manager != null and game_manager.has_method("get_mission_definitions"):
+		var mission_value: Variant = game_manager.call("get_mission_definitions")
+		if typeof(mission_value) == TYPE_ARRAY:
+			missions = mission_value
+
+	for mission in missions:
+		if generated.size() >= DAILY_QUEST_COUNT:
+			break
+		if typeof(mission) != TYPE_DICTIONARY:
+			continue
+		var quest := _daily_quest_from_mission(mission)
+		if not quest.is_empty():
+			generated.append(quest)
+
+	for fallback in QUEST_POOL:
+		if generated.size() >= DAILY_QUEST_COUNT:
+			break
+		generated.append((fallback as Dictionary).duplicate(true))
+
+	return generated
+
+func _daily_quest_from_mission(mission: Dictionary) -> Dictionary:
+	var mission_id := str(mission.get("id", "")).strip_edges()
+	var stat := str(mission.get("stat", "")).strip_edges()
+	var target := int(mission.get("target", 0))
+	if mission_id.is_empty() or stat.is_empty() or target <= 0:
+		return {}
+	return {
+		"id": "daily_%s" % mission_id,
+		"label": str(mission.get("label", mission_id.capitalize())),
+		"stat": stat,
+		"target": target,
+		"reward_type": _reward_type_for_stat(stat),
+		"reward_amount": _reward_amount_for_stat(stat, target),
+	}
+
+func _reward_type_for_stat(stat: String) -> String:
+	match stat:
+		"runs":
+			return "gems"
+		_:
+			return "gold"
+
+func _reward_amount_for_stat(stat: String, target: int) -> int:
+	match stat:
+		"runs":
+			return 1
+		"wave":
+			return max(target * 5, 15)
+		"xp":
+			return max(target, 20)
+		_:
+			return max(target * 2, 15)

@@ -30,10 +30,12 @@ const DEFAULT_SAVE_DATA := {
 	"selected_pet_id": DEFAULT_PET_ID,
 	"selected_guard_id": DEFAULT_GUARD_ID,
 	"unlocked_heroes": [DEFAULT_HERO_ID],
+	"hero_levels": {},
 	"unlocked_weapons": [DEFAULT_WEAPON_ID],
 	"weapon_levels": {},
 	"unlocked_pets": [DEFAULT_PET_ID],
 	"unlocked_guards": [DEFAULT_GUARD_ID],
+	"guard_levels": {},
 	"pet_evolution_stages": {},
 	"pet_evolution_shards": 0,
 	"pet_accessories": {},
@@ -143,6 +145,10 @@ func _merge_with_defaults(source: Dictionary) -> Dictionary:
 	if typeof(unlocked_heroes_value) == TYPE_ARRAY:
 		merged["unlocked_heroes"] = unlocked_heroes_value.duplicate(true)
 	_ensure_array_contains(merged["unlocked_heroes"], DEFAULT_HERO_ID)
+	var hero_levels_value: Variant = source.get("hero_levels", {})
+	if typeof(hero_levels_value) == TYPE_DICTIONARY:
+		var hero_levels: Dictionary = hero_levels_value
+		merged["hero_levels"] = hero_levels.duplicate(true)
 
 	var unlocked_weapons_value: Variant = source.get("unlocked_weapons", DEFAULT_SAVE_DATA["unlocked_weapons"])
 	if typeof(unlocked_weapons_value) == TYPE_ARRAY:
@@ -163,6 +169,10 @@ func _merge_with_defaults(source: Dictionary) -> Dictionary:
 	if typeof(unlocked_guards_value) == TYPE_ARRAY:
 		merged["unlocked_guards"] = unlocked_guards_value.duplicate(true)
 	_ensure_array_contains(merged["unlocked_guards"], DEFAULT_GUARD_ID)
+	var guard_levels_value: Variant = source.get("guard_levels", {})
+	if typeof(guard_levels_value) == TYPE_DICTIONARY:
+		var guard_levels: Dictionary = guard_levels_value
+		merged["guard_levels"] = guard_levels.duplicate(true)
 
 	var pet_evolution_stages_value: Variant = source.get("pet_evolution_stages", {})
 	if typeof(pet_evolution_stages_value) == TYPE_DICTIONARY:

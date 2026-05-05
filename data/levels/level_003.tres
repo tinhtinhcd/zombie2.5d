@@ -1,0 +1,39 @@
+[gd_resource type="Resource" script_class="LevelData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/levels/LevelData.gd" id="1_level_data"]
+[ext_resource type="Script" path="res://scripts/levels/LevelDifficultyData.gd" id="2_level_difficulty"]
+
+[sub_resource type="Resource" id="1_level_003_difficulty"]
+script = ExtResource("2_level_difficulty")
+health_multiplier = 1.45
+spawn_multiplier = 1.3
+pressure_rating = 1.45
+
+[resource]
+script = ExtResource("1_level_data")
+level_id = &"level_003"
+display_name = "Overpass Ruins"
+wave_count = 6
+enemy_types = PackedStringArray("normal", "fast", "tank")
+wave_definitions = [{
+"enemy_types": ["normal", "fast"],
+"spawn_count": 4
+}, {
+"enemy_types": ["normal", "fast", "tank"],
+"spawn_count": 5
+}, {
+"enemy_types": ["normal", "tank"],
+"spawn_count": 6
+}, {
+"enemy_types": ["fast", "tank"],
+"spawn_count": 7
+}, {
+"enemy_types": ["normal", "fast", "tank"],
+"spawn_count": 8
+}, {
+"enemy_types": ["boss"],
+"spawn_count": 1
+}]
+boss_wave_interval = 6
+boss_support_spawn_count = 3
+difficulty = SubResource("1_level_003_difficulty")

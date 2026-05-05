@@ -29,6 +29,11 @@ func _run() -> void:
 		return
 
 	game_manager.load_level_by_index(1)
+	var final_level_index := LevelLibrary.get_level_count()
+	if final_level_index < 2:
+		push_error("Core loop test failed: expected at least two levels.")
+		quit(1)
+		return
 	game_manager.set_boss_wave(false)
 	game_manager.complete_current_level()
 	await process_frame
@@ -37,6 +42,7 @@ func _run() -> void:
 		quit(1)
 		return
 
+	game_manager.load_level_by_index(final_level_index)
 	game_manager.set_boss_wave(true)
 	var before_victory_currency := game_manager.soft_currency
 	game_manager.complete_current_level()

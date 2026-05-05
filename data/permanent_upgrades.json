@@ -2,16 +2,19 @@
   "perm_max_hp": {
     "title": "Vitality",
     "description": "Permanent +2 max HP per rank.",
-    "max_rank": 5
+    "max_rank": 5,
+    "base_cost": 40
   },
   "perm_fire_rate": {
     "title": "Trigger Discipline",
     "description": "Permanent fire interval reduction per rank.",
-    "max_rank": 5
+    "max_rank": 5,
+    "base_cost": 45
   },
   "perm_projectile_damage": {
     "title": "Sharpened Shot",
     "description": "Permanent +1 projectile damage per rank.",
-    "max_rank": 5
+    "max_rank": 5,
+    "base_cost": 50
   }
 }

@@ -87,9 +87,38 @@ func _run() -> void:
 		push_error("Economy test failed: daily reward did not claim.")
 		quit(1)
 		return
+	if game_manager.daily_quests.size() != 3:
+		push_error("Economy test failed: daily quests did not generate three entries.")
+		quit(1)
+		return
+	if str((game_manager.daily_quests[0] as Dictionary).get("id", "")).begins_with("daily_mission_") == false:
+		push_error("Economy test failed: daily quests did not use mission data.")
+		quit(1)
+		return
 	game_manager.record_daily_quest_progress("kills", 5)
-	if not game_manager.get_daily_quest_summary().contains("5/50"):
+	if not game_manager.get_daily_quest_summary().contains("5/15"):
 		push_error("Economy test failed: daily quest progress did not update.")
+		quit(1)
+		return
+	game_manager.flush_progression_save()
+	if (save_manager.last_saved_snapshot.get("daily_quests", []) as Array).size() != 3:
+		push_error("Economy test failed: daily quest state did not persist.")
+		quit(1)
+		return
+
+	game_manager.gold = 500
+	game_manager.soft_currency = 500
+	var upgrade_ids := game_manager.get_permanent_upgrade_ids()
+	if upgrade_ids.is_empty() or not game_manager.unlock_permanent_upgrade(StringName(str(upgrade_ids[0]))):
+		push_error("Economy test failed: permanent upgrade purchase failed.")
+		quit(1)
+		return
+	if not game_manager.upgrade_hero("hero_knight"):
+		push_error("Economy test failed: hero upgrade purchase failed.")
+		quit(1)
+		return
+	if not game_manager.upgrade_guard("guard_shooter"):
+		push_error("Economy test failed: guard upgrade purchase failed.")
 		quit(1)
 		return
 

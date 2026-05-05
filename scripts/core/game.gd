@@ -261,11 +261,25 @@ func spawn_guard(guard_id: StringName) -> bool:
 	MODEL_NORMALIZER.normalize(guard, "guard", String(guard_id), guard_model_path)
 	guard_container.add_child(guard)
 	guard.global_position = player.global_position + Vector3(1.4, 0.6, 0.9)
+	_apply_guard_level_bonus(guard, String(guard_id))
 	_apply_guard_spawn_warmup(guard)
 	_active_guards[String(guard_id)] = guard
 	_refresh_guard_hud(String(guard_id))
 	_connect_guard_health(guard, String(guard_id))
 	return true
+
+func _apply_guard_level_bonus(guard: Node3D, guard_id: String) -> void:
+	if guard == null or game_manager == null or not game_manager.has_method("get_guard_level"):
+		return
+	var level := int(game_manager.call("get_guard_level", guard_id))
+	if level <= 1:
+		return
+	if NODE_UTILS.has_property(guard, "max_hp"):
+		guard.set("max_hp", int(guard.get("max_hp")) + level - 1)
+	if NODE_UTILS.has_property(guard, "current_hp"):
+		guard.set("current_hp", int(guard.get("max_hp")) if NODE_UTILS.has_property(guard, "max_hp") else int(guard.get("current_hp")) + level - 1)
+	if NODE_UTILS.has_property(guard, "projectile_damage"):
+		guard.set("projectile_damage", int(guard.get("projectile_damage")) + int((level - 1) / 2))
 
 func _refresh_guard_hud(guard_id: String) -> void:
 	if hud == null or not hud.has_method("set_active_guard"):

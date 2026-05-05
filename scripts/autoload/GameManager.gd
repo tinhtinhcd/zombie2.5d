@@ -12,6 +12,13 @@ const LEVEL_CLEAR_CURRENCY_REWARD := 10
 const BOSS_CLEAR_CURRENCY_REWARD := 15
 const ENERGY_MAX := 5
 const ENERGY_REGEN_SECONDS := 600
+const HERO_UPGRADE_MAX_LEVEL := 10
+const GUARD_UPGRADE_MAX_LEVEL := 10
+const HERO_UPGRADE_BASE_COST := 30
+const GUARD_UPGRADE_BASE_COST := 25
+const HERO_UNLOCK_COST := 75
+const GUARD_UNLOCK_BASE_COST := 60
+const PERMANENT_UPGRADE_BASE_COST := 40
 const DEBUG_GAMEPLAY_TRACE := false
 const TEST_UNLOCK_ALL_FEATURES := false
 
@@ -77,10 +84,12 @@ var selected_weapon_id: String = "weapon_basic"
 var selected_pet_id: String = "pet_drone"
 var selected_guard_id: String = "guard_shooter"
 var unlocked_heroes: Array = ["hero_knight"]
+var hero_levels: Dictionary = {}
 var unlocked_weapons: Array = ["weapon_basic"]
 var weapon_levels: Dictionary = {}
 var unlocked_pets: Array = ["pet_drone"]
 var unlocked_guards: Array = ["guard_shooter"]
+var guard_levels: Dictionary = {}
 var pet_evolution_stages: Dictionary = {}
 var pet_evolution_shards: int = 0
 var pet_accessories: Dictionary = {}
@@ -179,6 +188,8 @@ func add_xp(amount: int) -> void:
 	current_level_xp += resolved_amount
 	mission_stats["xp"] = int(mission_stats.get("xp", 0)) + resolved_amount
 	xp_changed.emit(xp)
+	if resolved_amount > 0:
+		record_daily_quest_progress("xp", resolved_amount)
 	_emit_mission_progress()
 	while current_level_xp >= xp_to_next_level:
 		current_level_xp -= xp_to_next_level
@@ -199,6 +210,7 @@ func set_wave(wave: int) -> void:
 	current_wave = max(wave, 0)
 	wave_changed.emit(current_wave)
 	mission_stats["wave"] = max(int(mission_stats.get("wave", 0)), current_wave)
+	record_daily_quest_progress("wave", current_wave)
 	_emit_mission_progress()
 
 func set_boss_wave(is_boss_wave_now: bool) -> void:
@@ -259,11 +271,34 @@ func unlock_permanent_upgrade(upgrade_id: StringName) -> bool:
 	var max_rank := int(definition.get("max_rank", 1))
 	if current_rank >= max_rank:
 		return false
+	if not spend_currency("gold", get_permanent_upgrade_cost(upgrade_id)):
+		return false
 
 	permanent_upgrades[upgrade_key] = current_rank + 1
 	_save_progression()
 	permanent_upgrades_changed.emit(permanent_upgrades.duplicate(true))
 	return true
+
+func get_permanent_upgrade_ids() -> Array:
+	return _game_data.get_permanent_upgrade_ids()
+
+func get_permanent_upgrade_definition(upgrade_id: StringName) -> Dictionary:
+	return _game_data.get_permanent_upgrade_definition(String(upgrade_id))
+
+func get_permanent_upgrade_cost(upgrade_id: StringName) -> int:
+	var definition := get_permanent_upgrade_definition(upgrade_id)
+	var current_rank := get_permanent_upgrade_rank(upgrade_id)
+	var base_cost: int = maxi(int(definition.get("base_cost", PERMANENT_UPGRADE_BASE_COST)), 1)
+	return maxi(roundi(float(base_cost) * pow(float(current_rank + 1), 1.45)), 1)
+
+func can_unlock_permanent_upgrade(upgrade_id: StringName) -> bool:
+	var definition := get_permanent_upgrade_definition(upgrade_id)
+	if definition.is_empty():
+		return false
+	var current_rank := get_permanent_upgrade_rank(upgrade_id)
+	if current_rank >= int(definition.get("max_rank", 1)):
+		return false
+	return gold >= get_permanent_upgrade_cost(upgrade_id)
 
 func get_permanent_upgrade_rank(upgrade_id: StringName) -> int:
 	_ensure_progression_loaded()
@@ -373,6 +408,9 @@ func get_guardian(guardian_id: String) -> Dictionary:
 func get_guardian_ids() -> Array:
 	return _game_data.get_guardian_ids()
 
+func get_mission_definitions() -> Array:
+	return _game_data.get_missions()
+
 func get_pet_evolution(pet_id: String) -> Dictionary:
 	return _game_data.get_pet_evolution(pet_id)
 
@@ -421,6 +459,93 @@ func resolve_weapon_model_path(weapon_id: String) -> String:
 func get_weapon_level(weapon_id: String) -> int:
 	_ensure_progression_loaded()
 	return clampi(int(weapon_levels.get(weapon_id, 1)), 1, 10)
+
+func get_hero_level(hero_id: String) -> int:
+	_ensure_progression_loaded()
+	return clampi(int(hero_levels.get(hero_id, 1)), 1, HERO_UPGRADE_MAX_LEVEL)
+
+func get_guard_level(guard_id: String) -> int:
+	_ensure_progression_loaded()
+	return clampi(int(guard_levels.get(guard_id, 1)), 1, GUARD_UPGRADE_MAX_LEVEL)
+
+func get_hero_upgrade_cost(hero_id: String) -> int:
+	return _get_roster_upgrade_cost(get_hero_level(hero_id), HERO_UPGRADE_BASE_COST)
+
+func get_guard_upgrade_cost(guard_id: String) -> int:
+	return _get_roster_upgrade_cost(get_guard_level(guard_id), GUARD_UPGRADE_BASE_COST)
+
+func can_upgrade_hero(hero_id: String) -> bool:
+	return is_hero_unlocked(hero_id) and get_hero_level(hero_id) < HERO_UPGRADE_MAX_LEVEL and gold >= get_hero_upgrade_cost(hero_id)
+
+func can_upgrade_guard(guard_id: String) -> bool:
+	return is_guardian_unlocked(guard_id) and get_guard_level(guard_id) < GUARD_UPGRADE_MAX_LEVEL and gold >= get_guard_upgrade_cost(guard_id)
+
+func get_hero_unlock_cost(_hero_id: String) -> int:
+	return HERO_UNLOCK_COST
+
+func get_guard_unlock_cost(guard_id: String) -> int:
+	var guardian := get_guardian(guard_id)
+	match str(guardian.get("rarity", "common")):
+		"rare":
+			return GUARD_UNLOCK_BASE_COST + 30
+		"epic":
+			return GUARD_UNLOCK_BASE_COST + 70
+		"legendary":
+			return GUARD_UNLOCK_BASE_COST + 120
+		_:
+			return GUARD_UNLOCK_BASE_COST
+
+func can_unlock_hero(hero_id: String) -> bool:
+	return _game_data.has_hero(hero_id) and not unlocked_heroes.has(hero_id) and gold >= get_hero_unlock_cost(hero_id)
+
+func can_unlock_guardian(guard_id: String) -> bool:
+	return _game_data.has_guardian(guard_id) and not unlocked_guards.has(guard_id) and is_guardian_unlocked(guard_id) and gold >= get_guard_unlock_cost(guard_id)
+
+func unlock_hero(hero_id: String) -> bool:
+	_ensure_progression_loaded()
+	if not can_unlock_hero(hero_id):
+		return false
+	if not spend_currency("gold", get_hero_unlock_cost(hero_id)):
+		return false
+	unlocked_heroes.append(hero_id)
+	hero_levels[hero_id] = 1
+	_save_progression()
+	loadout_changed.emit()
+	return true
+
+func unlock_guardian(guard_id: String) -> bool:
+	_ensure_progression_loaded()
+	if not can_unlock_guardian(guard_id):
+		return false
+	if not spend_currency("gold", get_guard_unlock_cost(guard_id)):
+		return false
+	unlocked_guards.append(guard_id)
+	guard_levels[guard_id] = 1
+	_save_progression()
+	loadout_changed.emit()
+	return true
+
+func upgrade_hero(hero_id: String) -> bool:
+	_ensure_progression_loaded()
+	if not can_upgrade_hero(hero_id):
+		return false
+	if not spend_currency("gold", get_hero_upgrade_cost(hero_id)):
+		return false
+	hero_levels[hero_id] = get_hero_level(hero_id) + 1
+	_save_progression()
+	loadout_changed.emit()
+	return true
+
+func upgrade_guard(guard_id: String) -> bool:
+	_ensure_progression_loaded()
+	if not can_upgrade_guard(guard_id):
+		return false
+	if not spend_currency("gold", get_guard_upgrade_cost(guard_id)):
+		return false
+	guard_levels[guard_id] = get_guard_level(guard_id) + 1
+	_save_progression()
+	loadout_changed.emit()
+	return true
 
 func get_pet_evolution_stage(pet_id: String) -> int:
 	_ensure_progression_loaded()
@@ -475,6 +600,9 @@ func get_weapon_upgrade_cost(weapon_id: String) -> int:
 	var level: int = get_weapon_level(weapon_id)
 	var base_cost: int = max(int(weapon.get("upgrade_base_cost", 20)), 1)
 	return max(roundi(float(base_cost) * pow(float(level), 1.5)), 1)
+
+func _get_roster_upgrade_cost(level: int, base_cost: int) -> int:
+	return maxi(roundi(float(maxi(base_cost, 1)) * pow(float(maxi(level, 1)), 1.45)), 1)
 
 func can_upgrade_weapon(weapon_id: String) -> bool:
 	return is_weapon_unlocked(weapon_id) and get_weapon_level(weapon_id) < 10 and soft_currency >= get_weapon_upgrade_cost(weapon_id)
@@ -537,6 +665,10 @@ func apply_selected_loadout(player: Player) -> void:
 
 	player.move_speed = max(player.move_speed + float(hero_definition.get("move_speed_bonus", 0.0)), 1.0)
 	player.projectile_damage += int(hero_definition.get("projectile_damage_bonus", 0))
+	var hero_level := get_hero_level(selected_hero_id)
+	if hero_level > 1:
+		player.increase_max_hp(hero_level - 1)
+		player.increase_projectile_damage(int((hero_level - 1) / 2))
 	player.hp_changed.emit(player.current_hp)
 
 func try_start_run() -> bool:
@@ -794,6 +926,9 @@ func _ensure_progression_loaded() -> void:
 		var unlocked_heroes_value: Variant = save_data.get("unlocked_heroes", unlocked_heroes)
 		if typeof(unlocked_heroes_value) == TYPE_ARRAY:
 			unlocked_heroes = unlocked_heroes_value
+		var hero_levels_value: Variant = save_data.get("hero_levels", {})
+		if typeof(hero_levels_value) == TYPE_DICTIONARY:
+			hero_levels = hero_levels_value
 		var unlocked_weapons_value: Variant = save_data.get("unlocked_weapons", unlocked_weapons)
 		if typeof(unlocked_weapons_value) == TYPE_ARRAY:
 			unlocked_weapons = unlocked_weapons_value
@@ -806,6 +941,9 @@ func _ensure_progression_loaded() -> void:
 		var unlocked_guards_value: Variant = save_data.get("unlocked_guards", unlocked_guards)
 		if typeof(unlocked_guards_value) == TYPE_ARRAY:
 			unlocked_guards = unlocked_guards_value
+		var guard_levels_value: Variant = save_data.get("guard_levels", {})
+		if typeof(guard_levels_value) == TYPE_DICTIONARY:
+			guard_levels = guard_levels_value
 		var pet_evolution_stages_value: Variant = save_data.get("pet_evolution_stages", {})
 		if typeof(pet_evolution_stages_value) == TYPE_DICTIONARY:
 			pet_evolution_stages = pet_evolution_stages_value
@@ -821,6 +959,8 @@ func _ensure_progression_loaded() -> void:
 	if TEST_UNLOCK_ALL_FEATURES:
 		_apply_testing_unlocks()
 	_validate_selected_loadout()
+	if _daily_rewards.ensure_today():
+		_save_progression()
 	_progression_loaded = true
 	highest_unlocked_level_changed.emit(highest_unlocked_level)
 	permanent_upgrades_changed.emit(permanent_upgrades.duplicate(true))
@@ -876,10 +1016,12 @@ func _get_progression_save_data() -> Dictionary:
 		"selected_pet_id": selected_pet_id,
 		"selected_guard_id": selected_guard_id,
 		"unlocked_heroes": unlocked_heroes,
+		"hero_levels": hero_levels,
 		"unlocked_weapons": unlocked_weapons,
 		"weapon_levels": weapon_levels,
 		"unlocked_pets": unlocked_pets,
 		"unlocked_guards": unlocked_guards,
+		"guard_levels": guard_levels,
 		"pet_evolution_stages": pet_evolution_stages,
 		"pet_evolution_shards": pet_evolution_shards,
 		"pet_accessories": pet_accessories,

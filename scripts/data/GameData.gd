@@ -203,6 +203,7 @@ const FALLBACK_PERMANENT_UPGRADES := {
 		"title": "Vitality",
 		"description": "Permanent +2 max HP per rank.",
 		"max_rank": 5,
+		"base_cost": 40,
 	},
 }
 
@@ -339,6 +340,9 @@ func resolve_weapon_model_path(weapon_id: String) -> String:
 
 func get_permanent_upgrade_definition(upgrade_id: String) -> Dictionary:
 	return permanent_upgrades.get(upgrade_id, {}).duplicate(true)
+
+func get_permanent_upgrade_ids() -> Array:
+	return permanent_upgrades.keys()
 
 func get_hero_ids() -> Array:
 	return heroes.keys()
@@ -763,6 +767,7 @@ func _validate_permanent_upgrades() -> void:
 		_ensure_string_field(upgrade, "title", str(defaults.get("title", _display_name_from_id(upgrade_id))), "permanent_upgrades.json", upgrade_id)
 		_ensure_string_field(upgrade, "description", str(defaults.get("description", "")), "permanent_upgrades.json", upgrade_id)
 		_ensure_number_field(upgrade, "max_rank", defaults.get("max_rank", 1), "permanent_upgrades.json", upgrade_id)
+		_ensure_number_field(upgrade, "base_cost", defaults.get("base_cost", 40), "permanent_upgrades.json", upgrade_id)
 		if int(upgrade.get("max_rank", 1)) < 1:
 			_warn("permanent_upgrades.json entry \"%s\" invalid max_rank; using 1." % upgrade_id)
 			upgrade["max_rank"] = 1
@@ -937,6 +942,7 @@ func _default_permanent_upgrade_entry(upgrade_id: String) -> Dictionary:
 		"title": _display_name_from_id(upgrade_id),
 		"description": "",
 		"max_rank": 1,
+		"base_cost": 40,
 	}
 
 func _display_name_from_id(entry_id: String) -> String:
