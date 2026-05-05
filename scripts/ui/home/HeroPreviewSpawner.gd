@@ -6,6 +6,7 @@ const PET_SCENE_PATH := "res://scenes/entities/pet_companion.tscn"
 const ENEMY_SCENE_PATH := "res://scenes/enemy/enemy.tscn"
 const PLAYER_SCENE := preload(PLAYER_SCENE_PATH)
 const MODEL_NORMALIZER := preload("res://scripts/utils/model_normalizer.gd")
+const NODE_UTILS := preload("res://scripts/utils/node_utils.gd")
 const PREVIEW_CONTAINER_NAME := "GameplayHeroPreview"
 const VIEWPORT_NAME := "PreviewViewport"
 const WORLD_NAME := "PreviewWorld"
@@ -176,7 +177,7 @@ static func show_guard_preview(slot: Control, guard_id: String, guard_definition
 		guard.position = PREVIEW_GUARD_POSITION
 		guard.rotation_degrees = PREVIEW_GUARD_ROTATION
 		guard.scale = PREVIEW_GUARD_SCALE
-		if _has_property(guard, "guardian_id"):
+		if NODE_UTILS.has_property(guard, "guardian_id"):
 			guard.set("guardian_id", guard_id)
 		world_root.add_child(guard)
 		_configure_preview_node(guard)
@@ -332,14 +333,6 @@ static func _find_animation_player(root: Node) -> AnimationPlayer:
 		if found != null:
 			return found
 	return null
-
-static func _has_property(node: Object, property_name: String) -> bool:
-	if node == null:
-		return false
-	for property in node.get_property_list():
-		if str(property.get("name", "")) == property_name:
-			return true
-	return false
 
 static func _validate_full_hero_model(player: Node3D, hero_id: String) -> void:
 	var parts := {

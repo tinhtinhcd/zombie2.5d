@@ -11,6 +11,7 @@ const TYPE_STATS := {
 	"boss": {"max_hp": 18, "move_speed": 2.0, "contact_damage": 2, "visual_scale": Vector3(1.8, 1.8, 1.8), "color": Color(1.0, 0.35, 0.35, 1.0)},
 }
 const SHOCKWAVE_SCENE := preload("res://scenes/effects/shockwave.tscn")
+const ENEMY_SCENE := preload("res://scenes/enemy/enemy.tscn")
 
 @export var enemy_type: StringName = &"normal"
 @export var move_speed: float = 2.8
@@ -21,9 +22,13 @@ const SHOCKWAVE_SCENE := preload("res://scenes/effects/shockwave.tscn")
 @export var contact_range: float = 0.9
 @export var spawn_warmup_duration: float = 0.35
 @export var xp_pickup_scene: PackedScene
+@export var health_pickup_scene: PackedScene
+@export var buff_pickup_scene: PackedScene
 @export var pickup_container_path: NodePath = NodePath("../../PickupContainer")
 @export var effect_container_path: NodePath = NodePath("../EffectContainer")
 @export var xp_drop_amount: int = 1
+@export_range(0.0, 1.0, 0.01) var health_drop_chance: float = 0.08
+@export_range(0.0, 1.0, 0.01) var buff_drop_chance: float = 0.04
 @export var move_bob_amount: float = 0.055
 @export var movement_animation_scene: PackedScene
 
@@ -49,6 +54,11 @@ var _death_tween: Tween
 var _visual_base_position: Vector3 = Vector3.ZERO
 var _visual_anim_time: float = 0.0
 var _knockback_velocity: Vector3 = Vector3.ZERO
+var _boss_charge_velocity: Vector3 = Vector3.ZERO
+var _boss_attack_cooldown: float = 2.4
+var _boss_telegraph_timer: float = 0.0
+var _boss_pending_attack: String = ""
+var _boss_summons_used: int = 0
 var _animation_player: AnimationPlayer
 var _current_animation: String = ""
 var game_manager: GameManager
@@ -85,9 +95,13 @@ func _physics_process(delta: float) -> void:
 		_animate_visual(delta, false)
 		return
 
+	if enemy_type == &"boss":
+		_process_boss_attacks(delta)
+
 	var move_direction := _get_move_direction_to_target()
 	_knockback_velocity = _knockback_velocity.move_toward(Vector3.ZERO, delta * 14.0)
-	velocity = move_direction * move_speed + _knockback_velocity
+	_boss_charge_velocity = _boss_charge_velocity.move_toward(Vector3.ZERO, delta * 9.0)
+	velocity = move_direction * move_speed + _knockback_velocity + _boss_charge_velocity
 	velocity -= _plane_normal * velocity.dot(_plane_normal)
 
 	move_and_slide()
@@ -97,7 +111,7 @@ func _physics_process(delta: float) -> void:
 
 	# Tick down contact-damage cooldown so the player isn't hurt every frame.
 	_contact_damage_cooldown = max(_contact_damage_cooldown - delta, 0.0)
-	_try_damage_player()
+	_try_damage_target()
 
 func set_target(new_target: Node3D) -> void:
 	target = new_target
@@ -161,12 +175,14 @@ func die() -> void:
 		if enemy_type == &"boss":
 			game_manager.update_boss_health(0, max_hp, false)
 	_spawn_xp_pickup()
+	_try_spawn_bonus_pickup()
 	if audio_manager != null:
 		audio_manager.play_sfx_event(&"enemy_death")
 	_play_death_feedback()
 	_spawn_death_effect()
 
 func _get_move_direction_to_target() -> Vector3:
+	_update_combat_target()
 	if target == null or not is_instance_valid(target):
 		return Vector3.ZERO
 
@@ -183,16 +199,36 @@ func _constrain_to_plane() -> void:
 		return
 	global_position -= _plane_normal * distance_from_plane
 
-func _try_damage_player() -> void:
+func _try_damage_target() -> void:
 	if _contact_damage_cooldown > 0.0:
 		return
-	if target is not Player:
+	if target == null or not is_instance_valid(target):
 		return
 	if global_position.distance_to(target.global_position) > contact_range:
 		return
-
-	target.take_damage(contact_damage)
+	if target.has_method("take_damage"):
+		target.call("take_damage", contact_damage)
 	_contact_damage_cooldown = contact_damage_interval
+
+func _update_combat_target() -> void:
+	if target != null and is_instance_valid(target) and target.has_method("is_dead") and bool(target.call("is_dead")):
+		target = null
+	var best_target := target
+	var best_distance := INF
+	if best_target != null and is_instance_valid(best_target):
+		best_distance = global_position.distance_squared_to(best_target.global_position)
+	for guard in get_tree().get_nodes_in_group("guards"):
+		if guard is not Node3D:
+			continue
+		var guard_node := guard as Node3D
+		if guard_node.has_method("is_dead") and bool(guard_node.call("is_dead")):
+			continue
+		var distance := global_position.distance_squared_to(guard_node.global_position)
+		if distance < best_distance * 0.85:
+			best_target = guard_node
+			best_distance = distance
+	if best_target != null:
+		target = best_target
 
 func _face_direction(world_direction: Vector3) -> void:
 	if visual_root == null or world_direction.is_zero_approx():
@@ -383,6 +419,106 @@ func _spawn_xp_pickup() -> void:
 		xp_pickup.xp_amount = game_manager.get_scaled_xp_drop(xp_drop_amount)
 	else:
 		xp_pickup.xp_amount = xp_drop_amount
+
+func _try_spawn_bonus_pickup() -> void:
+	var pickup_container := get_node_or_null(pickup_container_path) as Node3D
+	if pickup_container == null:
+		return
+	var roll := randf()
+	if health_pickup_scene != null and (enemy_type == &"boss" or roll <= health_drop_chance):
+		_spawn_pickup_scene(health_pickup_scene, pickup_container, Vector3(0.35, 0.0, 0.0))
+		return
+	if buff_pickup_scene != null and (enemy_type == &"boss" or roll <= health_drop_chance + buff_drop_chance):
+		var pickup := _spawn_pickup_scene(buff_pickup_scene, pickup_container, Vector3(-0.35, 0.0, 0.0))
+		if pickup != null:
+			var buff_types := ["damage", "move_speed", "fire_rate"]
+			pickup.set("buff_type", buff_types[randi() % buff_types.size()])
+
+func _spawn_pickup_scene(scene: PackedScene, pickup_container: Node3D, offset: Vector3) -> Node:
+	if scene == null or pickup_container == null:
+		return null
+	var pickup := scene.instantiate()
+	if pickup == null:
+		return null
+	pickup_container.add_child(pickup)
+	if pickup is Node3D:
+		(pickup as Node3D).global_position = global_position + offset
+	return pickup
+
+func _process_boss_attacks(delta: float) -> void:
+	if target == null or not is_instance_valid(target):
+		return
+	if _boss_telegraph_timer > 0.0:
+		_boss_telegraph_timer = maxf(_boss_telegraph_timer - delta, 0.0)
+		if _boss_telegraph_timer <= 0.0:
+			_execute_boss_attack()
+		return
+	_boss_attack_cooldown = maxf(_boss_attack_cooldown - delta, 0.0)
+	if _boss_attack_cooldown > 0.0:
+		return
+	var distance := global_position.distance_to(target.global_position)
+	if current_hp <= roundi(float(max_hp) * 0.55) and _boss_summons_used < 1:
+		_begin_boss_attack("summon", 0.65)
+	elif distance <= 3.2:
+		_begin_boss_attack("slam", 0.65)
+	else:
+		_begin_boss_attack("charge", 0.45)
+
+func _begin_boss_attack(attack_id: String, telegraph_time: float) -> void:
+	_boss_pending_attack = attack_id
+	_boss_telegraph_timer = maxf(telegraph_time, 0.05)
+	_spawn_death_effect()
+
+func _execute_boss_attack() -> void:
+	match _boss_pending_attack:
+		"slam":
+			_boss_slam()
+		"charge":
+			_boss_charge()
+		"summon":
+			_boss_summon()
+	_boss_pending_attack = ""
+	_boss_attack_cooldown = 3.0
+
+func _boss_slam() -> void:
+	_spawn_death_effect()
+	for body in _get_damageable_targets_in_radius(3.2):
+		body.call("take_damage", contact_damage + 1)
+
+func _boss_charge() -> void:
+	if target == null or not is_instance_valid(target):
+		return
+	var direction := target.global_position - global_position
+	direction.y = 0.0
+	if direction.is_zero_approx():
+		return
+	_boss_charge_velocity += direction.normalized() * 7.5
+
+func _boss_summon() -> void:
+	var enemy_container := get_parent() as Node3D
+	if enemy_container == null:
+		return
+	for index in range(2):
+		var minion := ENEMY_SCENE.instantiate() as Enemy
+		if minion == null:
+			continue
+		enemy_container.add_child(minion)
+		minion.apply_enemy_type(&"fast" if index == 0 else &"normal")
+		minion.global_position = global_position + Vector3(1.0 + float(index), 0.0, -0.7 + float(index) * 1.4)
+		minion.prepare_spawn(target)
+	_boss_summons_used += 1
+
+func _get_damageable_targets_in_radius(radius: float) -> Array[Node]:
+	var targets: Array[Node] = []
+	var radius_squared := radius * radius
+	if target != null and is_instance_valid(target) and target.has_method("take_damage") and global_position.distance_squared_to(target.global_position) <= radius_squared:
+		targets.append(target)
+	for guard in get_tree().get_nodes_in_group("guards"):
+		if guard is not Node3D or not guard.has_method("take_damage"):
+			continue
+		if global_position.distance_squared_to((guard as Node3D).global_position) <= radius_squared:
+			targets.append(guard)
+	return targets
 
 func _play_enemy_hit_flash() -> void:
 	if _feedback_material == null:

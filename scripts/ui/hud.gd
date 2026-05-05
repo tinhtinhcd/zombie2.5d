@@ -111,6 +111,17 @@ func set_active_guard(guard_id: String, display_name: String = "") -> void:
 	if guard_panel != null:
 		guard_panel.visible = not guard_id.is_empty()
 
+func set_guard_hp(current_hp: int, max_hp: int) -> void:
+	if guard_label == null:
+		_setup_guard_indicator()
+	if guard_label == null:
+		return
+	var base_text := guard_label.text
+	var hp_index := base_text.find(" HP ")
+	if hp_index >= 0:
+		base_text = base_text.substr(0, hp_index)
+	guard_label.text = "%s HP %d/%d" % [base_text, current_hp, max(max_hp, 1)]
+
 func _process(delta: float) -> void:
 	if game_manager != null and game_manager.is_gameplay_active:
 		_elapsed_time += delta

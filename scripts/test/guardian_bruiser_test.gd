@@ -73,7 +73,7 @@ func _run() -> void:
 	target_enemy.global_position = shooter.global_position + Vector3(1.0, 0.0, 0.0)
 	target_enemy.current_hp = target_enemy.max_hp
 	shooter.set("_cached_enemy", target_enemy)
-	if not bool(shooter.call("_try_cover_fire")):
+	if not bool(shooter.call("_try_skill", _get_skill(shooter, "Cover Fire"))):
 		push_error("Guardian test failed: Shooter Cover Fire did not trigger from data.")
 		quit(1)
 		return
@@ -84,17 +84,133 @@ func _run() -> void:
 	target_enemy.current_hp = target_enemy.max_hp
 	target_enemy.global_position = shooter.global_position + Vector3(1.0, 0.0, 0.0)
 	shooter.set("_cooldowns", {"Cover Fire": 5.0, "Focus Shot": 0.0, "Reload Drill": 0.0})
-	if not bool(shooter.call("_try_focus_shot")):
+	if not bool(shooter.call("_try_skill", _get_skill(shooter, "Focus Shot"))):
 		push_error("Guardian test failed: Shooter Focus Shot did not trigger from data.")
 		quit(1)
 		return
 	player.fire_interval = 1.0
 	shooter.set("_cached_enemy", target_enemy)
 	shooter.set("_cooldowns", {"Cover Fire": 5.0, "Focus Shot": 5.0, "Reload Drill": 0.0})
-	if not bool(shooter.call("_try_reload_drill")) or player.fire_interval >= 1.0:
+	if not bool(shooter.call("_try_skill", _get_skill(shooter, "Reload Drill"))) or player.fire_interval >= 1.0:
 		push_error("Guardian test failed: Shooter Reload Drill did not buff player fire rate.")
 		quit(1)
 		return
 
-	print("Guardian test passed: Bruiser and Shooter guards load data-driven skills.")
+	_clear_guards(game)
+	await process_frame
+	var medic := _spawn_support_guard(game, &"guard_medic")
+	if medic == null:
+		push_error("Guardian test failed: Medic guard did not spawn.")
+		quit(1)
+		return
+	player.current_hp = 3
+	medic.call("_try_skill", _get_skill(medic, "Patch Up"))
+	if player.current_hp <= 3:
+		push_error("Guardian test failed: Medic Patch Up did not heal.")
+		quit(1)
+		return
+	_place_enemy_pair(enemy_container, medic.global_position)
+	var original_speed := player.move_speed
+	medic.call("_try_skill", _get_skill(medic, "Adrenaline"))
+	if player.move_speed <= original_speed:
+		push_error("Guardian test failed: Medic Adrenaline did not buff move speed.")
+		quit(1)
+		return
+	var disinfect_enemy := enemy_container.get_child(0) as Enemy
+	disinfect_enemy.current_hp = disinfect_enemy.max_hp
+	medic.call("_try_skill", _get_skill(medic, "Disinfect"))
+	if disinfect_enemy.current_hp >= disinfect_enemy.max_hp:
+		push_error("Guardian test failed: Medic Disinfect did not damage nearby enemy.")
+		quit(1)
+		return
+
+	_clear_guards(game)
+	await process_frame
+	var engineer := _spawn_support_guard(game, &"guard_engineer")
+	if engineer == null:
+		push_error("Guardian test failed: Engineer guard did not spawn.")
+		quit(1)
+		return
+	_place_enemy_pair(enemy_container, engineer.global_position)
+	engineer.set("_cached_enemy", enemy_container.get_child(0))
+	var guard_count_before := (game.get_node("GuardContainer") as Node3D).get_child_count()
+	engineer.call("_try_skill", _get_skill(engineer, "Mini Turret"))
+	if (game.get_node("GuardContainer") as Node3D).get_child_count() <= guard_count_before:
+		push_error("Guardian test failed: Engineer Mini Turret did not deploy.")
+		quit(1)
+		return
+	var zap_enemy := enemy_container.get_child(0) as Enemy
+	zap_enemy.current_hp = zap_enemy.max_hp
+	engineer.call("_try_skill", _get_skill(engineer, "Zap Mine"))
+	if zap_enemy.current_hp >= zap_enemy.max_hp:
+		push_error("Guardian test failed: Engineer Zap Mine did not damage nearby enemy.")
+		quit(1)
+		return
+
+	_clear_guards(game)
+	await process_frame
+	var sentinel := _spawn_support_guard(game, &"guard_sentinel")
+	if sentinel == null:
+		push_error("Guardian test failed: Sentinel guard did not spawn.")
+		quit(1)
+		return
+	_place_enemy_pair(enemy_container, sentinel.global_position)
+	var taunt_enemy := enemy_container.get_child(0) as Enemy
+	sentinel.call("_try_skill", _get_skill(sentinel, "Taunt"))
+	if taunt_enemy.target != sentinel:
+		push_error("Guardian test failed: Sentinel Taunt did not redirect enemy.")
+		quit(1)
+		return
+	var hp_before := int(sentinel.get("current_hp"))
+	sentinel.call("_try_skill", _get_skill(sentinel, "Shield Wall"))
+	sentinel.call("take_damage", 2)
+	if int(sentinel.get("current_hp")) < hp_before - 1:
+		push_error("Guardian test failed: Sentinel Shield Wall did not reduce incoming guard damage.")
+		quit(1)
+		return
+	var boss := ENEMY_SCENE.instantiate() as Enemy
+	enemy_container.add_child(boss)
+	boss.apply_enemy_type(&"boss")
+	boss.global_position = sentinel.global_position + Vector3(1.0, 0.0, 0.0)
+	var boss_hp := boss.current_hp
+	sentinel.call("_try_skill", _get_skill(sentinel, "Boss Breaker"))
+	if boss.current_hp >= boss_hp:
+		push_error("Guardian test failed: Sentinel Boss Breaker did not damage boss.")
+		quit(1)
+		return
+
+	print("Guardian test passed: all guard runtime skills and health hooks work.")
 	quit(0)
+
+func _spawn_support_guard(game: Node, guard_id: StringName) -> ShooterGuard:
+	if not game.call("spawn_guard", guard_id):
+		return null
+	var guard_container := game.get_node("GuardContainer") as Node3D
+	for child in guard_container.get_children():
+		if child is ShooterGuard and StringName((child as ShooterGuard).guardian_id) == guard_id:
+			return child as ShooterGuard
+	return null
+
+func _clear_guards(game: Node) -> void:
+	var guard_container := game.get_node("GuardContainer") as Node3D
+	for child in guard_container.get_children():
+		child.queue_free()
+	game.set("_active_guards", {})
+
+func _get_skill(guard: ShooterGuard, skill_name: String) -> Dictionary:
+	var skills: Array = guard.get("_skills")
+	for skill in skills:
+		if typeof(skill) == TYPE_DICTIONARY and str((skill as Dictionary).get("name", "")) == skill_name:
+			return (skill as Dictionary).duplicate(true)
+	return {}
+
+func _place_enemy_pair(enemy_container: Node3D, center: Vector3) -> void:
+	for child in enemy_container.get_children():
+		enemy_container.remove_child(child)
+		child.free()
+	for index in range(2):
+		enemy_container.add_child(ENEMY_SCENE.instantiate())
+	for index in range(2):
+		var enemy := enemy_container.get_child(index) as Enemy
+		enemy.global_position = center + Vector3(0.6 + float(index) * 0.25, 0.0, 0.0)
+		enemy.current_hp = enemy.max_hp

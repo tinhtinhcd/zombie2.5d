@@ -12,6 +12,9 @@ const SFX_EVENTS := {
 
 var current_music_path: String = ""
 var last_sfx_path: String = ""
+var sound_enabled: bool = true
+var music_enabled: bool = true
+var vibration_enabled: bool = false
 var _sfx_players: Array[AudioStreamPlayer] = []
 var _warned_missing_paths: Dictionary = {}
 
@@ -22,8 +25,12 @@ func _ready() -> void:
 func play_music(track_path: String) -> void:
 	# Record the requested music track until playback is implemented.
 	current_music_path = track_path
+	if not music_enabled:
+		return
 
 func play_sfx(sfx_path: String) -> void:
+	if not sound_enabled:
+		return
 	last_sfx_path = sfx_path
 	if sfx_path.is_empty():
 		return
@@ -51,6 +58,11 @@ func play_sfx_event(event_name: StringName) -> void:
 		push_warning("AudioManager received unknown SFX event: %s" % String(event_name))
 		return
 	play_sfx(sfx_path)
+
+func apply_settings(settings: Dictionary) -> void:
+	sound_enabled = bool(settings.get("sound_enabled", sound_enabled))
+	music_enabled = bool(settings.get("music_enabled", music_enabled))
+	vibration_enabled = bool(settings.get("vibration_enabled", vibration_enabled))
 
 func _on_sfx_finished(player: AudioStreamPlayer) -> void:
 	if _sfx_players.has(player):

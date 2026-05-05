@@ -5,10 +5,14 @@ enum State { FOLLOW, EVALUATE, CAST, COOLDOWN }
 
 const SHOCKWAVE_SCENE := preload("res://scenes/effects/shockwave.tscn")
 
+signal hp_changed(current_hp: int, max_hp: int)
+signal died
+
 @export var target_path: NodePath = NodePath("../../Player")
 @export var enemy_container_path: NodePath = NodePath("../../EnemyContainer")
 @export var effect_container_path: NodePath = NodePath("../../EffectContainer")
 @export var move_speed: float = 5.0
+@export var max_hp: int = 10
 
 var target: Player
 var game_manager: GameManager
@@ -18,13 +22,22 @@ var scan_interval: float = 0.2
 var _scan_timer: float = 0.0
 var _cooldowns: Dictionary = {}
 var _skills: Array = []
+var current_hp: int = 0
+var _is_dead: bool = false
+var _base_scale: Vector3 = Vector3.ONE
 
 func _ready() -> void:
 	game_manager = get_node("/root/GameManager") as GameManager
 	target = get_node_or_null(target_path) as Player
+	_base_scale = scale
 	_load_definition()
+	current_hp = max(max_hp, 1)
+	add_to_group("guards")
+	hp_changed.emit(current_hp, max_hp)
 
 func _physics_process(delta: float) -> void:
+	if _is_dead:
+		return
 	if game_manager != null and not game_manager.is_gameplay_active:
 		velocity = Vector3.ZERO
 		return
@@ -42,12 +55,37 @@ func _load_definition() -> void:
 	var definition := game_manager.get_guardian("guard_bruiser")
 	follow_distance = float(definition.get("follow_distance", follow_distance))
 	scan_interval = float(definition.get("scan_interval", scan_interval))
+	max_hp = int(definition.get("max_hp", max_hp))
 	var skills_value: Variant = definition.get("skills", [])
 	if typeof(skills_value) == TYPE_ARRAY:
 		_skills = skills_value.duplicate(true)
 	for skill in _skills:
 		if typeof(skill) == TYPE_DICTIONARY:
 			_cooldowns[str((skill as Dictionary).get("name", ""))] = 0.0
+
+func take_damage(amount: int) -> void:
+	if _is_dead:
+		return
+	current_hp = max(current_hp - max(amount, 0), 0)
+	hp_changed.emit(current_hp, max_hp)
+	var tween := create_tween()
+	tween.tween_property(self, "scale", _base_scale * 1.08, 0.06)
+	tween.tween_property(self, "scale", _base_scale, 0.08)
+	if current_hp <= 0:
+		_die()
+
+func is_dead() -> bool:
+	return _is_dead
+
+func _die() -> void:
+	if _is_dead:
+		return
+	_is_dead = true
+	remove_from_group("guards")
+	set_physics_process(false)
+	visible = false
+	died.emit()
+	queue_free()
 
 func _follow_player(delta: float) -> void:
 	if target == null:

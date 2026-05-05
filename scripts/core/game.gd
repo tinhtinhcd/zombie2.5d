@@ -15,6 +15,7 @@ const SHOOTER_GUARD_SCENE := preload("res://scenes/entities/shooter_guard.tscn")
 const BRUISER_GUARD_SCENE := preload("res://scenes/entities/guardians/bruiser_guard.tscn")
 const SKILL_MANAGER_SCRIPT := preload("res://scripts/components/skill_manager.gd")
 const MODEL_NORMALIZER := preload("res://scripts/utils/model_normalizer.gd")
+const NODE_UTILS := preload("res://scripts/utils/node_utils.gd")
 const GUARD_SHOOTER_ID := &"guard_shooter"
 const GUARD_BRUISER_ID := &"guard_bruiser"
 const MAX_GUARDS := 1
@@ -254,7 +255,7 @@ func spawn_guard(guard_id: StringName) -> bool:
 			guard.name = "BruiserGuard"
 		_:
 			guard.name = "%sRuntime" % String(guard_id).replace("_", "")
-	if _has_node_property(guard, "guardian_id"):
+	if NODE_UTILS.has_property(guard, "guardian_id"):
 		guard.set("guardian_id", String(guard_id))
 	var guard_model_path := str(guard_definition.get("model_scene_path", ""))
 	MODEL_NORMALIZER.normalize(guard, "guard", String(guard_id), guard_model_path)
@@ -263,6 +264,7 @@ func spawn_guard(guard_id: StringName) -> bool:
 	_apply_guard_spawn_warmup(guard)
 	_active_guards[String(guard_id)] = guard
 	_refresh_guard_hud(String(guard_id))
+	_connect_guard_health(guard, String(guard_id))
 	return true
 
 func _refresh_guard_hud(guard_id: String) -> void:
@@ -271,22 +273,33 @@ func _refresh_guard_hud(guard_id: String) -> void:
 	var guard_definition := game_manager.get_guardian(guard_id)
 	hud.call("set_active_guard", guard_id, game_manager.get_display_name(guard_definition, "Guard"))
 
-func _has_node_property(node: Object, property_name: String) -> bool:
-	if node == null:
-		return false
-	for property in node.get_property_list():
-		if str(property.get("name", "")) == property_name:
-			return true
-	return false
-
 func _apply_guard_spawn_warmup(guard: Node3D) -> void:
 	if guard == null:
 		return
-	if _has_node_property(guard, "_attack_timer"):
+	if NODE_UTILS.has_property(guard, "_attack_timer"):
 		var attack_interval := 0.0
-		if _has_node_property(guard, "attack_interval"):
+		if NODE_UTILS.has_property(guard, "attack_interval"):
 			attack_interval = float(guard.get("attack_interval"))
 		guard.set("_attack_timer", maxf(attack_interval, 2.0))
+
+func _connect_guard_health(guard: Node3D, guard_id: String) -> void:
+	if guard == null:
+		return
+	if guard.has_signal("hp_changed"):
+		guard.connect("hp_changed", _on_guard_hp_changed.bind(guard_id))
+	if guard.has_signal("died"):
+		guard.connect("died", _on_guard_died.bind(guard_id))
+	if hud != null and hud.has_method("set_guard_hp") and NODE_UTILS.has_property(guard, "current_hp") and NODE_UTILS.has_property(guard, "max_hp"):
+		hud.call("set_guard_hp", int(guard.get("current_hp")), int(guard.get("max_hp")))
+
+func _on_guard_hp_changed(current_hp: int, max_hp: int, _guard_id: String) -> void:
+	if hud != null and hud.has_method("set_guard_hp"):
+		hud.call("set_guard_hp", current_hp, max_hp)
+
+func _on_guard_died(guard_id: String) -> void:
+	_active_guards.erase(guard_id)
+	if hud != null and hud.has_method("set_active_guard"):
+		hud.call("set_active_guard", "", "")
 
 func _go_home() -> void:
 	game_manager.resume_game()

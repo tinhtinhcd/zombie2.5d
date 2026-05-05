@@ -1,7 +1,9 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/enemy/enemy.gd" id="1_enemy"]
 [ext_resource type="PackedScene" path="res://scenes/effects/xp_pickup.tscn" id="2_xp_pickup"]
+[ext_resource type="PackedScene" path="res://scenes/effects/health_pickup.tscn" id="3_health_pickup"]
+[ext_resource type="PackedScene" path="res://scenes/effects/buff_pickup.tscn" id="4_buff_pickup"]
 [ext_resource type="PackedScene" path="res://assets/KayKit_Skeletons_1.1_FREE/KayKit_Skeletons_1.1_FREE/characters/gltf/Skeleton_Minion.glb" id="3_skeleton_minion"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_enemy"]
@@ -14,6 +16,8 @@ size = Vector3(0.9, 1.4, 0.9)
 [node name="Enemy" type="CharacterBody3D"]
 script = ExtResource("1_enemy")
 xp_pickup_scene = ExtResource("2_xp_pickup")
+health_pickup_scene = ExtResource("3_health_pickup")
+buff_pickup_scene = ExtResource("4_buff_pickup")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("CapsuleShape3D_enemy")
